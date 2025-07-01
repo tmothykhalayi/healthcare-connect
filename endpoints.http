@@ -1,0 +1,76 @@
+### Create a new order
+POST http://localhost:3000/orders
+Content-Type: application/json
+
+{
+  "patientId": "123e4567-e89b-12d3-a456-426614174000",
+  "orderDate": "2025-07-01T10:00:00Z",
+  "status": "pending",
+  "totalAmount": 150.00,
+  "OrderId": "234"
+}
+
+### Get all orders
+GET http://localhost:3000/orders
+
+### Get all orders for a specific patient
+GET http://localhost:3000/orders/patient/123e4567-e89b-12d3-a456-426614174000
+
+### Get orders by status
+GET http://localhost:3000/orders/status/pending
+
+### Get a specific order by ID
+GET http://localhost:3000/orders/550e8400-e29b-41d4-a716-446655440000
+
+### Update order status
+PATCH http://localhost:3000/orders/550e8400-e29b-41d4-a716-446655440000/status
+Content-Type: application/json
+
+{
+  "status": "processed"
+}
+
+### Update entire order
+PATCH http://localhost:3000/orders/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "status": "shipped",
+  "totalAmount": 175.00
+}
+
+### Delete an order
+DELETE http://localhost:3000/orders/550e8400-e29b-41d4-a716-446655440000
+
+
+###PATIENTS
+### Create a new patient  
+POST http://localhost:3000/patients  
+Content-Type: application/json  
+
+{
+  "userId": "123e4567-e89b-12d3-a456-426614174000",
+  "phoneNumber": "555-1234",
+  "address": "123 Main St",
+  "dateOfBirth": "1980-01-01",
+  "medicalHistory": "No known allergies"
+}
+
+### Get all patients  
+GET http://localhost:3000/patients
+
+### Get a specific patient by ID  
+GET http://localhost:3000/patients/550e8400-e29b-41d4-a716-446655440000
+
+### Update patient info  
+PATCH http://localhost:3000/patients/550e8400-e29b-41d4-a716-446655440000  
+Content-Type: application/json  
+
+{
+  "phoneNumber": "555-5678",
+  "address": "456 Elm St",
+  "medicalHistory": "Updated medical history"
+}
+
+### Delete a patient  
+DELETE http://localhost:3000/patients/550e8400-e29b-41d4-a716-446655440000

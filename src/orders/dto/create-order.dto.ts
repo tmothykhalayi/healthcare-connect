@@ -1,11 +1,6 @@
-import { IsString, IsDateString, IsEnum, IsNumber, IsOptional } from 'class-validator';
-
+import { IsString, IsDateString, IsEnum, IsNumber,IsNotEmpty , IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
 export class CreateOrderDto {
-  @IsString()
-  patientId: string;
-
-   @IsString()
-  OrderId: string;
 
   @IsDateString()
   orderDate: string;
@@ -13,6 +8,18 @@ export class CreateOrderDto {
   @IsEnum(['pending', 'processed', 'shipped', 'delivered', 'cancelled'])
   status: string;
 
+
+  @IsString()
+  @IsNotEmpty()
+  patientId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  OrderId: string;
+
+  @Type(() => Number)
   @IsNumber()
   totalAmount: number;
 }
+
+

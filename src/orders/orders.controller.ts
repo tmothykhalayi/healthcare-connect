@@ -65,7 +65,24 @@ export class OrdersController {
   }
 
   // Update order status by ID
-  @Patch(':id/status')  
+  @Patch(':id/status')
+  async updateStatus(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+    if (!updateOrderDto.status) {
+      throw new Error('Status is required');
+    }
+    
+    return await this.ordersService
+      .updateStatus(id, updateOrderDto.status)
+      .then(() => {
+        return `Order status with ID ${id} has been updated`;
+      })
+      .catch((error) => {
+        console.error('Error updating order status:', error);
+        throw new Error(`Failed to update order status with ID ${id}`);
+      });
+  }
+
+  // Update order by ID
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return await this.ordersService

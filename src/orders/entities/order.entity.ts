@@ -1,12 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-
+import { Entity, PrimaryGeneratedColumn,  ManyToOne,
+  JoinColumn,Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Patient } from '../../patients/entities/patient.entity'; 
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column()
-  patientId: string; 
 
    @Column()
   OrderId: string; 
@@ -27,4 +25,13 @@ export class Order {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+
+@ManyToOne(() => Patient, (patient) => patient.orders, { nullable: true })
+@JoinColumn({ name: 'patientId' })
+patient: Patient;
+
+@Column({ nullable: true })
+patientId: string;
+
 }

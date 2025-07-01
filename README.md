@@ -1,98 +1,141 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Healthcare System Data Model
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This document describes the key entities and relationships within the healthcare system data model. The system supports managing users of various roles (patients, doctors, admins, pharmacies), appointments, medical records, payments, medicines, and orders.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 1. User
+- `id: string`  
+- `email: string`  
+- `password: string` (hashed)  
+- `firstName: string`  
+- `lastName: string`  
+- `role: enum` ('admin', 'doctor', 'patient', 'pharmacy', etc.)  
+- `isEmailVerified: boolean`  
+- `createdAt: Date`  
+- `updatedAt: Date`  
 
-## Project setup
+---
 
-```bash
-$ pnpm install
-```
+### 2. Patient
+- `id: string` (foreign key to User)  
+- `userId: string` (reference to User)  
+- `dateOfBirth: Date`  
+- `gender: string`  
+- `address: string`  
+- `phoneNumber: string`  
+- `assignedDoctorId: string` (reference to Doctor)  
+- `medicalHistory: string`  
+- `createdAt: Date`  
+- `updatedAt: Date`  
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ pnpm run start
+### 3. Doctor
+- `id: string` (foreign key to User)  
+- `userId: string` (reference to User)  
+- `specializations: string[]` (array of specialties)  
+- `licenseNumber: string`  
+- `experienceYears: number`  
+- `bio: string`  
+- `createdAt: Date`  
+- `updatedAt: Date`  
+- Inherits `isEmailVerified` from User  
 
-# watch mode
-$ pnpm run start:dev
+---
 
-# production mode
-$ pnpm run start:prod
-```
+### 4. Appointment
+- `id: string`  
+- `patientId: string` (reference to Patient)  
+- `doctorId: string` (reference to Doctor)  
+- `appointmentDateTime: Date`  
+- `status: enum` ('pending', 'confirmed', 'cancelled', 'completed')  
+- `reason: string`  
+- `createdAt: Date`  
+- `updatedAt: Date`  
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ pnpm run test
+### 5. Records
+- `id: string` (foreign key to User)  
+- `patientId: string` (reference to Patient)  
+- `doctorId: string` (reference to Doctor who created/updated)  
+- `recordDate: Date`  
+- `description: string`  
+- `attachments: string[]` (URLs or file references)  
+- `createdAt: Date`  
+- `updatedAt: Date`  
 
-# e2e tests
-$ pnpm run test:e2e
+---
 
-# test coverage
-$ pnpm run test:cov
-```
+### 6. Admin
+- `id: string` (foreign key to User)  
+- `userId: string` (reference to User)  
+- `permissions: string[]` (array of permission identifiers or roles, e.g., ['manage-users', 'manage-settings'])  
+- `createdAt: Date`  
+- `updatedAt: Date`  
+- Inherits `isEmailVerified` from User  
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### 7. Medicine
+- `id: string` (foreign key to User)  
+- `name: string`  
+- `description: string`  
+- `manufacturer: string`  
+- `price: number`  
+- `expiryDate: Date`  
+- `createdAt: Date`  
+- `updatedAt: Date`  
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
+### 8. Payment
+- `id: string` (foreign key to User)  
+- `userId: string` (reference to User)  
+- `amount: number`  
+- `paymentMethod: string`  
+- `status: enum` ('pending', 'completed', 'failed', 'refunded')  
+- `relatedEntityType: string` (e.g., 'Appointment', 'Order')  
+- `relatedEntityId: string`  
+- `transactionId: string`  
+- `createdAt: Date`  
+- `updatedAt: Date`  
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+### 9. Pharmacy
+- `id: string` (foreign key to User)  
+- `name: string` (name of the hospital pharmacy unit)  
+- `location: string` (physical location in the hospital, e.g., "Ground Floor, Building A")  
+- `description: string` (optional, summary of services or specialties)  
+- `managedBy: string` (optional, reference to a User — Admin or Doctor)  
+- `isActive: boolean` (whether this pharmacy is currently operational)  
+- `createdAt: Date`  
+- `updatedAt: Date`  
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### 10. Orders
+- `id: string` (foreign key to User)  
+- `patientId: string` (reference to Patient)  
+- `orderDate: Date`  
+- `status: enum` ('pending', 'processed', 'shipped', 'delivered', 'cancelled')  
+- `totalAmount: number`  
+- `createdAt: Date`  
+- `updatedAt: Date`  
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Relationships Summary
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **User** is the base entity for Patient, Doctor, Admin, Pharmacy, and Medicine.  
+- **Patient** links to one assigned **Doctor**; has many **Appointments**, **Records**, and **Orders**.  
+- **Doctor** has many assigned **Patients**, **Appointments**, and **Records**.  
+- **Appointment** links one **Patient** and one **Doctor**, and may have one **Payment**.  
+- **Records** are created by **Doctor** for a **Patient**.  
+- **Admin** manages system permissions.  
+- **Pharmacy** may be managed by a **User** (Admin or Doctor), manages **Medicines** and fulfills **Orders**.  
+- **Payment** references the paying **User** and a related entity (Appointment, Order, etc.).
