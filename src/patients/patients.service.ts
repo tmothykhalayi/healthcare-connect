@@ -1,102 +1,94 @@
+import { Injectable, NotFoundException, InternalServerErrorException, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Patient } from './entities/patient.entity';
+import { Users } from '../users/entities/user.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { Injectable, ConflictException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Patient } from './entities/patient.entity';
-import { Users } from '../users/entities/user.entity'; 
 
 @Injectable()
 export class PatientsService {
-  constructor(
-    @InjectRepository(Patient) private patientsRepository: Repository<Patient>,
-    @InjectRepository(Users) private usersRepository: Repository<Users>,
-  ) {}
+    constructor(
+        @InjectRepository(Patient) private patientsRepository: Repository<Patient>,
+        @InjectRepository(Users) private usersRepository: Repository<Users>
+    ) {}
 
-  // Create a new patient linked to a User
-  async create(createPatientDto: CreatePatientDto) {
-    // Find the user by userId passed in DTO
-    const user = await this.usersRepository.findOne({ where: { id: createPatientDto.userId } });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${createPatientDto.userId} not found`);
-    }
+    // Create a new patient
+    async create(createPatientDto: CreatePatientDto): Promise<Patient> {
+        // Check if user exists
+        const user = await this.usersRepository.findOne({
+            where: { id: createPatientDto.userId }
+        });
 
-    // Check if patient for this user already exists
-    const existingPatient = await this.patientsRepository.findOne({
-      where: { user: { id: user.id } },
-    });
-    if (existingPatient) {
-      throw new ConflictException(`Patient record already exists for this user`);
-    }
-
-    // Create new patient entity linked to user
-    const newPatient = this.patientsRepository.create({
-      user,
-      phoneNumber: createPatientDto.phoneNumber,
-      address: createPatientDto.address,
-      dateOfBirth: createPatientDto.dateOfBirth,
-      medicalHistory: createPatientDto.medicalHistory,
-    });
-
-    try {
-      return await this.patientsRepository.save(newPatient);
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to create patient');
-    }
-  }
-
-  // Find all patients with user info
-  async findAll() {
-    return await this.patientsRepository.find({
-      relations: ['user'], // eager-load user to access firstName, lastName, email
-      select: {
-        id: true,
-        phoneNumber: true,
-        address: true,
-        dateOfBirth: true,
-        medicalHistory: true,
-        user: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
+        if (!user) {
+            throw new NotFoundException(`User with ID ${createPatientDto.userId} not found`);
         }
-      }
-    });
-  }
 
-  // Find one patient by ID with user info
-  async findOne(id: string) {
-    const patient = await this.patientsRepository.findOne({
-      where: { id },
-      relations: ['user'],
-    });
-    if (!patient) {
-      throw new NotFoundException(`Patient with ID ${id} not found`);
-    }
-    return patient;
-  }
+        // Check if patient already exists for this user
+        const existingPatient = await this.patientsRepository.findOne({
+            where: { userId: createPatientDto.userId }
+        });
 
-  // Update patient by ID (patient-specific fields only)
-  async update(id: string, updatePatientDto: UpdatePatientDto) {
-    const patient = await this.patientsRepository.findOne({ where: { id } });
-    if (!patient) {
-      throw new NotFoundException(`No patient found with ID ${id}`);
-    }
-    Object.assign(patient, updatePatientDto);
-    try {
-      return await this.patientsRepository.save(patient);
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to update patient');
-    }
-  }
+        if (existingPatient) {
+            throw new ConflictException(`Patient profile already exists for user ${createPatientDto.userId}`);
+        }
 
-  // Delete a patient by ID
-  async remove(id: string) {
-    const result = await this.patientsRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`No patient found with ID ${id}`);
+        const newPatient = this.patientsRepository.create(createPatientDto);
+
+        try {
+            return await this.patientsRepository.save(newPatient);
+        } catch (error) {
+            console.error('Database error:', error);
+            throw new InternalServerErrorException('Failed to create patient');
+        }
     }
-    return { message: `Patient with ID ${id} has been deleted` };
-  }
+
+    // Find all patients with user and order information
+    async findAll(): Promise<Patient[]> {
+        try {
+            return await this.patientsRepository.find({
+                relations: ['user', 'orders'],
+            });
+        } catch (error) {
+            throw new InternalServerErrorException('Failed to retrieve patients');
+        }
+    }
+
+    // Find one patient by ID with user and order information
+    async findOne(id: string): Promise<Patient> {
+        const patient = await this.patientsRepository.findOne({
+            where: { id: parseInt(id) },
+            relations: ['user', 'orders'],
+        });
+        if (!patient) {
+            throw new NotFoundException(`Patient with ID ${id} not found`);
+        }
+        return patient;
+    }
+
+    // Update patient
+    async update(id: string, updatePatientDto: UpdatePatientDto): Promise<{ message: string }> {
+        const patient = await this.patientsRepository.findOne({ where: { id: parseInt(id) } });
+        if (!patient) {
+            throw new NotFoundException(`Patient with ID ${id} not found`);
+        }
+
+        Object.assign(patient, updatePatientDto);
+        
+        try {
+            await this.patientsRepository.save(patient);
+            return { message: `Patient with ID ${id} updated successfully` };
+        } catch (error) {
+            throw new InternalServerErrorException('Failed to update patient');
+        }
+    }
+
+    // Delete patient
+    async remove(id: string): Promise<{ message: string }> {
+        const result = await this.patientsRepository.delete({ id: parseInt(id) });
+        if (result.affected === 0) {
+            throw new NotFoundException(`Patient with ID ${id} not found`);
+        }
+        return { message: `Patient with ID ${id} deleted successfully` };
+    }
 }

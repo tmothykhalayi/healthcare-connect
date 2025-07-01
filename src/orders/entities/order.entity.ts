@@ -1,37 +1,42 @@
-import { Entity, PrimaryGeneratedColumn,  ManyToOne,
-  JoinColumn,Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { Patient } from '../../patients/entities/patient.entity'; 
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { ApiProperty } from '@nestjs/swagger';
+
 @Entity('orders')
 export class Order {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @ApiProperty({ description: 'Order unique identifier' })
+  @PrimaryGeneratedColumn()
+  id: number;
+  
+  @ApiProperty({ description: 'Patient ID associated with the order' })
+  @Column()
+  patientId: number;
 
-   @Column()
-  OrderId: string; 
-
+  @ApiProperty({ description: 'Patient associated with this order' })
+  @ManyToOne('Patient', 'orders', { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'patientId' })
+  patient: any;
+  
+  @ApiProperty({ description: 'Date when the order was placed' })
   @Column({ type: 'timestamp' })
   orderDate: Date;
-
-  @Column({ type: 'enum', enum: ['pending', 'processed', 'shipped', 'delivered', 'cancelled'] })
+  
+  @ApiProperty({ description: 'Current status of the order' })
+  @Column()
   status: string;
-
-  @Column('decimal')
+  
+  @ApiProperty({ description: 'Total amount for the order' })
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   totalAmount: number;
-
-
-
+  
+  @ApiProperty({ description: 'Custom Order ID' })
+  @Column({ unique: true })
+  OrderId: string;
+  
+  @ApiProperty({ description: 'Order creation date' })
   @CreateDateColumn()
   createdAt: Date;
-
+  
+  @ApiProperty({ description: 'Order last update date' })
   @UpdateDateColumn()
   updatedAt: Date;
-
-
-@ManyToOne(() => Patient, (patient) => patient.orders, { nullable: true })
-@JoinColumn({ name: 'patientId' })
-patient: Patient;
-
-@Column({ nullable: true })
-patientId: string;
-
 }

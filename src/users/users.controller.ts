@@ -1,147 +1,83 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import {UserRole ,Users} from './entities/user.entity'; 
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { UserRole } from './entities/user.entity';
 
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(@InjectRepository(Users) private usersRepository: Repository<Users>) {}
+  constructor(private readonly usersService: UsersService) {}
 
-  //create a new user
   @Post()
-  async create (createUserDto: CreateUserDto) {
-    return await this.usersRepository
-      .save(createUserDto)
-      .then((user) => {
-        return `User with email ${user.email} has been created`;
-      })
-      .catch((error) => {
-        console.error('Error creating user:', error);
-        throw new Error('Failed to create user');
-      });
-
-  }
-  //find all users
-  @Get()
-  async findAll(role?: UserRole) {
-    if (role) {
-      return await this.usersRepository.find({
-        where: { role: role },
-      });
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({ status: 409, description: 'User already exists' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async create(@Body() createUserDto: CreateUserDto) {
+    try {
+      const user = await this.usersService.create(createUserDto);
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'User created successfully',
+        data: user
+      };
+    } catch (error) {
+      throw error;
     }
-    return await this.usersRepository.find({
-      select: ['id', 'email', 'firstName', 'lastName', 'role', 'isEmailVerified'],
-    });
   }
 
-  //find one user by email
+  @Get()
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiQuery({ name: 'role', enum: UserRole, required: false })
+  @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
+  async findAll(@Query('role') role?: UserRole) {
+    const users = await this.usersService.findAll(role);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Users retrieved successfully',
+      data: users
+    };
+  }
+
   @Get(':email')
+  @ApiOperation({ summary: 'Get user by email' })
+  @ApiParam({ name: 'email', description: 'User email address' })
+  @ApiResponse({ status: 200, description: 'User found' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(@Param('email') email: string) {
-    return await this.usersRepository
-      .findOne({
-        where: { email },
-      })
-      .then((user) => {
-        if (!user) {
-          return `No user found with email ${email}`;
-        }
-        return user;
-      })
-      .catch((error) => {
-        console.error('Error finding user:', error);
-        throw new Error(`Failed to find user with email ${email}`);
-      });
+    const user = await this.usersService.findOne(email);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User found',
+      data: user
+    };
   }
 
-  //update user by email
   @Patch(':email')
+  @ApiOperation({ summary: 'Update user by email' })
+  @ApiParam({ name: 'email', description: 'User email address' })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   async update(@Param('email') email: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.usersRepository
-      .update({ email }, updateUserDto)
-      .then(() => {
-        return `User with email ${email} has been updated`;
-      })
-      .catch((error) => {
-        console.error('Error updating user:', error);
-        throw new Error(`Failed to update user with email ${email}`);
-      });
+    const result = await this.usersService.update(email, updateUserDto);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result
+    };
   }
 
-  //update a user's role
-  @Patch(':email/role')
-  async updateRole(@Param('email') email: string, @Body('role') role: UserRole) {
-    return await this.usersRepository
-      .update({ email }, { role })
-      .then((result) => {
-        if (result.affected === 0) {
-          return `No user found with email ${email}`;
-        }
-        return `User with email ${email} has been updated to role ${role}`;
-      })
-      .catch((error) => {
-        console.error('Error updating user role:', error);
-        throw new Error(`Failed to update user role for email ${email}`);
-      });
-  }
-
-  //update user by id
-  @Patch(':id')
-  async updateById(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.usersRepository
-      .update(id, updateUserDto)
-      .then((result) => {
-        if (result.affected === 0) {
-          return `No user found with id ${id}`;
-        }
-        return `User with id ${id} has been updated`;
-      })
-      .catch((error) => {
-        console.error('Error updating user by id:', error);
-        throw new Error(`Failed to update user with id ${id}`);
-      });
-  }
-  
-
-  //delete a user  by email
   @Delete(':email')
-  async delete(@Param('email') email: string) {
-    return await this.usersRepository
-      .delete({ email })
-      .then((result) => {
-        if (result.affected === 0) {
-          return `No user found with email ${email}`;
-        }
-        return `User with email ${email} has been removed`;
-      })
-      .catch((error) => {
-        console.error('Error removing user:', error);
-        throw new Error(`Failed to remove user with email ${email}`);
-      });
+  @ApiOperation({ summary: 'Delete user by email' })
+  @ApiParam({ name: 'email', description: 'User email address' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async remove(@Param('email') email: string) {
+    const result = await this.usersService.delete(email);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result
+    };
   }
-
-  //delete a user by id 
-  @Delete(':id')
-  async deleteById(@Param('id') id: string) {
-    return await this.usersRepository
-      .delete(id)
-      .then((result) => {
-        if (result.affected === 0) {
-          return `No user found with id ${id}`;
-        }
-        return `User with id ${id} has been removed`;
-      })
-      .catch((error) => {
-        console.error('Error removing user by id:', error);
-        throw new Error(`Failed to remove user with id ${id}`);
-      });
-  }
-
-
-
-
-
-
 }

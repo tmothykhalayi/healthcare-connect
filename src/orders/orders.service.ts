@@ -1,135 +1,183 @@
-import { Injectable } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { Injectable, NotFoundException, InternalServerErrorException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrdersService {
-    constructor(@InjectRepository(Order) private ordersRepository: Repository<Order>) {}
+    constructor(
+        @InjectRepository(Order) private ordersRepository: Repository<Order>,
+        @InjectRepository(Patient) private patientsRepository: Repository<Patient>
+    ) {}
 
     // Create a new order
-    async create(createOrderDto: CreateOrderDto) {
+    async create(createOrderDto: CreateOrderDto): Promise<Order> {
+        // Check if patient exists
+        const patient = await this.patientsRepository.findOne({
+            where: { id: createOrderDto.patientId }
+        });
+
+        if (!patient) {
+            throw new NotFoundException(`Patient with ID ${createOrderDto.patientId} not found`);
+        }
+
+        // Check if OrderId already exists
+        const existingOrder = await this.ordersRepository.findOne({
+            where: { OrderId: createOrderDto.OrderId }
+        });
+
+        if (existingOrder) {
+            throw new ConflictException(`Order with OrderId ${createOrderDto.OrderId} already exists`);
+        }
+
+        // Create the order entity
         const newOrder = this.ordersRepository.create({
-           patientId: createOrderDto.patientId,
-            orderDate: createOrderDto.orderDate,
+            patientId: createOrderDto.patientId,
+            orderDate: new Date(createOrderDto.orderDate),
             status: createOrderDto.status,
             totalAmount: createOrderDto.totalAmount,
             OrderId: createOrderDto.OrderId
         });
-        try{
+
+        try {
             return await this.ordersRepository.save(newOrder);
+        } catch (error) {
+            console.error('Database error:', error);
+            throw new InternalServerErrorException('Failed to create order');
         }
-        catch (error) {
-            throw new Error('Failed to create order');
-        }
-    }
-    // Find all orders
-    async findAll(orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC') {
-        return await this.ordersRepository.find({
-            order: { [orderBy]: order },
-            relations: ['patient'], 
-        });
     }
 
-    // Find one order by ID
-    async findOne(id: string) {
+    // Find all orders with patient information
+    async findAll(orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC'): Promise<Order[]> {
+        try {
+            return await this.ordersRepository.find({
+                relations: ['patient', 'patient.user'],
+                order: { [orderBy]: order },
+            });
+        } catch (error) {
+            throw new InternalServerErrorException('Failed to retrieve orders');
+        }
+    }
+
+    // Find one order by ID with patient information
+    async findOne(id: string): Promise<Order> {
         const order = await this.ordersRepository.findOne({
-            where: { id },
-            relations: ['patient'], 
+            where: { id: parseInt(id) },
+            relations: ['patient', 'patient.user'],
         });
         if (!order) {
-            throw new Error(`Order with ID ${id} not found`);
+            throw new NotFoundException(`Order with ID ${id} not found`);
         }
         return order;
     }
 
-
-
-    // Find orders by status
-    async findByStatus(status: string, orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC') {
-        return await this.ordersRepository.find({
-            where: { status },
-            order: { [orderBy]: order },
-            relations: ['patient'], 
-        });
+    // Find orders by status with patient information
+    async findByStatus(status: string, orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC'): Promise<Order[]> {
+        try {
+            return await this.ordersRepository.find({
+                where: { status },
+                relations: ['patient', 'patient.user'],
+                order: { [orderBy]: order },
+            });
+        } catch (error) {
+            throw new InternalServerErrorException('Failed to retrieve orders by status');
+        }
     }       
-    // Find orders by patient ID
-    async findByPatientId(patientId: string, orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC') {
-        return await this.ordersRepository.find({
-            where: { patientId },
-            order: { [orderBy]: order },
-            relations: ['patient'], 
-        });
+
+    // Find orders by patient ID with patient information
+    async findByPatientId(patientId: string, orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC'): Promise<Order[]> {
+        try {
+            return await this.ordersRepository.find({
+                where: { patientId: parseInt(patientId) },
+                relations: ['patient', 'patient.user'],
+                order: { [orderBy]: order },
+            });
+        } catch (error) {
+            throw new InternalServerErrorException('Failed to retrieve orders by patient ID');
+        }
     }   
 
     // Update an order by ID
-    async update(id: string, updateOrderDto: UpdateOrderDto) {
-        const order = await this.ordersRepository.findOne({ where: { id } });
+    async update(id: string, updateOrderDto: UpdateOrderDto): Promise<{ message: string }> {
+        const order = await this.ordersRepository.findOne({ where: { id: parseInt(id) } });
         if (!order) {
-            throw new Error(`Order with ID ${id} not found`);
+            throw new NotFoundException(`Order with ID ${id} not found`);
+        }
+
+        // If patientId is being updated, check if the new patient exists
+        if (updateOrderDto.patientId) {
+            const patient = await this.patientsRepository.findOne({
+                where: { id: updateOrderDto.patientId }
+            });
+            if (!patient) {
+                throw new NotFoundException(`Patient with ID ${updateOrderDto.patientId} not found`);
+            }
+        }
+
+        // Convert orderDate if provided
+        if (updateOrderDto.orderDate) {
+            updateOrderDto.orderDate = new Date(updateOrderDto.orderDate).toISOString();
         }
 
         Object.assign(order, updateOrderDto);
+        
         try {
-            return await this.ordersRepository.save(order);
+            await this.ordersRepository.save(order);
+            return { message: `Order with ID ${id} updated successfully` };
         } catch (error) {
-            throw new Error('Failed to update order');
+            throw new InternalServerErrorException('Failed to update order');
         }
     }
 
-    //update order status by ID
-    async updateStatus(id: string, status: string) {
-        const order = await this.ordersRepository.findOne({ where: { id } });
+    // Update order status by ID
+    async updateStatus(id: string, status: string): Promise<{ message: string }> {
+        const order = await this.ordersRepository.findOne({ where: { id: parseInt(id) } });
         if (!order) {
-            throw new Error(`Order with ID ${id} not found`);
+            throw new NotFoundException(`Order with ID ${id} not found`);
         }
 
         order.status = status;
+        
         try {
-            return await this.ordersRepository.save(order);
+            await this.ordersRepository.save(order);
+            return { message: `Order status with ID ${id} updated successfully` };
         } catch (error) {
-            throw new Error('Failed to update order status');
+            throw new InternalServerErrorException('Failed to update order status');
         }
     }
 
     // Delete an order by ID
-    async remove(id: string) {
-        const result = await this.ordersRepository.delete({ id });
+    async remove(id: string): Promise<{ message: string }> {
+        const result = await this.ordersRepository.delete({ id: parseInt(id) });
         if (result.affected === 0) {
-            throw new Error(`Order with ID ${id} not found`);
+            throw new NotFoundException(`Order with ID ${id} not found`);
         }
         return { message: `Order with ID ${id} deleted successfully` };
     }
 
     // Delete orders by patient ID
-    async removeByPatientId(patientId: string) {
-        const result = await this.ordersRepository.delete({ patientId });
+    async removeByPatientId(patientId: string): Promise<{ message: string }> {
+        const result = await this.ordersRepository.delete({ patientId: parseInt(patientId) });
         if (result.affected === 0) {
-            throw new Error(`No orders found for patient ID ${patientId}`);
+            throw new NotFoundException(`No orders found for patient ID ${patientId}`);
         }
         return { message: `Orders for patient ID ${patientId} deleted successfully` };
     }   
-    
 
-    //delete order by orderId
-    async removeByOrderId(orderId: string) {
+    // Delete order by OrderId
+    async removeByOrderId(orderId: string): Promise<{ message: string }> {
         const result = await this.ordersRepository.delete({ OrderId: orderId });
         if (result.affected === 0) {
-            throw new Error(`No orders found with Order ID ${orderId}`);
+            throw new NotFoundException(`Order with Order ID ${orderId} not found`);
         }
         return { message: `Order with Order ID ${orderId} deleted successfully` };
     }
-    
 
     // Count total orders
-    async count() {
+    async count(): Promise<number> {
         return await this.ordersRepository.count();
     }   
-
-
-
-
-  
 }

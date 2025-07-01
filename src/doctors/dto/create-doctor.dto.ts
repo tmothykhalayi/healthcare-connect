@@ -1,25 +1,55 @@
-import { IsString, IsInt, IsOptional, IsUUID, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsString, IsOptional, Matches, IsPositive } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateDoctorDto {
+  @ApiProperty({ 
+    example: 1, 
+    description: 'User ID associated with the doctor' 
+  })
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  userId: number;
 
-    
-  @IsUUID()
-  userId: string;
-
+  @ApiProperty({ 
+    example: 'Cardiology', 
+    description: 'Doctor specialization'
+  })
   @IsString()
-  specialisation: string;
+  specialization: string;
 
+  @ApiProperty({ 
+    example: 'MD123456', 
+    description: 'Doctor license number'
+  })
   @IsString()
   licenseNumber: string;
 
+  @ApiProperty({ 
+    example: 10, 
+    description: 'Doctor years of experience'
+  })
+  @Type(() => Number)
   @IsInt()
-  @Min(0)
-  experienceYears: number;
+  @IsPositive()
+  yearsOfExperience: number;
 
+  @ApiProperty({ 
+    example: '+15551234567', 
+    description: 'Doctor phone number'
+  })
+  @Matches(/^\+?[1-9]\d{1,14}$/, {
+    message: 'phoneNumber must be a valid international phone number'
+  })
+  phoneNumber: string;
+
+  @ApiProperty({ 
+    example: '123 Medical Center Dr, City, State 12345', 
+    description: 'Doctor office address',
+    required: false
+  })
   @IsOptional()
   @IsString()
-  bio?: string;
-
-  @IsInt()
-  Id: number;
+  officeAddress?: string;
 }

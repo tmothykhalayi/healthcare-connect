@@ -1,98 +1,87 @@
-
 import { Injectable } from '@nestjs/common';
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Doctor } from './entities/doctor.entity';
-import { Repository } from 'typeorm';
 
+@ApiTags('doctors')
 @Controller('doctors')
 export class DoctorsController {
-  constructor (
-        @InjectRepository(Doctor) private doctorRepository: Repository<Doctor>,
-    ){}
+  constructor(private doctorsService: DoctorsService) {}
 
   //create a new doctor 
   @Post()
-  async create (createDoctorDto: CreateDoctorDto) {
-    return await this.doctorRepository
-      .save(createDoctorDto)
-      .then((doctor) => {
-        return `Doctor with license number ${doctor.licenseNumber} has been created`;
-      })
-      .catch((error) => {
-        console.error('Error creating doctor:', error);
-        throw new Error('Failed to create doctor');
-      });
-    
+  @ApiOperation({ summary: 'Create a new doctor' })
+  @ApiResponse({ status: 201, description: 'Doctor created successfully' })
+  @ApiResponse({ status: 409, description: 'Doctor already exists' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async create(@Body() createDoctorDto: CreateDoctorDto) {
+    try {
+      const doctor = await this.doctorsService.create(createDoctorDto);
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Doctor created successfully',
+        data: doctor
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   //find all doctors
   @Get()
-  async findAll(specialisation?: string) {
-    if (specialisation) {
-      return await this.doctorRepository.find({
-        where: { specialisation: specialisation },
-      });
-    }
-    return await this.doctorRepository.find({
-      relations: ['users'], 
-    });
+  @ApiOperation({ summary: 'Get all doctors' })
+  @ApiResponse({ status: 200, description: 'Doctors retrieved successfully' })
+  async findAll() {
+    const doctors = await this.doctorsService.findAll();
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Doctors retrieved successfully',
+      data: doctors
+    };
   }
 
   //find one doctor
-  @Get(':licenseNumber')
-  async findOne(@Param('licenseNumber') licenseNumber: string) {
-    return await this.doctorRepository
-      .findOne({
-        where: { licenseNumber },
-        relations: ['users'],
-      })
-      .then((doctor) => {
-        if (!doctor) {
-          return `No doctor found with license number ${licenseNumber}`;
-        }
-        return doctor;
-      })
-      .catch((error) => {
-        console.error('Error finding doctor:', error);
-        throw new Error(`Failed to find doctor with license number ${licenseNumber}`);
-      });
+  @Get(':id')
+  @ApiOperation({ summary: 'Get doctor by ID' })
+  @ApiParam({ name: 'id', description: 'Doctor ID' })
+  @ApiResponse({ status: 200, description: 'Doctor found' })
+  @ApiResponse({ status: 404, description: 'Doctor not found' })
+  async findOne(@Param('id') id: string) {
+    const doctor = await this.doctorsService.findOne(+id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Doctor found',
+      data: doctor
+    };
   }
 
   //update a doctor 
-  @Patch(':licenseNumber')
-  async update(
-    @Param('licenseNumber') licenseNumber: string,
-    @Body() updateDoctorDto: UpdateDoctorDto,
-  ): Promise<string> {
-    return await this.doctorRepository
-      .update({ licenseNumber }, updateDoctorDto)
-      .then(() => {
-        return `Doctor with license number ${licenseNumber} has been updated`;
-      })
-      .catch((error) => {
-        console.error('Error updating doctor:', error);
-        throw new Error(`Failed to update doctor with license number ${licenseNumber}`);
-      });
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update doctor' })
+  @ApiParam({ name: 'id', description: 'Doctor ID' })
+  @ApiResponse({ status: 200, description: 'Doctor updated successfully' })
+  @ApiResponse({ status: 404, description: 'Doctor not found' })
+  async update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
+    const result = await this.doctorsService.update(+id, updateDoctorDto);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result
+    };
   }
 
   //delete a doctor
-  @Delete(':licenseNumber')
-  async remove(@Param('licenseNumber') licenseNumber: string): Promise<string> {
-    return await this.doctorRepository
-      .delete({ licenseNumber })
-      .then((result) => {
-        if (result.affected === 0) {
-          return `No doctor found with license number ${licenseNumber}`;
-        }
-        return `Doctor with license number ${licenseNumber} has been removed`;
-      })
-      .catch((error) => {
-        console.error('Error removing doctor:', error);
-        throw new Error(`Failed to remove doctor with license number ${licenseNumber}`);
-      });
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete doctor' })
+  @ApiParam({ name: 'id', description: 'Doctor ID' })
+  @ApiResponse({ status: 200, description: 'Doctor deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Doctor not found' })
+  async remove(@Param('id') id: string) {
+    const result = await this.doctorsService.remove(+id);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result
+    };
   }
 }

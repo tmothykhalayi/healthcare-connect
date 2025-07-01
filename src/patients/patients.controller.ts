@@ -51,7 +51,7 @@ export class PatientsController {
   async findOne(@Param('id') id: string) {
     return await this.patientsRepository
       .findOne({
-        where: { id },
+        where: { id: parseInt(id) },
         relations: ['user'], //LOAD user relation to access firstName, lastName, email
         select: {
           id: true,
@@ -82,7 +82,7 @@ export class PatientsController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
     return await this.patientsRepository
-      .update({ id },
+      .update({ id: parseInt(id) },
         updatePatientDto,
       ) 
       .then(() => {
@@ -97,7 +97,7 @@ export class PatientsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.patientsRepository
-      .delete({ id })
+      .delete({ id: parseInt(id) })
       .then((result) => {
         if (result.affected === 0) {
           return `No patient found with ID ${id}`;

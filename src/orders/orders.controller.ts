@@ -1,116 +1,135 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 
+@ApiTags('orders')
 @Controller('orders')
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
 
-  // Create a new order
-
   @Post()
-  async create (@Body() createOrderDto: CreateOrderDto) {
-    return await this.ordersService
-      .create(createOrderDto)
-      .then((order) => {
-        return `Order with ID ${order.id} has been created`;
-      })
-      .catch((error) => {
-        console.error('Error creating order:', error);
-        throw new Error('Failed to create order');
-
-      });
+  @ApiOperation({ summary: 'Create a new order' })
+  @ApiResponse({ status: 201, description: 'Order created successfully' })
+  @ApiResponse({ status: 409, description: 'Order already exists' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async create(@Body() createOrderDto: CreateOrderDto) {
+    try {
+      const order = await this.ordersService.create(createOrderDto);
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Order created successfully',
+        data: order
+      };
+    } catch (error) {
+      throw error;
+    }
   }
-// Find all orders
+
   @Get()
+  @ApiOperation({ summary: 'Get all orders' })
+  @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
   async findAll(orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC') {
-    return await this.ordersService.findAll(orderBy, order);
+    const orders = await this.ordersService.findAll(orderBy, order);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Orders retrieved successfully',
+      data: orders
+    };
   }
 
-  // Find orders by status
   @Get('status/:status')
+  @ApiOperation({ summary: 'Get orders by status' })
+  @ApiParam({ name: 'status', description: 'Order status' })
+  @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
   async findByStatus(
     @Param('status') status: string,
     orderBy: string = 'orderDate',
     order: 'ASC' | 'DESC' = 'ASC',
   ) {
-    return await this.ordersService.findByStatus(status, orderBy, order);
+    const orders = await this.ordersService.findByStatus(status, orderBy, order);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Orders retrieved successfully',
+      data: orders
+    };
   }
-  // Find orders by patient ID
+
   @Get('patient/:patientId')
+  @ApiOperation({ summary: 'Get orders by patient ID' })
+  @ApiParam({ name: 'patientId', description: 'Patient ID' })
+  @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
   async findByPatientId(
     @Param('patientId') patientId: string,
     orderBy: string = 'orderDate',
     order: 'ASC' | 'DESC' = 'ASC',
   ) {
-    return await this.ordersService.findByPatientId(patientId, orderBy, order);
+    const orders = await this.ordersService.findByPatientId(patientId, orderBy, order);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Orders retrieved successfully',
+      data: orders
+    };
   } 
 
-  // Find one order by ID
   @Get(':id')
+  @ApiOperation({ summary: 'Get order by ID' })
+  @ApiParam({ name: 'id', description: 'Order ID' })
+  @ApiResponse({ status: 200, description: 'Order found' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
   async findOne(@Param('id') id: string) {
-    return await this.ordersService.findOne(id)
-      .then((order) => {
-        if (!order) {
-          return `No order found with ID ${id}`;
-        }
-        return order;
-      })
-      .catch((error) => {
-        console.error('Error finding order:', error);
-        throw new Error(`Failed to find order with ID ${id}`);
-      });
+    const order = await this.ordersService.findOne(id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Order found',
+      data: order
+    };
   }
 
-  // Update order status by ID
   @Patch(':id/status')
+  @ApiOperation({ summary: 'Update order status' })
+  @ApiParam({ name: 'id', description: 'Order ID' })
+  @ApiResponse({ status: 200, description: 'Order status updated successfully' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
   async updateStatus(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     if (!updateOrderDto.status) {
-      throw new Error('Status is required');
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Status is required'
+      };
     }
     
-    return await this.ordersService
-      .updateStatus(id, updateOrderDto.status)
-      .then(() => {
-        return `Order status with ID ${id} has been updated`;
-      })
-      .catch((error) => {
-        console.error('Error updating order status:', error);
-        throw new Error(`Failed to update order status with ID ${id}`);
-      });
+    const result = await this.ordersService.updateStatus(id, updateOrderDto.status);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result
+    };
   }
 
-  // Update order by ID
   @Patch(':id')
+  @ApiOperation({ summary: 'Update order' })
+  @ApiParam({ name: 'id', description: 'Order ID' })
+  @ApiResponse({ status: 200, description: 'Order updated successfully' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
   async update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return await this.ordersService
-      .update(id, updateOrderDto)
-      .then(() => {
-        return `Order with ID ${id} has been updated`;
-      })
-      .catch((error) => {
-        console.error('Error updating order:', error);
-        throw new Error(`Failed to update order with ID ${id}`);
-      });
+    const result = await this.ordersService.update(id, updateOrderDto);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result
+    };
   }
 
-  // Delete an order by ID
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete order' })
+  @ApiParam({ name: 'id', description: 'Order ID' })
+  @ApiResponse({ status: 200, description: 'Order deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
   async remove(@Param('id') id: string) {
-    return await this.ordersService
-      .remove(id)
-      .then((result) => {
-        if (typeof result === 'object' && 'message' in result) {
-          return result.message;
-        }
-        return `Order with ID ${id} has been deleted`;
-      })
-      .catch((error) => {
-        console.error('Error deleting order:', error);
-        throw new Error(`Failed to delete order with ID ${id}`);
-      });
+    const result = await this.ordersService.remove(id);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result
+    };
   } 
-
 }

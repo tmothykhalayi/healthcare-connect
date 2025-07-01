@@ -1,76 +1,92 @@
-### Create a new order
+### STEP 1: Create Users First ###
+
+### Create a patient user
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "email": "patient@example.com",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Patient",
+  "role": "patient",
+  "isEmailVerified": false
+}
+
+### Create a doctor user
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "email": "doctor@example.com",
+  "password": "password123",
+  "firstName": "Dr. Jane",
+  "lastName": "Smith",
+  "role": "doctor",
+  "isEmailVerified": true
+}
+
+### STEP 2: Create Doctor Profile ###
+
+### Create a doctor (using user ID from above response)
+POST http://localhost:3000/doctors
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "specialization": "Cardiology",
+  "licenseNumber": "MD123456",
+  "yearsOfExperience": 10,
+  "phoneNumber": "+15551234567",
+  "officeAddress": "123 Medical Center Dr, City, State 12345"
+}
+
+### STEP 3: Create Patient Profile ###
+
+### Create a patient (using user ID from step 1, doctor ID from step 2)
+POST http://localhost:3000/patients
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "gender": "male",
+  "phoneNumber": "+15559876543",
+  "assignedDoctorId": 1,
+  "address": "123 Main St, City, State 12345",
+  "dateOfBirth": "1990-05-15",
+  "medicalHistory": "No known allergies."
+}
+
+### STEP 4: Create Orders ###
+
+### Create an order (using patient ID from step 3)
 POST http://localhost:3000/orders
 Content-Type: application/json
 
 {
-  "patientId": "123e4567-e89b-12d3-a456-426614174000",
+  "patientId": 1,
   "orderDate": "2025-07-01T10:00:00Z",
   "status": "pending",
   "totalAmount": 150.00,
-  "OrderId": "234"
+  "OrderId": "ORD-001"
 }
 
-### Get all orders
-GET http://localhost:3000/orders
+### STEP 5: Test Retrieval with Relationships ###
 
-### Get all orders for a specific patient
-GET http://localhost:3000/orders/patient/123e4567-e89b-12d3-a456-426614174000
+### Get all users
+GET http://localhost:3000/users
 
-### Get orders by status
-GET http://localhost:3000/orders/status/pending
+### Get all doctors (with user and patient relationships)
+GET http://localhost:3000/doctors
 
-### Get a specific order by ID
-GET http://localhost:3000/orders/550e8400-e29b-41d4-a716-446655440000
-
-### Update order status
-PATCH http://localhost:3000/orders/550e8400-e29b-41d4-a716-446655440000/status
-Content-Type: application/json
-
-{
-  "status": "processed"
-}
-
-### Update entire order
-PATCH http://localhost:3000/orders/550e8400-e29b-41d4-a716-446655440000
-Content-Type: application/json
-
-{
-  "status": "shipped",
-  "totalAmount": 175.00
-}
-
-### Delete an order
-DELETE http://localhost:3000/orders/550e8400-e29b-41d4-a716-446655440000
-
-
-###PATIENTS
-### Create a new patient  
-POST http://localhost:3000/patients  
-Content-Type: application/json  
-
-{
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "phoneNumber": "555-1234",
-  "address": "123 Main St",
-  "dateOfBirth": "1980-01-01",
-  "medicalHistory": "No known allergies"
-}
-
-### Get all patients  
+### Get all patients (with user, doctor, and order relationships)
 GET http://localhost:3000/patients
 
-### Get a specific patient by ID  
-GET http://localhost:3000/patients/550e8400-e29b-41d4-a716-446655440000
+### Get all orders (with patient relationships)
+GET http://localhost:3000/orders
 
-### Update patient info  
-PATCH http://localhost:3000/patients/550e8400-e29b-41d4-a716-446655440000  
-Content-Type: application/json  
+### Get specific patient by ID (with all relationships)
+GET http://localhost:3000/patients/1
 
-{
-  "phoneNumber": "555-5678",
-  "address": "456 Elm St",
-  "medicalHistory": "Updated medical history"
-}
-
-### Delete a patient  
-DELETE http://localhost:3000/patients/550e8400-e29b-41d4-a716-446655440000
+### Get specific doctor by ID (with all relationships)
+GET http://localhost:3000/doctors/1
