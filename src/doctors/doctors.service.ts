@@ -113,44 +113,38 @@ export class DoctorsService {
 
     // Add this method for automatic role assignment
     async createFromUser(user: Users): Promise<Doctor> {
-        console.log(`DoctorsService.createFromUser called for user ID ${user.id}`);
-        
         // Check if doctor record already exists
         const existingDoctor = await this.doctorsRepository.findOne({
             where: { userId: user.id }
         });
 
         if (existingDoctor) {
-            console.log(`Doctor profile already exists for user ID ${user.id}`);
             return existingDoctor;
         }
 
         try {
-            // Create basic doctor record
+            // Create doctor with NO NULL values
             const doctorData = {
                 userId: user.id,
-                specialization: 'General Practice', // Default specialization
-                licenseNumber: `TEMP_${user.id}_${Date.now().toString().slice(-6)}`, // Temporary license
+                specialization: 'General Practice',
+                licenseNumber: `TEMP_${user.id}_${Date.now().toString().slice(-6)}`,
                 yearsOfExperience: 0,
-                education: '',
-                phoneNumber: '',
-                officeAddress: '',
+                education: 'Pending verification',
+                phoneNumber: user.phoneNumber || '(Not set)',
+                officeAddress: 'Pending update',
+                consultationFee: 0.0,
+                availableDays: ['Monday', 'Wednesday', 'Friday'],
+                availableHours: '9:00 AM - 5:00 PM',
+                bio: 'New doctor profile',
                 status: 'pending_verification',
             };
 
-            console.log(`Creating new doctor profile with data:`, doctorData);
             const newDoctor = this.doctorsRepository.create(doctorData);
             const savedDoctor = await this.doctorsRepository.save(newDoctor);
-            console.log(`Successfully created doctor profile with ID ${savedDoctor.id}`);
 
             return savedDoctor;
         } catch (error) {
-            console.error(`Error creating doctor from user ${user.id}:`, error);
-            
-            if (error.code === '23505') {
-                throw new ConflictException(`Doctor profile already exists for user ID ${user.id}`);
-            }
-            
+            console.error('Error creating doctor from user:', error);
             throw new InternalServerErrorException(`Failed to create doctor profile: ${error.message}`);
         }
     }

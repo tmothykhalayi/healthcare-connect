@@ -1,10 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum UserRole {
-  PATIENT = 'patient',
-  DOCTOR = 'doctor',
   ADMIN = 'admin',
+  DOCTOR = 'doctor',
+  PATIENT = 'patient',
   PHARMACY = 'pharmacy'
 }
 
@@ -30,8 +30,16 @@ export class Users {
   @Column()
   lastName: string;
   
+  @ApiProperty({ description: 'User phone number', required: false })
+  @Column({ nullable: true })
+  phoneNumber: string;
+  
   @ApiProperty({ description: 'User role', enum: UserRole })
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.PATIENT })
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.PATIENT
+  })
   role: UserRole;
   
   @ApiProperty({ description: 'Email verification status' })
@@ -42,8 +50,8 @@ export class Users {
   @Column({ default: true })
   isActive: boolean;
   
-  @ApiProperty({ description: 'Last login timestamp' })
-  @Column({ type: 'timestamp', nullable: true })
+  @ApiProperty({ description: 'User last login date' })
+  @Column({ nullable: true, type: 'timestamp' })
   lastLogin: Date;
   
   @ApiProperty({ description: 'User creation date' })
@@ -53,17 +61,4 @@ export class Users {
   @ApiProperty({ description: 'User last update date' })
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // Relationships to specialized entities
-  @OneToOne('Patient', 'user')
-  patient: any;
-
-  @OneToOne('Doctor', 'user')
-  doctor: any;
-
-  @OneToOne('Admin', 'user')
-  admin: any;
-
-  @OneToOne('Pharmacy', 'user')
-  pharmacy: any;
 }

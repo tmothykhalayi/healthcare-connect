@@ -1,43 +1,46 @@
 // dto/create-user.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsString, IsEnum, IsOptional, IsBoolean, MinLength } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean } from 'class-validator';
 import { UserRole } from '../entities/user.entity';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'user@example.com', description: 'User email address' })
+  @ApiProperty({ example: 'user@example.com', description: 'Email address' })
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: 'password123', description: 'User password (minimum 6 characters)' })
+  @ApiProperty({ example: 'password123', description: 'Password' })
   @IsString()
-  @MinLength(6)
+  @IsNotEmpty()
   password: string;
 
-  @ApiProperty({ example: 'John', description: 'User first name' })
+  @ApiProperty({ example: 'John', description: 'First name' })
   @IsString()
+  @IsNotEmpty()
   firstName: string;
 
-  @ApiProperty({ example: 'Doe', description: 'User last name' })
+  @ApiProperty({ example: 'Doe', description: 'Last name' })
   @IsString()
+  @IsNotEmpty()
   lastName: string;
 
-  @ApiPropertyOptional({ 
-    example: UserRole.PATIENT, 
-    description: 'User role',
-    enum: UserRole,
-    default: UserRole.PATIENT
-  })
-  @IsOptional()
+  @ApiProperty({ enum: UserRole, default: UserRole.PATIENT, description: 'User role' })
   @IsEnum(UserRole)
+  @IsOptional()
   role?: UserRole;
 
-  @ApiPropertyOptional({ example: false, description: 'Email verification status', default: false })
+  @ApiPropertyOptional({ example: '15551234567', description: 'Phone number' })
+  @IsString()
   @IsOptional()
+  phoneNumber?: string;
+
+  @ApiPropertyOptional({ default: false })
   @IsBoolean()
+  @IsOptional()
   isEmailVerified?: boolean;
 
-  @ApiPropertyOptional({ example: true, description: 'Account active status', default: true })
-  @IsOptional()
+  @ApiPropertyOptional({ default: true })
   @IsBoolean()
+  @IsOptional()
   isActive?: boolean;
 }

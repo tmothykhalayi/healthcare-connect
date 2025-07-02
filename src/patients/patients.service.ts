@@ -125,36 +125,28 @@ export class PatientsService {
         }
 
         try {
+            // Create patient with NO NULL values
             const patientData = {
                 userId: user.id,
-                gender: undefined, // Will be set when profile is completed
-                dateOfBirth: new Date(), // Default to current date, will be updated later
-                phoneNumber: '',
-                address: '',
+                gender: Gender.OTHER, // Default gender enum value
+                dateOfBirth: new Date('2000-01-01'), // Default date
+                phoneNumber: user.phoneNumber || '(Not set)',
+                address: 'Pending update',
+                emergencyContact: 'Not provided',
+                medicalHistory: '',
+                allergies: [],
+                bloodType: 'Unknown',
+                weight: 0.0,
+                height: 0.0,
                 status: 'pending_profile_completion',
             };
 
             const newPatient = this.patientsRepository.create(patientData);
             const savedPatient = await this.patientsRepository.save(newPatient);
 
-            const patient = await this.patientsRepository.findOne({
-                where: { id: savedPatient.id },
-                relations: ['user']
-            });
-            
-            if (!patient) {
-                throw new NotFoundException(`Patient with ID ${savedPatient.id} not found`);
-            }
-            
-            return patient;
-
+            return savedPatient;
         } catch (error) {
             console.error('Error creating patient from user:', error);
-            
-            if (error.code === '23505') {
-                throw new ConflictException(`Patient profile already exists for user ID ${user.id}`);
-            }
-            
             throw new InternalServerErrorException(`Failed to create patient profile: ${error.message}`);
         }
     }

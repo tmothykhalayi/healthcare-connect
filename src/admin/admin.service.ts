@@ -58,11 +58,13 @@ export class AdminService {
       return existingAdmin;
     }
 
+    // Create basic admin record with NO NULL values
     try {
       const adminData = {
         user: user,
-        adminLevel: 'admin',
-        department: 'General',
+        adminLevel: 'admin', // Default level
+        department: 'General', // Default department
+        phoneNumber: user.phoneNumber || '(Not set)', // Default value
         status: 'active',
         permissions: {
           users: ['read'],
@@ -73,14 +75,8 @@ export class AdminService {
 
       const newAdmin = this.adminRepository.create(adminData);
       return await this.adminRepository.save(newAdmin);
-
     } catch (error) {
       console.error('Error creating admin from user:', error);
-      
-      if (error.code === '23505') {
-        throw new ConflictException(`Admin profile already exists for user ID ${user.id}`);
-      }
-      
       throw new InternalServerErrorException(`Failed to create admin profile: ${error.message}`);
     }
   }

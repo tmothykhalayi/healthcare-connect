@@ -60,36 +60,25 @@ export class PharmacyService {
         }
 
         try {
+            // Create pharmacy with NO NULL values
             const pharmacyData = {
                 userId: user.id,
                 pharmacyName: `${user.firstName} ${user.lastName} Pharmacy`,
-                licenseNumber: `PTEMP_${user.id}_${Date.now()}`,
-                address: '',
-                phoneNumber: '',
+                licenseNumber: `PTEMP_${user.id}_${Date.now().toString().slice(-6)}`,
+                address: 'Pending update',
+                phoneNumber: user.phoneNumber || '(Not set)',
+                email: user.email,
+                openingHours: '9:00 AM - 6:00 PM',
+                services: ['Prescription filling', 'Over-the-counter medication'],
                 status: 'pending_verification',
             };
 
             const newPharmacy = this.pharmacyRepository.create(pharmacyData);
             const savedPharmacy = await this.pharmacyRepository.save(newPharmacy);
 
-            const result = await this.pharmacyRepository.findOne({
-                where: { id: savedPharmacy.id },
-                relations: ['user']
-            });
-            
-            if (!result) {
-                throw new NotFoundException(`Failed to retrieve pharmacy after creation`);
-            }
-            
-            return result;
-
+            return savedPharmacy;
         } catch (error) {
             console.error('Error creating pharmacy from user:', error);
-            
-            if (error.code === '23505') {
-                throw new ConflictException(`Pharmacy profile already exists for user ID ${user.id}`);
-            }
-            
             throw new InternalServerErrorException(`Failed to create pharmacy profile: ${error.message}`);
         }
     }

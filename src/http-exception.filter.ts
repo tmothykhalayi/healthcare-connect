@@ -5,8 +5,8 @@ import {
   ArgumentsHost,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
-import { LogsService } from './logs/logs.service';
 import { Request, Response } from 'express';
+import { LogsService } from './logs/logs.service';
 
 // Interface for standardized error response
 interface MyResponseObj {
@@ -18,7 +18,9 @@ interface MyResponseObj {
 
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
-  private readonly logs = new LogsService();
+  constructor(httpAdapter: any, private readonly logs: LogsService) {
+    super(httpAdapter);
+  }
 
   private getClientIp(request: Request): string {
     // Get IP from X-Forwarded-For header or fall back to connection remote address

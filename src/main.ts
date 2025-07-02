@@ -4,12 +4,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './http-exception.filter';
+import { LogsService } from './logs/logs.service'; // Import LogsService
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logsService = app.get(LogsService); // Get LogsService instance
   // Global exception filter for handling errors
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new AllExceptionsFilter(app.getHttpAdapter(), logsService));
   
   
   // Enable CORS for frontend integration
