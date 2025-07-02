@@ -1,6 +1,6 @@
-### STEP 1: Create Users First ###
+### STEP 1: Create All Required Users First ###
 
-### Create a patient user
+### Create user 1 - Patient
 POST http://localhost:3000/users
 Content-Type: application/json
 
@@ -13,7 +13,7 @@ Content-Type: application/json
   "isEmailVerified": false
 }
 
-### Create a doctor user
+### Create user 2 - Doctor
 POST http://localhost:3000/users
 Content-Type: application/json
 
@@ -26,9 +26,79 @@ Content-Type: application/json
   "isEmailVerified": true
 }
 
-### STEP 2: Create Doctor Profile ###
+### Create user 3 - Admin
+POST http://localhost:3000/users
+Content-Type: application/json
 
-### Create a doctor (using user ID from above response)
+{
+  "email": "admin@example.com",
+  "password": "admin123",
+  "firstName": "System",
+  "lastName": "Administrator",
+  "role": "admin",
+  "isEmailVerified": true
+}
+
+### Create user 4 - Super Admin
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "email": "superadmin@example.com",
+  "password": "superadmin123",
+  "firstName": "Super",
+  "lastName": "Admin",
+  "role": "admin",
+  "isEmailVerified": true
+}
+
+### Create user 5 - Moderator
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "email": "moderator@example.com",
+  "password": "moderator123",
+  "firstName": "Customer",
+  "lastName": "Service",
+  "role": "admin",
+  "isEmailVerified": true
+}
+
+### Create user 6 - Department Head
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "email": "depthead@example.com",
+  "password": "depthead123",
+  "firstName": "Medical",
+  "lastName": "Head",
+  "role": "admin",
+  "isEmailVerified": true
+}
+
+### Create user 7 - Audit Admin
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "email": "audit@example.com",
+  "password": "audit123",
+  "firstName": "Audit",
+  "lastName": "Manager",
+  "role": "admin",
+  "isEmailVerified": true
+}
+
+### STEP 2: Verify Users Created Successfully ###
+
+### Get all users to verify IDs
+GET http://localhost:3000/users
+
+### STEP 3: Create Doctor and Patient Profiles ###
+
+### Create doctor profile (using user ID 2)
 POST http://localhost:3000/doctors
 Content-Type: application/json
 
@@ -37,63 +107,176 @@ Content-Type: application/json
   "specialization": "Cardiology",
   "licenseNumber": "MD123456",
   "yearsOfExperience": 10,
-  "phoneNumber": "+15551234567",
+  "phoneNumber": "15551234567",
   "officeAddress": "123 Medical Center Dr, City, State 12345"
 }
 
-### STEP 3: Create Patient Profile ###
-
-### Create a patient (using user ID from step 1, doctor ID from step 2)
+### Create patient profile (using user ID 1)
 POST http://localhost:3000/patients
 Content-Type: application/json
 
 {
   "userId": 1,
   "gender": "male",
-  "phoneNumber": "+15559876543",
+  "phoneNumber": "15559876543",
   "assignedDoctorId": 1,
   "address": "123 Main St, City, State 12345",
   "dateOfBirth": "1990-05-15",
   "medicalHistory": "No known allergies."
 }
 
-### STEP 4: Create Orders ###
+### STEP 4: Create Admin Profiles (Now with Existing Users) ###
 
-### Create an order (using patient ID from step 3)
-POST http://localhost:3000/orders
+### Create regular admin profile (user ID 3)
+POST http://localhost:3000/admin
 Content-Type: application/json
 
 {
-  "patientId": 1,
-  "orderDate": "2025-07-01T10:00:00Z",
-  "status": "pending",
-  "totalAmount": 150.00,
-  "OrderId": "ORD-001"
+  "userId": 3,
+  "adminLevel": "admin",
+  "permissions": {
+    "users": ["read", "write", "delete"],
+    "appointments": ["read", "write"],
+    "doctors": ["read", "write"],
+    "patients": ["read", "write"],
+    "orders": ["read", "write"]
+  },
+  "department": "IT Department",
+  "phoneNumber": "15551234567",
+  "emergencyContact": "15559876543",
+  "status": "active",
+  "notes": "System administrator with full access"
 }
 
-### STEP 5: Test Retrieval with Relationships ###
+### Create super admin profile (user ID 4)
+POST http://localhost:3000/admin
+Content-Type: application/json
 
-### Get all users
+{
+  "userId": 4,
+  "adminLevel": "super_admin",
+  "permissions": {
+    "users": ["read", "write", "delete"],
+    "appointments": ["read", "write", "delete"],
+    "doctors": ["read", "write", "delete"],
+    "patients": ["read", "write", "delete"],
+    "orders": ["read", "write", "delete"],
+    "admin": ["read", "write", "delete"],
+    "system": ["read", "write", "delete"]
+  },
+  "department": "Management",
+  "phoneNumber": "15551111111",
+  "emergencyContact": "15552222222",
+  "status": "active",
+  "notes": "Super administrator with complete system access"
+}
+
+### Create moderator profile (user ID 5)
+POST http://localhost:3000/admin
+Content-Type: application/json
+
+{
+  "userId": 5,
+  "adminLevel": "moderator",
+  "permissions": {
+    "appointments": ["read", "write"],
+    "patients": ["read"],
+    "doctors": ["read"]
+  },
+  "department": "Customer Service",
+  "phoneNumber": "15553333333",
+  "emergencyContact": "15554444444",
+  "status": "active",
+  "notes": "Moderator with limited access"
+}
+
+### Create department head admin (user ID 6)
+POST http://localhost:3000/admin
+Content-Type: application/json
+
+{
+  "userId": 6,
+  "adminLevel": "admin",
+  "permissions": {
+    "users": ["read", "write"],
+    "appointments": ["read", "write", "delete"],
+    "doctors": ["read", "write"],
+    "patients": ["read", "write"],
+    "reports": ["read", "write"]
+  },
+  "department": "Medical Department",
+  "phoneNumber": "15556666666",
+  "emergencyContact": "15557777777",
+  "status": "active",
+  "notes": "Department head with reporting capabilities"
+}
+
+### Create audit admin (user ID 7)
+POST http://localhost:3000/admin
+Content-Type: application/json
+
+{
+  "userId": 7,
+  "adminLevel": "moderator",
+  "permissions": {
+    "users": ["read"],
+    "appointments": ["read"],
+    "doctors": ["read"],
+    "patients": ["read"],
+    "orders": ["read"]
+  },
+  "department": "Audit Department",
+  "phoneNumber": "15550000000",
+  "status": "active",
+  "notes": "Read-only access for audit purposes"
+}
+
+### STEP 5: Verify Admin Creation ###
+
+### Get all admins
+GET http://localhost:3000/admin
+
+### Get all users with their admin profiles
 GET http://localhost:3000/users
 
-### Get all doctors (with user and patient relationships)
-GET http://localhost:3000/doctors
+### STEP 6: Test Admin Functionality ###
 
-### Get all patients (with user, doctor, and order relationships)
-GET http://localhost:3000/patients
+### Get admin statistics
+GET http://localhost:3000/admin/stats
 
-### Get all orders (with patient relationships)
-GET http://localhost:3000/orders
+### Get active admins
+GET http://localhost:3000/admin/active
 
-### Get specific patient by ID (with all relationships)
-GET http://localhost:3000/patients/1
+### Get super admins
+GET http://localhost:3000/admin/super-admins
 
-### Get specific doctor by ID (with all relationships)
-GET http://localhost:3000/doctors/1
+### Search admins
+GET http://localhost:3000/admin/search?q=System
 
-### APPOINTMENTS ENDPOINTS ###
+### Get admins by level
+GET http://localhost:3000/admin/level/super_admin
 
-### Create a new appointment
+### Get admins by status
+GET http://localhost:3000/admin/status/active
+
+### Get admins by department
+GET http://localhost:3000/admin/department/IT
+
+### Get specific admin
+GET http://localhost:3000/admin/1
+
+### Update admin
+PATCH http://localhost:3000/admin/1
+Content-Type: application/json
+
+{
+  "status": "active",
+  "notes": "Status confirmed"
+}
+
+### STEP 7: Create Appointments ###
+
+### Create appointment
 POST http://localhost:3000/appointments
 Content-Type: application/json
 
@@ -108,302 +291,314 @@ Content-Type: application/json
   "notes": "Patient requested morning appointment"
 }
 
-### Create an urgent appointment
-POST http://localhost:3000/appointments
+### STEP 8: Create Orders ###
+
+### Create order
+POST http://localhost:3000/orders
 Content-Type: application/json
 
 {
   "patientId": 1,
-  "doctorId": 1,
-  "appointmentDate": "2025-07-02T14:30:00Z",
-  "appointmentTime": "14:30",
-  "duration": 45,
-  "reason": "Chest pain consultation",
-  "status": "scheduled",
-  "priority": "urgent",
-  "notes": "Patient reports chest discomfort"
+  "orderDate": "2025-07-01T10:00:00Z",
+  "status": "pending",
+  "totalAmount": 150.00,
+  "OrderId": "ORD-001"
 }
 
-### Create a follow-up appointment
-POST http://localhost:3000/appointments
+### MEDICAL RECORDS ENDPOINTS ###
+
+### Create a diagnosis record
+POST http://localhost:3000/medical-records
 Content-Type: application/json
 
 {
   "patientId": 1,
   "doctorId": 1,
-  "appointmentDate": "2025-07-10T09:00:00Z",
-  "appointmentTime": "09:00",
-  "duration": 20,
-  "reason": "Follow-up consultation",
-  "status": "scheduled",
-  "parentAppointmentId": 1,
-  "notes": "Follow-up for previous treatment"
-}
-
-### Create a comprehensive appointment with all fields
-POST http://localhost:3000/appointments
-Content-Type: application/json
-
-{
-  "patientId": 1,
-  "doctorId": 1,
-  "appointmentDate": "2025-07-05T10:00:00Z",
-  "appointmentTime": "10:00",
-  "duration": 30,
-  "reason": "Regular checkup",
-  "status": "scheduled",
-  "priority": "normal",
-  "notes": "Patient requested morning appointment",
-  "medicalNotes": "Initial consultation for routine health screening",
-  "diagnosis": "Scheduled for general health assessment",
-  "prescription": "No current prescriptions",
+  "appointmentId": 1,
+  "recordType": "diagnosis",
+  "title": "Hypertension Diagnosis",
+  "description": "Patient presented with elevated blood pressure readings during routine checkup. No symptoms reported.",
+  "diagnosis": "Essential Hypertension (Stage 1)",
+  "treatment": "Lifestyle modifications including diet and exercise. Medication therapy initiated.",
+  "medications": [
+    {
+      "name": "Lisinopril",
+      "dosage": "10mg",
+      "frequency": "once daily",
+      "duration": "ongoing"
+    }
+  ],
   "vitals": {
-    "bloodPressure": "120/80",
-    "heartRate": "72",
+    "bloodPressure": "145/92",
+    "heartRate": "78",
     "temperature": "98.6°F",
-    "weight": "150 lbs"
-  }
+    "weight": "180 lbs"
+  },
+  "followUpInstructions": "Return in 4 weeks for blood pressure monitoring. Continue medication as prescribed.",
+  "nextAppointmentDate": "2025-08-01T10:00:00Z",
+  "priority": "normal",
+  "notes": "Patient counseled on dietary modifications and regular exercise"
 }
 
-### Create an urgent appointment with medical details
-POST http://localhost:3000/appointments
+### Create a prescription record
+POST http://localhost:3000/medical-records
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorId": 1,
+  "recordType": "prescription",
+  "title": "Antibiotic Prescription for UTI",
+  "description": "Patient diagnosed with urinary tract infection based on symptoms and urinalysis results.",
+  "diagnosis": "Urinary Tract Infection (UTI)",
+  "treatment": "Antibiotic therapy for 7 days",
+  "medications": [
+    {
+      "name": "Trimethoprim-Sulfamethoxazole",
+      "dosage": "800mg/160mg",
+      "frequency": "twice daily",
+      "duration": "7 days"
+    }
+  ],
+  "labResults": {
+    "urinalysis": {
+      "bacteria": "positive",
+      "whiteBloodCells": "elevated",
+      "nitrites": "positive"
+    }
+  },
+  "followUpInstructions": "Complete full course of antibiotics. Return if symptoms persist or worsen.",
+  "priority": "normal",
+  "notes": "Patient advised to increase fluid intake"
+}
+
+### Create a lab result record
+POST http://localhost:3000/medical-records
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorId": 1,
+  "recordType": "lab_result",
+  "title": "Annual Blood Work Results",
+  "description": "Comprehensive metabolic panel and lipid profile results from annual physical examination.",
+  "labResults": {
+    "glucose": "95 mg/dL (normal)",
+    "cholesterol": {
+      "total": "200 mg/dL",
+      "HDL": "50 mg/dL",
+      "LDL": "130 mg/dL",
+      "triglycerides": "150 mg/dL"
+    },
+    "kidneyFunction": {
+      "creatinine": "1.0 mg/dL (normal)",
+      "BUN": "15 mg/dL (normal)"
+    },
+    "liverFunction": {
+      "ALT": "25 U/L (normal)",
+      "AST": "22 U/L (normal)"
+    }
+  },
+  "followUpInstructions": "Continue current lifestyle. Repeat labs in 1 year.",
+  "priority": "normal",
+  "notes": "All values within normal limits"
+}
+
+### Create an emergency record
+POST http://localhost:3000/medical-records
 Content-Type: application/json
 
 {
   "patientId": 2,
   "doctorId": 1,
-  "appointmentDate": "2025-07-02T14:30:00Z",
-  "appointmentTime": "14:30",
-  "duration": 45,
-  "reason": "Chest pain consultation",
-  "status": "scheduled",
-  "priority": "urgent",
-  "notes": "Patient reports chest discomfort",
-  "medicalNotes": "Patient experiencing chest pain for 2 hours",
-  "diagnosis": "Requires immediate evaluation",
-  "prescription": "Pre-evaluation - no medications prescribed yet",
+  "recordType": "emergency",
+  "title": "Emergency Department Visit - Chest Pain",
+  "description": "Patient presented to ED with acute onset chest pain, duration 2 hours. Pain described as crushing, radiating to left arm.",
+  "diagnosis": "Rule out myocardial infarction - chest pain evaluation",
+  "treatment": "Cardiac workup including EKG, chest X-ray, and cardiac enzymes. Pain management provided.",
   "vitals": {
-    "bloodPressure": "140/90",
-    "heartRate": "85",
+    "bloodPressure": "160/95",
+    "heartRate": "92",
     "temperature": "99.1°F",
-    "oxygenSaturation": "98%"
-  }
+    "oxygenSaturation": "98%",
+    "respiratoryRate": "18"
+  },
+  "labResults": {
+    "troponin": "negative",
+    "CK-MB": "normal",
+    "EKG": "normal sinus rhythm"
+  },
+  "followUpInstructions": "Follow up with primary care physician within 48 hours. Return to ED if chest pain recurs.",
+  "priority": "critical",
+  "notes": "Patient discharged home after cardiac workup negative for acute MI"
 }
 
-### Create a follow-up appointment with complete information
-POST http://localhost:3000/appointments
+### Create a surgery record
+POST http://localhost:3000/medical-records
 Content-Type: application/json
 
 {
-  "patientId": 1,
+  "patientId": 2,
   "doctorId": 1,
-  "appointmentDate": "2025-07-10T09:00:00Z",
-  "appointmentTime": "09:00",
-  "duration": 20,
-  "reason": "Follow-up consultation",
-  "status": "scheduled",
+  "recordType": "surgery",
+  "title": "Laparoscopic Cholecystectomy",
+  "description": "Patient underwent laparoscopic removal of gallbladder due to symptomatic cholelithiasis.",
+  "diagnosis": "Cholelithiasis with acute cholecystitis",
+  "treatment": "Laparoscopic cholecystectomy performed successfully. No complications.",
+  "followUpInstructions": "Post-operative care instructions provided. Follow up in 2 weeks for wound check.",
+  "nextAppointmentDate": "2025-07-15T14:00:00Z",
   "priority": "normal",
-  "parentAppointmentId": 1,
-  "notes": "Follow-up for previous treatment",
-  "medicalNotes": "Review progress from previous visit",
-  "diagnosis": "Monitoring treatment response",
-  "prescription": "Continue current medication regimen",
-  "vitals": {}
+  "attachments": [
+    {
+      "name": "operative_report.pdf",
+      "type": "surgery_report",
+      "url": "/files/surgery_123.pdf"
+    },
+    {
+      "name": "post_op_instructions.pdf",
+      "type": "instructions",
+      "url": "/files/postop_123.pdf"
+    }
+  ],
+  "notes": "Surgery completed without complications. Patient tolerated procedure well."
 }
 
-### Get all appointments
-GET http://localhost:3000/appointments
+### Get all medical records
+GET http://localhost:3000/medical-records
 
-### Get a specific appointment by ID
-GET http://localhost:3000/appointments/1
+### Get medical records statistics
+GET http://localhost:3000/medical-records/stats
 
-### Get appointments by doctor ID
-GET http://localhost:3000/appointments/doctor/1
+### Get urgent medical records
+GET http://localhost:3000/medical-records/urgent
 
-### Get appointments by patient ID
-GET http://localhost:3000/appointments/patient/1
+### Get recent medical records (last 7 days)
+GET http://localhost:3000/medical-records/recent
 
-### Get appointments by status
-GET http://localhost:3000/appointments/status/scheduled
+### Get recent medical records (last 30 days)
+GET http://localhost:3000/medical-records/recent?days=30
 
-### Get appointments by date range
-GET http://localhost:3000/appointments/date-range?startDate=2025-07-01&endDate=2025-07-31
+### Search medical records
+GET http://localhost:3000/medical-records/search?q=hypertension
 
-### Get today's appointments
-GET http://localhost:3000/appointments/today
+### Get medical records by patient ID
+GET http://localhost:3000/medical-records/patient/1
 
-### Get upcoming appointments (next 7 days)
-GET http://localhost:3000/appointments/upcoming
+### Get medical records by doctor ID
+GET http://localhost:3000/medical-records/doctor/1
 
-### Update appointment status to confirmed
-PATCH http://localhost:3000/appointments/1
+### Get medical records by appointment ID
+GET http://localhost:3000/medical-records/appointment/1
+
+### Get medical records by record type
+GET http://localhost:3000/medical-records/type/diagnosis
+
+### Get medical records by status
+GET http://localhost:3000/medical-records/status/active
+
+### Get medical records by priority
+GET http://localhost:3000/medical-records/priority/critical
+
+### Get medical records by date range
+GET http://localhost:3000/medical-records/date-range?startDate=2025-07-01&endDate=2025-07-31
+
+### Get specific medical record
+GET http://localhost:3000/medical-records/1
+
+### Update medical record
+PATCH http://localhost:3000/medical-records/1
 Content-Type: application/json
 
 {
-  "status": "confirmed"
+  "notes": "Patient responded well to treatment. Blood pressure improved.",
+  "followUpInstructions": "Continue current medication. Return in 8 weeks for follow-up.",
+  "nextAppointmentDate": "2025-08-30T10:00:00Z"
 }
 
-### Update appointment time and duration
-PATCH http://localhost:3000/appointments/1
+### Archive medical record
+PATCH http://localhost:3000/medical-records/1/archive
+
+### Bulk update status
+PATCH http://localhost:3000/medical-records/bulk-status
 Content-Type: application/json
 
 {
-  "appointmentDate": "2025-07-05T11:00:00Z",
-  "appointmentTime": "11:00",
-  "duration": 45,
-  "notes": "Rescheduled per patient request"
+  "recordIds": [1, 2, 3],
+  "status": "archived"
 }
 
-### Cancel an appointment
-PATCH http://localhost:3000/appointments/1
-Content-Type: application/json
+### Delete medical record
+DELETE http://localhost:3000/medical-records/1
 
-{
-  "status": "cancelled",
-  "cancellationReason": "Patient unable to attend",
-  "notes": "Patient requested rescheduling for next week"
-}
+### COMPLEX MEDICAL RECORDS SCENARIOS ###
 
-### Complete an appointment
-PATCH http://localhost:3000/appointments/1
-Content-Type: application/json
-
-{
-  "status": "completed",
-  "notes": "Consultation completed successfully. Prescribed medication.",
-  "diagnosis": "Minor respiratory infection",
-  "prescription": "Amoxicillin 500mg, 3 times daily for 7 days"
-}
-
-### Mark appointment as no-show
-PATCH http://localhost:3000/appointments/1
-Content-Type: application/json
-
-{
-  "status": "no_show",
-  "notes": "Patient did not attend scheduled appointment"
-}
-
-### Update appointment with medical notes
-PATCH http://localhost:3000/appointments/1
-Content-Type: application/json
-
-{
-  "medicalNotes": "Patient shows improvement since last visit. Blood pressure normal.",
-  "vitals": {
-    "bloodPressure": "120/80",
-    "heartRate": "72",
-    "temperature": "98.6°F",
-    "weight": "150 lbs"
-  }
-}
-
-### Reschedule appointment
-PATCH http://localhost:3000/appointments/1
-Content-Type: application/json
-
-{
-  "appointmentDate": "2025-07-08T15:00:00Z",
-  "appointmentTime": "15:00",
-  "status": "rescheduled",
-  "rescheduleReason": "Doctor unavailable",
-  "notes": "Moved to next available slot"
-}
-
-### Delete an appointment (soft delete)
-DELETE http://localhost:3000/appointments/1
-
-### BULK OPERATIONS ###
-
-### Get multiple appointments by IDs
-POST http://localhost:3000/appointments/bulk
-Content-Type: application/json
-
-{
-  "appointmentIds": [1, 2, 3, 4, 5]
-}
-
-### Bulk update appointment statuses
-PATCH http://localhost:3000/appointments/bulk
-Content-Type: application/json
-
-{
-  "appointmentIds": [1, 2, 3],
-  "status": "confirmed",
-  "notes": "Bulk confirmation"
-}
-
-### SEARCH AND FILTER ENDPOINTS ###
-
-### Search appointments by patient name
-GET http://localhost:3000/appointments/search?patientName=John Doe
-
-### Search appointments by reason
-GET http://localhost:3000/appointments/search?reason=checkup
-
-### Get available appointment slots for a doctor
-GET http://localhost:3000/appointments/doctor/1/available-slots?date=2025-07-05
-
-### Get doctor's schedule for a specific date
-GET http://localhost:3000/appointments/doctor/1/schedule?date=2025-07-05
-
-### Get patient's appointment history
-GET http://localhost:3000/appointments/patient/1/history
-
-### Get appointments requiring follow-up
-GET http://localhost:3000/appointments/follow-up-required
-
-### ANALYTICS ENDPOINTS ###
-
-### Get appointment statistics
-GET http://localhost:3000/appointments/stats
-
-### Get doctor's appointment statistics
-GET http://localhost:3000/appointments/doctor/1/stats
-
-### Get monthly appointment report
-GET http://localhost:3000/appointments/reports/monthly?year=2025&month=7
-
-### Get appointment cancellation rate
-GET http://localhost:3000/appointments/reports/cancellation-rate
-
-### NOTIFICATION ENDPOINTS ###
-
-### Send appointment reminders
-POST http://localhost:3000/appointments/reminders/send
-Content-Type: application/json
-
-{
-  "appointmentIds": [1, 2, 3],
-  "reminderType": "sms",
-  "customMessage": "Don't forget your appointment tomorrow!"
-}
-
-### Get appointments needing reminders
-GET http://localhost:3000/appointments/reminders/pending
-
-### INTEGRATION ENDPOINTS ###
-
-### Export appointments to calendar
-GET http://localhost:3000/appointments/export/calendar?doctorId=1&startDate=2025-07-01&endDate=2025-07-31
-
-### Generate appointment PDF report
-GET http://localhost:3000/appointments/1/pdf
-
-### Send appointment confirmation email
-POST http://localhost:3000/appointments/1/send-confirmation
-
-### VALIDATION ENDPOINTS ###
-
-### Validate appointment data
-POST http://localhost:3000/appointments/validate
+### Create comprehensive consultation record
+POST http://localhost:3000/medical-records
 Content-Type: application/json
 
 {
   "patientId": 1,
   "doctorId": 1,
-  "appointmentDate": "2025-07-05T10:00:00Z",
-  "appointmentTime": "10:00",
-  "duration": 30,
-  "reason": "Regular checkup"
+  "recordType": "consultation",
+  "title": "Cardiology Consultation - Chest Pain Evaluation",
+  "description": "Patient referred for cardiology consultation due to recurrent chest pain episodes over past month.",
+  "diagnosis": "Atypical chest pain, rule out coronary artery disease",
+  "treatment": "Stress test ordered, lifestyle modifications recommended",
+  "vitals": {
+    "bloodPressure": "135/85",
+    "heartRate": "75",
+    "weight": "175 lbs",
+    "height": "70 inches"
+  },
+  "allergies": ["Penicillin", "Sulfa drugs"],
+  "followUpInstructions": "Schedule stress test within 2 weeks. Follow up after results available.",
+  "priority": "urgent",
+  "attachments": [
+    {
+      "name": "referral_letter.pdf",
+      "type": "referral",
+      "url": "/files/referral_456.pdf"
+    }
+  ],
+  "notes": "Patient anxious about symptoms. Reassurance provided regarding likelihood of serious cardiac pathology."
 }
+
+### Create imaging result record
+POST http://localhost:3000/medical-records
+Content-Type: application/json
+
+{
+  "patientId": 2,
+  "doctorId": 1,
+  "recordType": "imaging",
+  "title": "Chest X-ray - Follow-up Pneumonia",
+  "description": "Follow-up chest X-ray to assess resolution of pneumonia after antibiotic treatment.",
+  "diagnosis": "Resolving pneumonia",
+  "treatment": "Continue current antibiotic course",
+  "labResults": {
+    "imaging": {
+      "study": "Chest X-ray PA and lateral",
+      "findings": "Marked improvement in right lower lobe infiltrate. No pleural effusion.",
+      "impression": "Resolving right lower lobe pneumonia"
+    }
+  },
+  "followUpInstructions": "Complete antibiotic course. Repeat chest X-ray in 4 weeks if symptoms persist.",
+  "priority": "normal",
+  "attachments": [
+    {
+      "name": "chest_xray_followup.jpg",
+      "type": "imaging",
+      "url": "/files/xray_789.jpg"
+    }
+  ],
+  "notes": "Significant improvement noted compared to initial X-ray"
+}
+
+### Test search functionality
+GET http://localhost:3000/medical-records/search?q=chest pain
+
+### Test date range queries
+GET http://localhost:3000/medical-records/date-range?startDate=2025-07-01&endDate=2025-07-02
+
+### Test record type filtering
+GET http://localhost:3000/medical-records/type/emergency
