@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { Users, UserRole } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -31,8 +32,13 @@ export class UsersService {
     }
 
     try {
+      // Hash the password before storing
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+
       const userData = {
         ...createUserDto,
+        password: hashedPassword, // Use hashed password
         role: createUserDto.role || UserRole.PATIENT,
         isEmailVerified: createUserDto.isEmailVerified || false,
         isActive: createUserDto.isActive !== undefined ? createUserDto.isActive : true,
@@ -165,6 +171,12 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
+    // Hash password if it's being updated
+    if (updateUserDto.password) {
+      const saltRounds = 10;
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds);
+    }
+
     Object.assign(user, updateUserDto);
 
     try {
@@ -181,6 +193,12 @@ export class UsersService {
     
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    // Hash password if it's being updated
+    if (updateUserDto.password) {
+      const saltRounds = 10;
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds);
     }
 
     Object.assign(user, updateUserDto);

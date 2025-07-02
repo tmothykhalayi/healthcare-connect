@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
+import { AuthModule } from './auth/auth.module';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from './app.service';
@@ -24,7 +25,8 @@ import{LogsModule} from './logs/logs.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-   UsersModule, DoctorsModule, 
+    AuthModule,
+    UsersModule, DoctorsModule, 
     PatientsModule, AppointmentsModule,
      AdminModule, MedicalModule, 
       MedicinesModule, OrdersModule, 

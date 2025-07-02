@@ -52,6 +52,10 @@ export class Users {
   @Column({ default: true })
   isActive: boolean;
   
+  @ApiProperty({ description: 'Hashed refresh token for JWT authentication' })
+  @Column({ nullable: true })
+  hashedRefreshToken: string;
+  
   @ApiProperty({ description: 'User last login date' })
   @Column({ nullable: true, type: 'timestamp' })
   lastLogin: Date;

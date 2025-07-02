@@ -1,0 +1,80 @@
+### Clean Authentication Test - Esthy Nandwa
+### Base URL and Environment Variables
+@baseUrl = http://localhost:8000
+@accessToken = 
+@refreshToken = 
+
+### ------------------------------------------
+### 1. CREATE TEST USER - ESTHY NANDWA
+### ------------------------------------------
+
+### Create Esthy Nandwa user (Doctor)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "esthy.nandwa@example.com",
+  "password": "123",
+  "firstName": "Esthy",
+  "lastName": "Nandwa",
+  "phoneNumber": "+254712345679",
+  "role": "doctor"
+}
+
+###
+
+### ------------------------------------------
+### 2. USER AUTHENTICATION
+### ------------------------------------------
+
+### Sign in with Esthy's credentials
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "esthy.nandwa@example.com",
+  "password": "123"
+}
+
+###
+
+### Get Esthy's profile (use accessToken from signin response)
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE0ODk5NjAsImV4cCI6MTc1MTQ5MDg2MH0.3jFKBv6U_BLKmaJyuiD21ESPa747_f0XYub-JJLkpqQ
+
+###
+
+### Sign out Esthy
+POST {{baseUrl}}/auth/signout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE0ODk5NjAsImV4cCI6MTc1MTQ5MDg2MH0.3jFKBv6U_BLKmaJyuiD21ESPa747_f0XYub-JJLkpqQ
+
+###
+
+### ------------------------------------------
+### 3. TOKEN REFRESH TEST
+### ------------------------------------------
+
+### Refresh access token (use refreshToken from signin response)
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE0ODk5NjAsImV4cCI6MTc1MjA5NDc2MH0.MngQsMHHR4UfKByeDVhFqLFwhxzPr9RabIkk5pPXsNM
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE0ODk5NjAsImV4cCI6MTc1MjA5NDc2MH0.MngQsMHHR4UfKByeDVhFqLFwhxzPr9RabIkk5pPXsNM"
+}
+
+###
+
+### ------------------------------------------
+### 4. VERIFICATION ENDPOINTS
+### ------------------------------------------
+
+### Get all users (to verify Esthy was created)
+GET {{baseUrl}}/users
+
+###
+
+### Get specific user by ID (replace with Esthy's ID after creation)
+GET {{baseUrl}}/users/1
+
+###
