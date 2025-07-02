@@ -1,5 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn,
+  OneToMany , CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Payment } from '../../payments/entities/payment.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -61,4 +63,7 @@ export class Users {
   @ApiProperty({ description: 'User last update date' })
   @UpdateDateColumn()
   updatedAt: Date;
+
+   @OneToMany(() => Payment, (payment) => payment.user)
+  payments: Payment[];
 }

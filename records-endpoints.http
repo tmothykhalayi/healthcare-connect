@@ -1,0 +1,84 @@
+@baseUrl = http://localhost:3000
+@patientId = 1
+@doctorId = 1
+@recordId = 1
+
+### ------------------------------------------
+### MEDICAL RECORDS - BASIC OPERATIONS
+### ------------------------------------------
+
+### Create a new medical record (diagnosis type)
+POST {{baseUrl}}/medical-records
+Content-Type: application/json
+
+{
+  "patientId": {{patientId}},
+  "doctorId": {{doctorId}},
+  "recordType": "diagnosis",
+  "title": "Seasonal Allergies Assessment",
+  "description": "Patient presented with allergic rhinitis symptoms",
+  "diagnosis": "Seasonal allergies",
+  "treatment": "Antihistamine medication",
+  "notes": "Follow up in 2 weeks if symptoms persist. Patient reports sneezing, itchy eyes, and congestion."
+}
+
+### Get all medical records (admin only)
+GET {{baseUrl}}/medical-records
+
+### Get medical record by ID
+GET {{baseUrl}}/medical-records/{{recordId}}
+
+### Get all medical records for a specific patient
+GET {{baseUrl}}/medical-records/patient/{{patientId}}
+
+### Get all medical records created by a specific doctor
+GET {{baseUrl}}/medical-records/doctor/{{doctorId}}
+
+### Update medical record
+PATCH {{baseUrl}}/medical-records/{{recordId}}
+Content-Type: application/json
+
+{
+  "title": "Updated Seasonal Allergies Assessment",
+  "description": "Updated diagnosis after follow-up appointment",
+  "diagnosis": "Chronic seasonal allergies",
+  "treatment": "Higher strength antihistamine medication",
+  "notes": "Patient showing improvement after medication adjustment"
+}
+
+### Delete medical record (admin or record owner only)
+DELETE {{baseUrl}}/medical-records/{{recordId}}
+
+### ------------------------------------------
+### MEDICAL RECORDS - ADDITIONAL OPERATIONS
+### ------------------------------------------
+
+### Search medical records
+GET {{baseUrl}}/medical-records/search?q=allergies
+
+### Filter medical records by date range (if implemented)
+GET {{baseUrl}}/medical-records/filter?startDate=2025-01-01&endDate=2025-07-31
+
+### Get medical records by type
+GET {{baseUrl}}/medical-records/type/diagnosis
+GET {{baseUrl}}/medical-records/type/prescription
+GET {{baseUrl}}/medical-records/type/lab_result
+
+### Check API documentation for all available endpoints
+GET {{baseUrl}}/api
+
+### ------------------------------------------
+### FILE HANDLING IMPLEMENTATION NOTE
+### ------------------------------------------
+
+# Based on the 404 errors received, it appears that file handling endpoints
+# are not yet implemented in this API. Below is a recommendation for 
+# how to implement this functionality.
+
+### To implement file uploads for medical records, you would need:
+### 1. A dedicated FileModule/AttachmentsModule
+### 2. File storage service (local or cloud-based)
+### 3. API endpoints for upload/download/delete operations
+### 4. Database tables to track file metadata
+
+# See implementation details below in the comments section

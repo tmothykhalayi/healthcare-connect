@@ -18,7 +18,9 @@ import { PharmacyModule } from '../pharmacy/pharmacy.module';
   ],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService],
+  exports: [UsersService ,
+    TypeOrmModule,
+  ],
 })
 export class UsersModule {}
 
