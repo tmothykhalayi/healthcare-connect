@@ -1,31 +1,64 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber, IsEmail, IsOptional, IsBoolean, IsArray } from 'class-validator';
 
 export class CreatePharmacyDto {
-  @ApiProperty({ example: 1, description: 'User ID from users table' })
+  @ApiProperty({ description: 'User ID (from users table)' })
   @IsNumber()
   userId: number;
 
-  @ApiProperty({ example: 'ABC Pharmacy', description: 'Name of pharmacy' })
+  @ApiProperty({ description: 'Pharmacy name' })
   @IsString()
   pharmacyName: string;
 
-  @ApiProperty({ example: 'PH12345', description: 'Pharmacy license number' })
+  @ApiProperty({ description: 'Pharmacy license number' })
   @IsString()
   licenseNumber: string;
 
-  @ApiPropertyOptional({ example: '123 Main St, City, State 12345', description: 'Pharmacy address' })
+  @ApiProperty({ description: 'Pharmacy phone number' })
+  @IsString()
+  phoneNumber: string;
+
+  @ApiProperty({ description: 'Pharmacy address' })
+  @IsString()
+  address: string;
+
+  @ApiProperty({ description: 'Pharmacy email', required: false })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @ApiProperty({ description: 'Pharmacy opening hours', required: false })
   @IsOptional()
   @IsString()
-  address?: string;
+  openingHours?: string;
 
-  @ApiPropertyOptional({ example: '15551234567', description: 'Pharmacy phone number' })
+  @ApiProperty({ description: 'Services offered', required: false })
   @IsOptional()
-  @IsString()
-  phoneNumber?: string;
+  @IsArray()
+  services?: string[];
 
-  @ApiPropertyOptional({ example: 'active', description: 'Pharmacy status', default: 'pending_verification' })
+  @ApiProperty({ description: 'Delivery available', required: false })
+  @IsOptional()
+  @IsBoolean()
+  deliveryAvailable?: boolean;
+
+  @ApiProperty({ description: 'Online ordering available', required: false })
+  @IsOptional()
+  @IsBoolean()
+  onlineOrderingAvailable?: boolean;
+
+  @ApiProperty({ description: 'Insurance plans accepted', required: false })
+  @IsOptional()
+  @IsArray()
+  insurancePlansAccepted?: string[];
+
+  @ApiProperty({ description: 'Pharmacy status', required: false })
   @IsOptional()
   @IsString()
   status?: string;
+
+  @ApiProperty({ description: 'Additional notes', required: false })
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

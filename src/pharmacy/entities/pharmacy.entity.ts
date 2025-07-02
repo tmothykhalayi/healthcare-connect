@@ -33,9 +33,13 @@ export class Pharmacy {
   @Column()
   address: string;
   
-  @ApiProperty({ description: 'Operating hours' })
-  @Column()
-  operatingHours: string;
+  @ApiProperty({ description: 'Pharmacy email' })
+  @Column({ nullable: true })
+  email: string;
+  
+  @ApiProperty({ description: 'Pharmacy opening hours' })
+  @Column({ default: '9:00 AM - 6:00 PM' })
+  openingHours: string;
   
   @ApiProperty({ description: 'Services offered (JSON array)' })
   @Column({ type: 'json', default: '[]' })
@@ -68,12 +72,4 @@ export class Pharmacy {
   @ApiProperty({ description: 'Pharmacy last update date' })
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @ApiProperty({ description: 'Pharmacy email' })
-  @Column()
-  email: string;
-
-  @ApiProperty({ description: 'Pharmacy opening hours' })
-  @Column({ default: '9:00 AM - 6:00 PM' })
-  openingHours: string;
 }

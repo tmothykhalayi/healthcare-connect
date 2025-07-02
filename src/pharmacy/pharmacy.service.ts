@@ -39,7 +39,7 @@ export class PharmacyService {
             });
             return await this.pharmacyRepository.save(pharmacy);
         } catch (error) {
-            console.error('Error creating pharmacy:', error);
+        
             
             if (error.code === '23505') {
                 throw new ConflictException(`Pharmacy with this details already exists`);
@@ -105,6 +105,72 @@ export class PharmacyService {
     async update(id: number, updatePharmacyDto: UpdatePharmacyDto) {
         await this.pharmacyRepository.update(id, updatePharmacyDto);
         return this.findOne(id);
+    }
+
+    // Find pharmacy by user ID
+    async findByUserId(userId: number) {
+        const pharmacy = await this.pharmacyRepository.findOne({
+            where: { userId },
+            relations: ['user'],
+        });
+
+        if (!pharmacy) {
+            throw new NotFoundException(`Pharmacy for user ID ${userId} not found`);
+        }
+
+        return pharmacy;
+    }
+
+    // Search pharmacies by name
+    async searchByName(name: string) {
+        return await this.pharmacyRepository
+            .createQueryBuilder('pharmacy')
+            .where('pharmacy.pharmacyName ILIKE :name', { name: `%${name}%` })
+            .leftJoinAndSelect('pharmacy.user', 'user')
+            .getMany();
+    }
+
+    // Find pharmacies with delivery service
+    async findWithDelivery(deliveryAvailable: boolean) {
+        return await this.pharmacyRepository.find({
+            where: { deliveryAvailable },
+            relations: ['user'],
+        });
+    }
+
+    // Find pharmacies by location (city)
+    async findByLocation(city: string) {
+        return await this.pharmacyRepository
+            .createQueryBuilder('pharmacy')
+            .where('pharmacy.address ILIKE :city', { city: `%${city}%` })
+            .leftJoinAndSelect('pharmacy.user', 'user')
+            .getMany();
+    }
+
+    // Update pharmacy status
+    async updateStatus(id: number, status: string) {
+        const pharmacy = await this.findOne(id);
+        await this.pharmacyRepository.update(id, { status });
+        return { ...pharmacy, status };
+    }
+
+    // Get pharmacy statistics
+    async getStats(id: number) {
+        const pharmacy = await this.findOne(id);
+        
+        // This is a basic implementation - you can expand based on your needs
+        return {
+            pharmacyId: id,
+            pharmacyName: pharmacy.pharmacyName,
+            status: pharmacy.status,
+            deliveryAvailable: pharmacy.deliveryAvailable,
+            onlineOrderingAvailable: pharmacy.onlineOrderingAvailable,
+            services: pharmacy.services,
+            // Add more statistics as needed
+            totalOrders: 0, // Placeholder - implement when you have orders
+            totalCustomers: 0, // Placeholder - implement when you have customers
+            monthlyRevenue: 0, // Placeholder - implement when you have revenue tracking
+        };
     }
 
     async remove(id: number) {

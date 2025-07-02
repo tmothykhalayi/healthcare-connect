@@ -1,26 +1,342 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Between } from 'typeorm';
+import { Medicine } from './entities/medicine.entity';
+import { Users } from '../users/entities/user.entity';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 
 @Injectable()
 export class MedicinesService {
-  create(createMedicineDto: CreateMedicineDto) {
-    return 'This action adds a new medicine';
+  constructor(
+    @InjectRepository(Medicine)
+    private readonly medicineRepository: Repository<Medicine>,
+    @InjectRepository(Users)
+    private readonly usersRepository: Repository<Users>,
+  ) {}
+
+  async create(createMedicineDto: CreateMedicineDto): Promise<Medicine> {
+    const { userId } = createMedicineDto;
+
+    try {
+      // Check if the user exists
+      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+
+      // Set default values if not provided
+      const medicineData = {
+        ...createMedicineDto,
+        expiryDate: new Date(createMedicineDto.expiryDate),
+        category: createMedicineDto.category || 'General',
+        dosageForm: createMedicineDto.dosageForm || 'Tablet',
+        prescriptionRequired: createMedicineDto.prescriptionRequired || false,
+        status: createMedicineDto.status || 'active',
+        stockQuantity: createMedicineDto.stockQuantity || 0,
+        minimumStockLevel: createMedicineDto.minimumStockLevel || 10,
+      };
+
+      // Create and save medicine
+      const medicine = this.medicineRepository.create(medicineData);
+      const savedMedicine = await this.medicineRepository.save(medicine);
+
+      // Return medicine with user relation
+      const result = await this.medicineRepository.findOne({
+        where: { id: savedMedicine.id },
+        relations: ['user'],
+      });
+      
+      if (!result) {
+        throw new NotFoundException(`Medicine with ID ${savedMedicine.id} not found after creation`);
+      }
+      
+      return result;
+
+    } catch (error) {
+      console.error('Error creating medicine:', error);
+      
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      // Handle database errors
+      if (error.code === '23505') {
+        throw new ConflictException('Medicine with these details already exists');
+      }
+      
+      throw new InternalServerErrorException(`Failed to create medicine: ${error.message}`);
+    }
   }
 
-  findAll() {
-    return `This action returns all medicines`;
+  async findAll(): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository.find({
+        relations: ['user'],
+        order: { createdAt: 'DESC' }
+      });
+    } catch (error) {
+      console.error('Error fetching medicines:', error);
+      throw new InternalServerErrorException('Failed to fetch medicines');
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} medicine`;
+  async findOne(id: number): Promise<Medicine> {
+    try {
+      const medicine = await this.medicineRepository.findOne({
+        where: { id },
+        relations: ['user'],
+      });
+
+      if (!medicine) {
+        throw new NotFoundException(`Medicine with ID ${id} not found`);
+      }
+
+      return medicine;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error fetching medicine:', error);
+      throw new InternalServerErrorException('Failed to fetch medicine');
+    }
   }
 
-  update(id: number, updateMedicineDto: UpdateMedicineDto) {
-    return `This action updates a #${id} medicine`;
+  async findByUserId(userId: number): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository.find({
+        where: { userId },
+        relations: ['user'],
+        order: { createdAt: 'DESC' }
+      });
+    } catch (error) {
+      console.error('Error fetching medicines by user ID:', error);
+      throw new InternalServerErrorException('Failed to fetch medicines');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} medicine`;
+  async findByCategory(category: string): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository.find({
+        where: { category },
+        relations: ['user'],
+        order: { name: 'ASC' }
+      });
+    } catch (error) {
+      console.error('Error fetching medicines by category:', error);
+      throw new InternalServerErrorException('Failed to fetch medicines');
+    }
+  }
+
+  async findByManufacturer(manufacturer: string): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository.find({
+        where: { manufacturer },
+        relations: ['user'],
+        order: { name: 'ASC' }
+      });
+    } catch (error) {
+      console.error('Error fetching medicines by manufacturer:', error);
+      throw new InternalServerErrorException('Failed to fetch medicines');
+    }
+  }
+
+  async findExpiringSoon(days: number = 30): Promise<Medicine[]> {
+    try {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + days);
+
+      return await this.medicineRepository.find({
+        where: {
+          expiryDate: Between(new Date(), futureDate)
+        },
+        relations: ['user'],
+        order: { expiryDate: 'ASC' }
+      });
+    } catch (error) {
+      console.error('Error fetching expiring medicines:', error);
+      throw new InternalServerErrorException('Failed to fetch expiring medicines');
+    }
+  }
+
+  async findLowStock(): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository
+        .createQueryBuilder('medicine')
+        .leftJoinAndSelect('medicine.user', 'user')
+        .where('medicine.stockQuantity <= medicine.minimumStockLevel')
+        .orderBy('medicine.stockQuantity', 'ASC')
+        .getMany();
+    } catch (error) {
+      console.error('Error fetching low stock medicines:', error);
+      throw new InternalServerErrorException('Failed to fetch low stock medicines');
+    }
+  }
+
+  async searchMedicines(query: string): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository
+        .createQueryBuilder('medicine')
+        .leftJoinAndSelect('medicine.user', 'user')
+        .where('medicine.name ILIKE :query', { query: `%${query}%` })
+        .orWhere('medicine.manufacturer ILIKE :query', { query: `%${query}%` })
+        .orWhere('medicine.category ILIKE :query', { query: `%${query}%` })
+        .orWhere('medicine.description ILIKE :query', { query: `%${query}%` })
+        .orderBy('medicine.name', 'ASC')
+        .getMany();
+    } catch (error) {
+      console.error('Error searching medicines:', error);
+      throw new InternalServerErrorException('Failed to search medicines');
+    }
+  }
+
+  async findByPriceRange(minPrice: number, maxPrice: number): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository.find({
+        where: {
+          price: Between(minPrice, maxPrice)
+        },
+        relations: ['user'],
+        order: { price: 'ASC' }
+      });
+    } catch (error) {
+      console.error('Error fetching medicines by price range:', error);
+      throw new InternalServerErrorException('Failed to fetch medicines by price range');
+    }
+  }
+
+  async findPrescriptionMedicines(): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository.find({
+        where: { prescriptionRequired: true },
+        relations: ['user'],
+        order: { name: 'ASC' }
+      });
+    } catch (error) {
+      console.error('Error fetching prescription medicines:', error);
+      throw new InternalServerErrorException('Failed to fetch prescription medicines');
+    }
+  }
+
+  async findOTCMedicines(): Promise<Medicine[]> {
+    try {
+      return await this.medicineRepository.find({
+        where: { prescriptionRequired: false },
+        relations: ['user'],
+        order: { name: 'ASC' }
+      });
+    } catch (error) {
+      console.error('Error fetching OTC medicines:', error);
+      throw new InternalServerErrorException('Failed to fetch OTC medicines');
+    }
+  }
+
+  async getMedicineStats(): Promise<any> {
+    try {
+      const totalMedicines = await this.medicineRepository.count();
+      const activeMedicines = await this.medicineRepository.count({ where: { status: 'active' } });
+      const prescriptionMedicines = await this.medicineRepository.count({ where: { prescriptionRequired: true } });
+      const otcMedicines = await this.medicineRepository.count({ where: { prescriptionRequired: false } });
+      
+      const expiringSoon = await this.findExpiringSoon(30);
+      const lowStock = await this.findLowStock();
+      
+      const categoriesStats = await this.medicineRepository
+        .createQueryBuilder('medicine')
+        .select('medicine.category', 'category')
+        .addSelect('COUNT(*)', 'count')
+        .groupBy('medicine.category')
+        .getRawMany();
+
+      const manufacturersStats = await this.medicineRepository
+        .createQueryBuilder('medicine')
+        .select('medicine.manufacturer', 'manufacturer')
+        .addSelect('COUNT(*)', 'count')
+        .groupBy('medicine.manufacturer')
+        .getRawMany();
+
+      return {
+        total: totalMedicines,
+        active: activeMedicines,
+        prescription: prescriptionMedicines,
+        otc: otcMedicines,
+        expiringSoon: expiringSoon.length,
+        lowStock: lowStock.length,
+        byCategory: categoriesStats,
+        byManufacturer: manufacturersStats,
+      };
+    } catch (error) {
+      console.error('Error fetching medicine statistics:', error);
+      throw new InternalServerErrorException('Failed to fetch medicine statistics');
+    }
+  }
+
+  async update(id: number, updateMedicineDto: UpdateMedicineDto): Promise<Medicine> {
+    try {
+      // First check if medicine exists
+      const medicine = await this.findOne(id);
+
+      // Prepare update data
+      const updateData = {
+        ...updateMedicineDto,
+        ...(updateMedicineDto.expiryDate && {
+          expiryDate: new Date(updateMedicineDto.expiryDate)
+        })
+      };
+
+      // Update the medicine
+      await this.medicineRepository.update(id, updateData);
+      
+      // Return updated medicine
+      return await this.findOne(id);
+
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error updating medicine:', error);
+      throw new InternalServerErrorException('Failed to update medicine');
+    }
+  }
+
+  async updateStock(id: number, newQuantity: number): Promise<Medicine> {
+    try {
+      const medicine = await this.findOne(id);
+      await this.medicineRepository.update(id, { stockQuantity: newQuantity });
+      return await this.findOne(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error updating medicine stock:', error);
+      throw new InternalServerErrorException('Failed to update medicine stock');
+    }
+  }
+
+  async updateStatus(id: number, status: string): Promise<Medicine> {
+    try {
+      const medicine = await this.findOne(id);
+      await this.medicineRepository.update(id, { status });
+      return await this.findOne(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error updating medicine status:', error);
+      throw new InternalServerErrorException('Failed to update medicine status');
+    }
+  }
+
+  async remove(id: number): Promise<void> {
+    try {
+      const medicine = await this.findOne(id);
+      await this.medicineRepository.remove(medicine);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error removing medicine:', error);
+      throw new InternalServerErrorException('Failed to remove medicine');
+    }
   }
 }
