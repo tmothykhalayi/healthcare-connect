@@ -18,20 +18,27 @@ export class PaymentsService {
 
   // Create a new payment
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
-    const user = await this.usersRepository.findOne({
-      where: { id: parseInt(createPaymentDto.userId) },
-    });
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id: parseInt(createPaymentDto.userId) },
+      });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${createPaymentDto.userId} not found`);
+      if (!user) {
+        throw new NotFoundException(`User with ID ${createPaymentDto.userId} not found`);
+      }
+      
+      const payment = this.paymentRepository.create({
+        ...createPaymentDto,
+        userId: user.id,
+        relatedEntityId: parseInt(createPaymentDto.relatedEntityId),
+      });
+      const savedPayment = await this.paymentRepository.save(payment);
+      
+      return Array.isArray(savedPayment) ? savedPayment[0] : savedPayment;
+    } catch (error) {
+      console.error('Error creating payment:', error);
+      throw error;
     }
-
-    const newPayment = this.paymentRepository.create({
-      ...createPaymentDto,
-      user, // associate the user entity
-    });
-
-    return this.paymentRepository.save(newPayment);
   }
 
   // Get all payments
@@ -44,7 +51,7 @@ export class PaymentsService {
   // Get a payment by ID
   async findOne(id: number): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({
-      where: { id: id.toString() },
+      where: { id: id },
       relations: ['user'],
     });
 
@@ -74,7 +81,50 @@ export class PaymentsService {
   }
   // Update a payment
   async update(id: number, updatePaymentDto: UpdatePaymentDto): Promise<string> {
-    const result = await this.paymentRepository.update(id, updatePaymentDto);
+    // Create a clean payment update object with proper types
+    const paymentToUpdate: Partial<Payment> = {};
+    
+    // Copy only the fields that exist in updatePaymentDto
+    if (updatePaymentDto.amount !== undefined) {
+      paymentToUpdate.amount = updatePaymentDto.amount;
+    }
+    
+    if (updatePaymentDto.paymentMethod !== undefined) {
+      paymentToUpdate.paymentMethod = updatePaymentDto.paymentMethod;
+    }
+    
+    if (updatePaymentDto.status !== undefined) {
+      paymentToUpdate.status = updatePaymentDto.status;
+    }
+    
+    if (updatePaymentDto.relatedEntityType !== undefined) {
+      paymentToUpdate.relatedEntityType = updatePaymentDto.relatedEntityType;
+    }
+    
+    if (updatePaymentDto.relatedEntityId !== undefined) {
+      paymentToUpdate.relatedEntityId = parseInt(updatePaymentDto.relatedEntityId);
+    }
+    
+    if (updatePaymentDto.transactionId !== undefined) {
+      paymentToUpdate.transactionId = updatePaymentDto.transactionId;
+    }
+    
+    // Handle userId separately to convert from string to number
+    if (updatePaymentDto.userId !== undefined) {
+      const userId = parseInt(updatePaymentDto.userId);
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+      });
+      
+      if (!user) {
+        throw new NotFoundException(`User with ID ${updatePaymentDto.userId} not found`);
+      }
+      
+      // Set userId as a number in the update object
+      paymentToUpdate.userId = userId;
+    }
+    
+    const result = await this.paymentRepository.update(id, paymentToUpdate);
     if (result.affected === 0) {
       throw new NotFoundException(`No payment found with ID ${id}`);
     }

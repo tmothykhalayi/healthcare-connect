@@ -1,35 +1,41 @@
-
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Users } from '../../users/entities/user.entity';
 
-@Entity()
+@Entity('payments')
 export class Payment {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column()
-  userId: string;
+  userId: number;
 
-  @ManyToOne(() => Users, (user) => user.payments)
-  user: Users;
-
-  @Column('decimal')
+  @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
 
   @Column()
   paymentMethod: string;
 
-  @Column({ type: 'enum', enum: ['pending', 'completed', 'failed', 'refunded'] })
-  status: 'pending' | 'completed' | 'failed' | 'refunded';
-
   @Column()
-  relatedEntityType: string;
-
-  @Column()
-  relatedEntityId: string;
-
-  @Column()
+  status: string;
+  
+  @Column({ nullable: true })
   transactionId: string;
+  
+  @Column({ nullable: true })
+  relatedEntityType: string;
+  
+  @Column({ nullable: true })
+  relatedEntityId: number;
+  
+  @Column({ nullable: true })
+  description: string;
+
+  @Column('json', { nullable: true })
+  metadata: any;
+
+  @ManyToOne(() => Users)
+  @JoinColumn({ name: 'userId' })
+  user: Users;
 
   @CreateDateColumn()
   createdAt: Date;

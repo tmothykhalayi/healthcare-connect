@@ -1,0 +1,108 @@
+@baseUrl = http://localhost:3000
+@patientId = 1
+@doctorId = 1
+@paymentId = 1
+
+### ------------------------------------------
+### PAYMENTS MANAGEMENT - SETUP
+### ------------------------------------------
+
+### Create first test payment
+POST {{baseUrl}}/payments
+Content-Type: application/json
+
+{
+  "userId": "{{patientId}}",
+  "amount": 150.00,
+  "paymentMethod": "credit_card",
+  "status": "completed",
+  "relatedEntityType": "appointment",
+  "relatedEntityId": "1",
+  "transactionId": "txn_123456789"
+}
+
+### Create second test payment with different values
+POST {{baseUrl}}/payments
+Content-Type: application/json
+
+{
+  "userId": "{{patientId}}",
+  "amount": 75.50,
+  "paymentMethod": "insurance",
+  "status": "pending",
+  "relatedEntityType": "prescription",
+  "relatedEntityId": "2",
+  "transactionId": "txn_987654321"
+}
+
+### ------------------------------------------
+### PAYMENTS MANAGEMENT - RETRIEVAL
+### ------------------------------------------
+
+### Get all payments to see created records
+GET {{baseUrl}}/payments
+
+### Get payment by ID (update ID after creating)
+GET {{baseUrl}}/payments/1
+
+### Get payments by user ID (should work after creating payments)
+GET {{baseUrl}}/payments/user/{{patientId}}
+
+### ------------------------------------------
+### PAYMENT UPDATES
+### ------------------------------------------
+
+### Update payment status
+PATCH {{baseUrl}}/payments/1
+Content-Type: application/json
+
+{
+  "status": "refunded"
+}
+
+### Update payment amount
+PATCH {{baseUrl}}/payments/2
+Content-Type: application/json
+
+{
+  "amount": 80.00
+}
+
+### ------------------------------------------
+### PAYMENT FILTERS
+### ------------------------------------------
+
+### Filter payments by date range
+GET {{baseUrl}}/payments/filter?startDate=2025-07-01&endDate=2025-07-31
+
+### Filter payments by status
+GET {{baseUrl}}/payments/filter?status=completed
+
+### Filter payments by another status
+GET {{baseUrl}}/payments/filter?status=pending
+
+### Filter payments by payment method
+GET {{baseUrl}}/payments/filter?paymentMethod=credit_card
+
+### Filter payments by related entity type
+GET {{baseUrl}}/payments/filter?relatedEntityType=appointment
+
+### Combined filters
+GET {{baseUrl}}/payments/filter?status=completed&relatedEntityType=appointment
+
+### ------------------------------------------
+### PAYMENT ANALYTICS
+### ------------------------------------------
+
+### Check payment count (should work after creating payments)
+GET {{baseUrl}}/payments/count
+
+### Try statistics after creating test data
+GET {{baseUrl}}/payments/statistics
+
+### ------------------------------------------
+### CLEANUP (if needed)
+### ------------------------------------------
+
+### Delete payment (use carefully)
+DELETE {{baseUrl}}/payments/1
