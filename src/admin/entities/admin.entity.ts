@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from "typeorm";
 import { ApiProperty } from '@nestjs/swagger';
+import { Users } from '../../users/entities/user.entity';
 
 @Entity('admins')
 export class Admin {
@@ -7,14 +8,14 @@ export class Admin {
   @PrimaryGeneratedColumn()
   id: number;
   
-  @ApiProperty({ description: 'User ID associated with the admin' })
-  @Column()
+  @ApiProperty({ description: 'User ID (from users table)' })
+  @Column({ unique: true })
   userId: number;
 
   @ApiProperty({ description: 'User associated with this admin' })
-  @ManyToOne('Users', { onDelete: 'CASCADE' })
+  @OneToOne(() => Users, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
-  user: any;
+  user: Users;
 
   @ApiProperty({ description: 'Admin level (super_admin, admin, moderator)' })
   @Column({ default: 'admin' })

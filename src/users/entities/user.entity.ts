@@ -1,13 +1,11 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne } from "typeorm";
 import { ApiProperty } from '@nestjs/swagger';
-import { Patient } from '../../patients/entities/patient.entity';
-import { Doctor } from '../../doctors/entities/doctor.entity';
 
 export enum UserRole {
-  ADMIN = 'admin',
-  DOCTOR = 'doctor',
   PATIENT = 'patient',
-  PHARMACY = 'pharmacy',
+  DOCTOR = 'doctor',
+  ADMIN = 'admin',
+  PHARMACY = 'pharmacy'
 }
 
 @Entity('users')
@@ -20,6 +18,10 @@ export class Users {
   @Column({ unique: true })
   email: string;
   
+  @ApiProperty({ description: 'User password (hashed)' })
+  @Column()
+  password: string;
+  
   @ApiProperty({ description: 'User first name' })
   @Column()
   firstName: string;
@@ -28,25 +30,21 @@ export class Users {
   @Column()
   lastName: string;
   
-  @ApiProperty({ enum: UserRole, description: 'User role' })
-  @Column({ type: 'enum', enum: UserRole })
+  @ApiProperty({ description: 'User role', enum: UserRole })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.PATIENT })
   role: UserRole;
   
   @ApiProperty({ description: 'Email verification status' })
   @Column({ default: false })
   isEmailVerified: boolean;
   
-  @ApiProperty({ description: 'User password (hashed)' })
-  @Column({ select: false })
-  password: string;
-
-  @ApiProperty({ description: 'Patient profile if user is a patient' })
-  @OneToOne(() => Patient, patient => patient.user)
-  patient: Patient;
-
-  @ApiProperty({ description: 'Doctor profile if user is a doctor' })
-  @OneToOne(() => Doctor, doctor => doctor.user)
-  doctor: Doctor;
+  @ApiProperty({ description: 'Account active status' })
+  @Column({ default: true })
+  isActive: boolean;
+  
+  @ApiProperty({ description: 'Last login timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
+  lastLogin: Date;
   
   @ApiProperty({ description: 'User creation date' })
   @CreateDateColumn()
@@ -55,4 +53,17 @@ export class Users {
   @ApiProperty({ description: 'User last update date' })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  // Relationships to specialized entities
+  @OneToOne('Patient', 'user')
+  patient: any;
+
+  @OneToOne('Doctor', 'user')
+  doctor: any;
+
+  @OneToOne('Admin', 'user')
+  admin: any;
+
+  @OneToOne('Pharmacy', 'user')
+  pharmacy: any;
 }

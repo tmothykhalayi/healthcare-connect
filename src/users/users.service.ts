@@ -1,109 +1,93 @@
-import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-
+import { Users, UserRole } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Users, UserRole } from './entities/user.entity';
+import { AdminService } from '../admin/admin.service';
+import { DoctorsService } from '../doctors/doctors.service';
+import { PatientsService } from '../patients/patients.service';
+import { PharmacyService } from '../pharmacy/pharmacy.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users)
     private usersRepository: Repository<Users>,
+    private adminService: AdminService,
+    private doctorsService: DoctorsService,
+    private patientsService: PatientsService,
+    private pharmacyService: PharmacyService,
   ) {}
 
-  // Create a new user with hashed password
-  async create(createUserDto: CreateUserDto): Promise<Omit<Users, 'password'>> {
+  async create(createUserDto: CreateUserDto): Promise<Users> {
+    // Check if user already exists
     const existingUser = await this.usersRepository.findOne({
-      where: { email: createUserDto.email },
+      where: { email: createUserDto.email }
     });
 
     if (existingUser) {
-      throw new ConflictException(
-        `User with email ${createUserDto.email} already exists`,
-      );
+      throw new ConflictException(`User with email ${createUserDto.email} already exists`);
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-    const newUser = this.usersRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-      isEmailVerified: createUserDto.isEmailVerified ?? false,
-    });
-
     try {
+      const userData = {
+        ...createUserDto,
+        role: createUserDto.role || UserRole.PATIENT,
+        isEmailVerified: createUserDto.isEmailVerified || false,
+        isActive: createUserDto.isActive !== undefined ? createUserDto.isActive : true,
+      };
+
+      // Validate role
+      if (!Object.values(UserRole).includes(userData.role as UserRole)) {
+        throw new BadRequestException(`Invalid role: ${userData.role}`);
+      }
+
+      // Create the user first
+      const newUser = this.usersRepository.create(userData);
       const savedUser = await this.usersRepository.save(newUser);
-      const { password, ...userWithoutPassword } = savedUser;
-      return userWithoutPassword as Omit<Users, 'password'>;
+      
+      // Now create the role-specific record
+      console.log(`Creating ${savedUser.role} profile for user ID ${savedUser.id}`);
+      
+      try {
+        await this.assignToRoleTable(savedUser);
+        console.log(`Successfully created ${savedUser.role} profile for user ID ${savedUser.id}`);
+      } catch (error) {
+        console.error(`Error creating ${savedUser.role} profile:`, error);
+        // Don't fail the whole operation if role assignment fails
+      }
+      
+      return savedUser;
     } catch (error) {
-      console.error('Database error:', error);
+      console.error('Error creating user:', error);
+      
+      if (error instanceof ConflictException || 
+          error instanceof BadRequestException) {
+        throw error;
+      }
+      
       throw new InternalServerErrorException('Failed to create user');
     }
   }
 
-  // Get all users, optionally filtered by role
   async findAll(role?: UserRole): Promise<Users[]> {
-    const where = role ? { role } : {};
-    return this.usersRepository.find({
-      where,
-      select: [
-        'id',
-        'email',
-        'firstName',
-        'lastName',
-        'role',
-        'isEmailVerified',
-        'createdAt',
-        'updatedAt',
-      ],
-    });
-  }
-
-  // Find one user by email
-  async findOne(email: string): Promise<Users> {
-    const user = await this.usersRepository.findOne({
-      where: { email },
-      select: [
-        'id',
-        'email',
-        'firstName',
-        'lastName',
-        'role',
-        'isEmailVerified',
-        'createdAt',
-        'updatedAt',
-      ],
-    });
-
-    if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
+    const queryOptions: any = {
+      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
+      order: { createdAt: 'DESC' },
+    };
+    
+    if (role) {
+      queryOptions.where = { role };
     }
-
-    return user;
+    
+    return await this.usersRepository.find(queryOptions);
   }
 
-  // Find one user by ID
-  async findOneById(id: number): Promise<Users> {
+  async findOne(id: number): Promise<Users> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      select: [
-        'id',
-        'email',
-        'firstName',
-        'lastName',
-        'role',
-        'isEmailVerified',
-        'createdAt',
-        'updatedAt',
-      ],
+      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
     });
 
     if (!user) {
@@ -113,16 +97,90 @@ export class UsersService {
     return user;
   }
 
-  // Update a user by email
-  async update(email: string, updateUserDto: UpdateUserDto) {
-    const user = await this.usersRepository.findOne({ where: { email } });
+  async findByEmail(email: string): Promise<Users> {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
+    });
 
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
 
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    return user;
+  }
+
+  async findByRole(role: UserRole): Promise<Users[]> {
+    return await this.usersRepository.find({
+      where: { role },
+      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getDoctors(): Promise<Users[]> {
+    return await this.findByRole(UserRole.DOCTOR);
+  }
+
+  async getPatients(): Promise<Users[]> {
+    return await this.findByRole(UserRole.PATIENT);
+  }
+
+  async getAdmins(): Promise<Users[]> {
+    return await this.findByRole(UserRole.ADMIN);
+  }
+
+  async getPharmacies(): Promise<Users[]> {
+    return await this.findByRole(UserRole.PHARMACY);
+  }
+
+  async getUserStats(): Promise<any> {
+    const totalUsers = await this.usersRepository.count();
+    const activeUsers = await this.usersRepository.count({ where: { isActive: true } });
+    const verifiedUsers = await this.usersRepository.count({ where: { isEmailVerified: true } });
+    
+    const doctors = await this.usersRepository.count({ where: { role: UserRole.DOCTOR } });
+    const patients = await this.usersRepository.count({ where: { role: UserRole.PATIENT } });
+    const admins = await this.usersRepository.count({ where: { role: UserRole.ADMIN } });
+    const pharmacies = await this.usersRepository.count({ where: { role: UserRole.PHARMACY } });
+
+    return {
+      total: totalUsers,
+      active: activeUsers,
+      verified: verifiedUsers,
+      byRole: {
+        doctors,
+        patients,
+        admins,
+        pharmacies,
+      },
+    };
+  }
+
+  // Update by ID
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    Object.assign(user, updateUserDto);
+
+    try {
+      await this.usersRepository.save(user);
+      return { message: `User with ID ${id} updated successfully` };
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update user');
+    }
+  }
+
+  // Update by email
+  async updateByEmail(email: string, updateUserDto: UpdateUserDto): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
     }
 
     Object.assign(user, updateUserDto);
@@ -131,30 +189,148 @@ export class UsersService {
       await this.usersRepository.save(user);
       return { message: `User with email ${email} updated successfully` };
     } catch (error) {
-      console.error('Error updating user:', error);
       throw new InternalServerErrorException('Failed to update user');
     }
   }
 
-  // Delete a user by email
-  async delete(email: string) {
-    const result = await this.usersRepository.delete({ email });
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`User with email ${email} not found`);
-    }
-
-    return { message: `User with email ${email} has been removed` };
-  }
-
-  // Delete a user by ID
-  async deleteById(id: number) {
+  // Delete by ID
+  async remove(id: number): Promise<{ message: string }> {
     const result = await this.usersRepository.delete({ id });
-
+    
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return { message: `User with ID ${id} has been removed` };
+    return { message: `User with ID ${id} deleted successfully` };
+  }
+
+  // Delete by email
+  async deleteByEmail(email: string): Promise<{ message: string }> {
+    const result = await this.usersRepository.delete({ email });
+    
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    return { message: `User with email ${email} deleted successfully` };
+  }
+
+  async search(query: string): Promise<Users[]> {
+    return await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.patient', 'patient')
+      .leftJoinAndSelect('user.doctor', 'doctor')
+      .leftJoinAndSelect('user.admin', 'admin')
+      .leftJoinAndSelect('user.pharmacy', 'pharmacy')
+      .where('user.firstName LIKE :query', { query: `%${query}%` })
+      .orWhere('user.lastName LIKE :query', { query: `%${query}%` })
+      .orWhere('user.email LIKE :query', { query: `%${query}%` })
+      .orderBy('user.createdAt', 'DESC')
+      .getMany();
+  }
+
+  async getActiveUsers(): Promise<Users[]> {
+    return await this.usersRepository.find({
+      where: { isActive: true },
+      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
+      order: { lastLogin: 'DESC' },
+    });
+  }
+
+  async getVerifiedUsers(): Promise<Users[]> {
+    return await this.usersRepository.find({
+      where: { isEmailVerified: true },
+      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async updateLastLogin(id: number): Promise<{ message: string }> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    user.lastLogin = new Date();
+
+    try {
+      await this.usersRepository.save(user);
+      return { message: `User last login updated successfully` };
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update last login');
+    }
+  }
+
+  async bulkUpdateStatus(userIds: number[], isActive: boolean): Promise<{ message: string }> {
+    try {
+      await this.usersRepository
+        .createQueryBuilder()
+        .update(Users)
+        .set({ isActive })
+        .where('id IN (:...userIds)', { userIds })
+        .execute();
+
+      return { message: `${userIds.length} users updated successfully` };
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to bulk update users');
+    }
+  }
+
+  async createUserWithRole(createUserDto: CreateUserDto): Promise<Users> {
+    // Create the base user
+    const user = await this.create(createUserDto);
+    
+    // Automatically assign to appropriate role table
+    await this.assignToRoleTable(user);
+    
+    return user;
+  }
+
+  async assignUserRole(userId: number, role: UserRole): Promise<void> {
+    // Update user role
+    await this.usersRepository.update(userId, { role });
+    
+    // Get the updated user
+    const user = await this.findOne(userId);
+    
+    // Assign to appropriate role table
+    await this.assignToRoleTable(user);
+  }
+
+  private async assignToRoleTable(user: Users): Promise<void> {
+    console.log(`Starting role assignment for user ${user.id} with role ${user.role}`);
+    
+    try {
+      switch (user.role) {
+        case UserRole.ADMIN:
+          console.log(`Creating admin profile for user ${user.id}`);
+          await this.adminService.createFromUser(user);
+          break;
+          
+        case UserRole.DOCTOR:
+          console.log(`Creating doctor profile for user ${user.id}`);
+          await this.doctorsService.createFromUser(user);
+          break;
+          
+        case UserRole.PATIENT:
+          console.log(`Creating patient profile for user ${user.id}`);
+          await this.patientsService.createFromUser(user);
+          break;
+          
+        case UserRole.PHARMACY:
+          console.log(`Creating pharmacy profile for user ${user.id}`);
+          await this.pharmacyService.createFromUser(user);
+          break;
+          
+        default:
+          throw new BadRequestException(`Invalid role: ${user.role}`);
+      }
+      
+      console.log(`Successfully completed role assignment for user ${user.id}`);
+    } catch (error) {
+      console.error(`Error in assignToRoleTable for user ${user.id}:`, error);
+      throw error; // Re-throw to be handled by caller
+    }
   }
 }

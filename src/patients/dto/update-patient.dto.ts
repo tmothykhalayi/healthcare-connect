@@ -5,10 +5,10 @@ import { IsInt, IsString, IsOptional, IsDateString, Matches, IsPositive } from '
 import { Type } from 'class-transformer';
 
 export class UpdatePatientDto extends PartialType(CreatePatientDto) {
-  @ApiPropertyOptional({ example: 'male', enum: ['male', 'female', 'other'] })
-  @IsOptional()
-  @IsString()
-  gender?: string;
+  // @ApiPropertyOptional({ example: 'male', enum: ['male', 'female', 'other'] })
+  // @IsOptional()
+  // @IsString()
+  // gender?: string;
 
   @ApiPropertyOptional({ example: '+15551234567' })
   @IsOptional()
@@ -38,4 +38,9 @@ export class UpdatePatientDto extends PartialType(CreatePatientDto) {
   @IsOptional()
   @IsString()
   medicalHistory?: string;
+
+  @ApiPropertyOptional({ example: '2025-07-01T10:00:00Z', description: 'Last visit timestamp' })
+  @IsOptional()
+  @IsDateString()
+  lastVisit?: string;
 }

@@ -1,69 +1,79 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, IsOptional, IsDateString, Matches, IsPositive } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNumber, IsString, IsArray, IsOptional, IsDateString, IsEnum } from 'class-validator';
+
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+  OTHER = 'other'
+}
 
 export class CreatePatientDto {
-  @ApiProperty({ 
-    example: 1, 
-    description: 'User ID associated with the patient' 
-  })
-  @Type(() => Number)
-  @IsInt()
-  @IsPositive()
+  @ApiProperty({ example: 1, description: 'User ID from users table' })
+  @IsNumber()
   userId: number;
 
   @ApiProperty({ 
     example: 'male', 
     description: 'Patient gender',
-    enum: ['male', 'female', 'other']
+    enum: Gender
   })
-  @IsString()
-  gender: string;
+  @IsEnum(Gender)
+  gender: Gender;
 
-  @ApiProperty({ 
-    example: '+15551234567', 
-    description: 'Patient phone number in international format' 
-  })
-  @Matches(/^\+?[1-9]\d{1,14}$/, {
-    message: 'phoneNumber must be a valid international phone number'
-  })
+  @ApiProperty({ example: '1990-05-15', description: 'Patient date of birth (YYYY-MM-DD)' })
+  @IsDateString()
+  dateOfBirth: string;
+
+  @ApiProperty({ example: '15559876543', description: 'Patient phone number' })
+  @IsString()
   phoneNumber: string;
 
-  @ApiProperty({ 
-    example: 2, 
-    description: 'Assigned doctor ID',
-    required: false
-  })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @IsPositive()
-  assignedDoctorId?: number;
+  @ApiProperty({ example: '123 Main St, City, State 12345', description: 'Patient address' })
+  @IsString()
+  address: string;
 
-  @ApiProperty({ 
-    example: '123 Main St, City, State 12345', 
-    description: 'Patient address',
-    required: false
-  })
+  @ApiPropertyOptional({ example: 'Jane Doe - 15559876543', description: 'Emergency contact information' })
   @IsOptional()
   @IsString()
-  address?: string;
+  emergencyContact?: string;
 
-  @ApiProperty({ 
-    example: '1990-05-15', 
-    description: 'Patient date of birth',
-    required: false
-  })
-  @IsOptional()
-  @IsDateString()
-  dateOfBirth?: string;
-
-  @ApiProperty({ 
-    example: 'No known allergies. Previous surgery: appendectomy in 2015.', 
-    description: 'Patient medical history',
-    required: false
-  })
+  @ApiPropertyOptional({ example: 'No significant medical history', description: 'Patient medical history' })
   @IsOptional()
   @IsString()
   medicalHistory?: string;
+
+  @ApiPropertyOptional({ 
+    example: ['Penicillin', 'Peanuts'], 
+    description: 'List of patient allergies',
+    type: [String]
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  allergies?: string[];
+
+  @ApiPropertyOptional({ example: 1, description: 'Assigned doctor ID (from doctors table)' })
+  @IsOptional()
+  @IsNumber()
+  assignedDoctorId?: number;
+
+  @ApiPropertyOptional({ example: 'A+', description: 'Blood type' })
+  @IsOptional()
+  @IsString()
+  bloodType?: string;
+
+  @ApiPropertyOptional({ example: 70.5, description: 'Weight in kg' })
+  @IsOptional()
+  @IsNumber()
+  weight?: number;
+
+  @ApiPropertyOptional({ example: 175.5, description: 'Height in cm' })
+  @IsOptional()
+  @IsNumber()
+  height?: number;
+
+  @ApiPropertyOptional({ example: 'active', description: 'Patient status', default: 'active' })
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

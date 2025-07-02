@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, InternalServerErrorException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Patient } from './entities/patient.entity';
-import { Users } from '../users/entities/user.entity';
+import { Patient, Gender } from './entities/patient.entity';
+import { Users, UserRole } from '../users/entities/user.entity';
+import { Doctor } from '../doctors/entities/doctor.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 
@@ -10,36 +11,56 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 export class PatientsService {
     constructor(
         @InjectRepository(Patient) private patientsRepository: Repository<Patient>,
-        @InjectRepository(Users) private usersRepository: Repository<Users>
+        @InjectRepository(Users) private usersRepository: Repository<Users>,
+        @InjectRepository(Doctor) private doctorsRepository: Repository<Doctor>
     ) {}
 
     // Create a new patient
     async create(createPatientDto: CreatePatientDto): Promise<Patient> {
-        // Check if user exists
-        const user = await this.usersRepository.findOne({
-            where: { id: createPatientDto.userId }
-        });
-
-        if (!user) {
-            throw new NotFoundException(`User with ID ${createPatientDto.userId} not found`);
-        }
-
         // Check if patient already exists for this user
         const existingPatient = await this.patientsRepository.findOne({
             where: { userId: createPatientDto.userId }
         });
 
         if (existingPatient) {
-            throw new ConflictException(`Patient profile already exists for user ${createPatientDto.userId}`);
+            throw new ConflictException(`Patient profile already exists for user ID ${createPatientDto.userId}`);
         }
 
-        const newPatient = this.patientsRepository.create(createPatientDto);
-
+        // Check if user exists and has the correct role
+        // You might want to inject UsersService here to verify the user exists
+        
         try {
-            return await this.patientsRepository.save(newPatient);
+            const patientData = {
+                ...createPatientDto,
+                dateOfBirth: createPatientDto.dateOfBirth ? new Date(createPatientDto.dateOfBirth) : undefined,
+            };
+
+            const newPatient = this.patientsRepository.create(patientData);
+            const savedPatient = await this.patientsRepository.save(newPatient);
+
+            const patient = await this.patientsRepository.findOne({
+                where: { id: savedPatient.id },
+                relations: ['user', 'assignedDoctor']
+            });
+            
+            if (!patient) {
+                throw new NotFoundException(`Patient with ID ${savedPatient.id} not found`);
+            }
+            
+            return patient;
+
         } catch (error) {
-            console.error('Database error:', error);
-            throw new InternalServerErrorException('Failed to create patient');
+            console.error('Error creating patient:', error);
+            
+            if (error.code === '23505') {
+                throw new ConflictException(`Patient profile already exists for user ID ${createPatientDto.userId}`);
+            }
+            
+            if (error.code === '23503') {
+                throw new BadRequestException(`User ID ${createPatientDto.userId} does not exist or assigned doctor ID is invalid`);
+            }
+            
+            throw new InternalServerErrorException(`Failed to create patient: ${error.message}`);
         }
     }
 
@@ -90,5 +111,51 @@ export class PatientsService {
             throw new NotFoundException(`Patient with ID ${id} not found`);
         }
         return { message: `Patient with ID ${id} deleted successfully` };
+    }
+
+    // Add this method for automatic role assignment
+    async createFromUser(user: Users): Promise<Patient> {
+        // Check if patient record already exists
+        const existingPatient = await this.patientsRepository.findOne({
+            where: { userId: user.id }
+        });
+
+        if (existingPatient) {
+            return existingPatient;
+        }
+
+        try {
+            const patientData = {
+                userId: user.id,
+                gender: undefined, // Will be set when profile is completed
+                dateOfBirth: new Date(), // Default to current date, will be updated later
+                phoneNumber: '',
+                address: '',
+                status: 'pending_profile_completion',
+            };
+
+            const newPatient = this.patientsRepository.create(patientData);
+            const savedPatient = await this.patientsRepository.save(newPatient);
+
+            const patient = await this.patientsRepository.findOne({
+                where: { id: savedPatient.id },
+                relations: ['user']
+            });
+            
+            if (!patient) {
+                throw new NotFoundException(`Patient with ID ${savedPatient.id} not found`);
+            }
+            
+            return patient;
+
+        } catch (error) {
+            console.error('Error creating patient from user:', error);
+            
+            if (error.code === '23505') {
+                throw new ConflictException(`Patient profile already exists for user ID ${user.id}`);
+            }
+            
+            throw new InternalServerErrorException(`Failed to create patient profile: ${error.message}`);
+        }
     }
 }

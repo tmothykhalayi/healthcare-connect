@@ -6,29 +6,38 @@ import { UpdatePharmacyDto } from './dto/update-pharmacy.dto';
 @Controller('pharmacy')
 export class PharmacyController {
   constructor(private readonly pharmacyService: PharmacyService) {}
-
+  // Get all pharmacies
   @Post()
   create(@Body() createPharmacyDto: CreatePharmacyDto) {
     return this.pharmacyService.create(createPharmacyDto);
   }
 
+  //get all pharmacies
   @Get()
-  findAll() {
+  async findAll() {
     return this.pharmacyService.findAll();
   }
 
+
+  //get one by id 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.pharmacyService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePharmacyDto: UpdatePharmacyDto) {
+  //update by id 
+  async update(@Param('id') id: string, @Body() updatePharmacyDto: UpdatePharmacyDto) {
     return this.pharmacyService.update(+id, updatePharmacyDto);
   }
 
+
+
+  //delete a pharmacies
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.pharmacyService.remove(+id);
   }
+
+
+
 }

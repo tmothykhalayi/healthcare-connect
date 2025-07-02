@@ -1,604 +1,231 @@
-### STEP 1: Create All Required Users First ###
+### Set environment variables (update IDs after checking your database)
+@baseUrl = http://localhost:3000
+@patientId = 1
+@doctorId = 1
+@pharmacyId = 1
+@adminId = 1
 
-### Create user 1 - Patient
-POST http://localhost:3000/users
+### --------------------------
+### 1. USER CREATION WITH AUTOMATIC ROLE ASSIGNMENT
+### --------------------------
+
+### Create a patient user (automatically creates patient profile)
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "email": "patient@example.com",
+  "email": "test.patient@example.com",
   "password": "password123",
-  "firstName": "John",
+  "firstName": "Test",
   "lastName": "Patient",
-  "role": "patient",
-  "isEmailVerified": false
+  "role": "patient"
 }
 
-### Create user 2 - Doctor
-POST http://localhost:3000/users
+### Create a doctor user (automatically creates doctor profile)
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "email": "doctor@example.com",
+  "email": "test.doctor@example.com",
   "password": "password123",
-  "firstName": "Dr. Jane",
-  "lastName": "Smith",
-  "role": "doctor",
-  "isEmailVerified": true
+  "firstName": "Test",
+  "lastName": "Doctor",
+  "role": "doctor"
 }
 
-### Create user 3 - Admin
-POST http://localhost:3000/users
+### Create an admin user (automatically creates admin profile)
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "email": "admin@example.com",
-  "password": "admin123",
-  "firstName": "System",
-  "lastName": "Administrator",
-  "role": "admin",
-  "isEmailVerified": true
-}
-
-### Create user 4 - Super Admin
-POST http://localhost:3000/users
-Content-Type: application/json
-
-{
-  "email": "superadmin@example.com",
-  "password": "superadmin123",
-  "firstName": "Super",
+  "email": "test.admin@example.com",
+  "password": "password123",
+  "firstName": "Test",
   "lastName": "Admin",
-  "role": "admin",
-  "isEmailVerified": true
+  "role": "admin"
 }
 
-### Create user 5 - Moderator
-POST http://localhost:3000/users
+### Create a pharmacy user (automatically creates pharmacy profile)
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "email": "moderator@example.com",
-  "password": "moderator123",
-  "firstName": "Customer",
-  "lastName": "Service",
-  "role": "admin",
-  "isEmailVerified": true
+  "email": "test.pharmacy@example.com",
+  "password": "password123",
+  "firstName": "Test",
+  "lastName": "Pharmacy",
+  "role": "pharmacy"
 }
 
-### Create user 6 - Department Head
-POST http://localhost:3000/users
+### --------------------------
+### 2. VERIFY AUTOMATIC ROLE ASSIGNMENT
+### --------------------------
+
+### Get all users to verify creation
+GET {{baseUrl}}/users
+
+### Check patient profiles were created automatically
+GET {{baseUrl}}/patients
+
+### Check doctor profiles were created automatically
+GET {{baseUrl}}/doctors
+
+### Check admin profiles were created automatically
+GET {{baseUrl}}/admin
+
+### Check pharmacy profiles were created automatically
+GET {{baseUrl}}/pharmacy
+
+### --------------------------
+### 3. COMPLETE USER PROFILES
+### --------------------------
+
+### Get patient profiles to find the correct ID
+GET {{baseUrl}}/patients
+
+### Complete patient profile (update ID from previous step)
+PATCH {{baseUrl}}/patients/{{patientId}}
 Content-Type: application/json
 
 {
-  "email": "depthead@example.com",
-  "password": "depthead123",
-  "firstName": "Medical",
-  "lastName": "Head",
-  "role": "admin",
-  "isEmailVerified": true
+  "gender": "female",
+  "dateOfBirth": "1992-03-15",
+  "phoneNumber": "15551234567",
+  "address": "123 Main St, City, State 12345",
+  "emergencyContact": "John Smith - 15559876543",
+  "bloodType": "B+",
+  "weight": 65.0,
+  "height": 170.0
 }
 
-### Create user 7 - Audit Admin
-POST http://localhost:3000/users
+### Get doctor profiles to find the correct ID
+GET {{baseUrl}}/doctors
+
+### Complete doctor profile (update ID from previous step)
+PATCH {{baseUrl}}/doctors/{{doctorId}}
 Content-Type: application/json
 
 {
-  "email": "audit@example.com",
-  "password": "audit123",
-  "firstName": "Audit",
-  "lastName": "Manager",
-  "role": "admin",
-  "isEmailVerified": true
+  "specialization": "Neurology",
+  "licenseNumber": "MD987654",
+  "yearsOfExperience": 8,
+  "education": "Medical University",
+  "phoneNumber": "15559876543",
+  "officeAddress": "456 Medical Plaza, City, State 12345",
+  "consultationFee": 180.00,
+  "availableDays": ["Monday", "Wednesday", "Friday"],
+  "availableHours": "10:00 AM - 6:00 PM"
 }
 
-### STEP 2: Verify Users Created Successfully ###
+### Get pharmacy profiles to find the correct ID
+GET {{baseUrl}}/pharmacy
 
-### Get all users to verify IDs
-GET http://localhost:3000/users
+### Complete pharmacy profile (update ID from previous step)
+PATCH {{baseUrl}}/pharmacy/{{pharmacyId}}
+Content-Type: application/json
 
-### STEP 3: Create Doctor and Patient Profiles ###
+{
+  "pharmacyName": "Healing Pharmacy",
+  "licenseNumber": "PH456789",
+  "address": "789 Health Avenue, City, State 12345",
+  "phoneNumber": "15557891234",
+  "status": "active"
+}
 
-### Create doctor profile (using user ID 2)
-POST http://localhost:3000/doctors
+### --------------------------
+### 4. CHANGE USER ROLE & TEST REASSIGNMENT
+### --------------------------
+
+### Find a user to change role
+GET {{baseUrl}}/users
+
+### Change user's role (will create new role-specific record)
+PATCH {{baseUrl}}/users/1/role
+Content-Type: application/json
+
+{
+  "role": "doctor"
+}
+
+### Verify user's role was changed
+GET {{baseUrl}}/users/1
+
+### Check if doctor profile was created after role change
+GET {{baseUrl}}/doctors
+
+### --------------------------
+### 5. TEST VALIDATION & ERROR HANDLING
+### --------------------------
+
+### Try to create user with invalid role (should fail)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "invalid.role@example.com",
+  "password": "password123",
+  "firstName": "Invalid",
+  "lastName": "Role",
+  "role": "invalidRole"
+}
+
+### Try to create duplicate user (should fail)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "test.patient@example.com",
+  "password": "password123",
+  "firstName": "Duplicate",
+  "lastName": "User",
+  "role": "patient"
+}
+
+### Try to create patient profile with non-patient user ID (should fail)
+POST {{baseUrl}}/patients
 Content-Type: application/json
 
 {
   "userId": 2,
-  "specialization": "Cardiology",
-  "licenseNumber": "MD123456",
-  "yearsOfExperience": 10,
-  "phoneNumber": "15551234567",
-  "officeAddress": "123 Medical Center Dr, City, State 12345"
-}
-
-### Create patient profile (using user ID 1)
-POST http://localhost:3000/patients
-Content-Type: application/json
-
-{
-  "userId": 1,
   "gender": "male",
-  "phoneNumber": "15559876543",
-  "assignedDoctorId": 1,
-  "address": "123 Main St, City, State 12345",
   "dateOfBirth": "1990-05-15",
-  "medicalHistory": "No known allergies."
+  "phoneNumber": "15559876543",
+  "address": "123 Main St, City, State 12345"
 }
 
-### STEP 4: Create Admin Profiles (Now with Existing Users) ###
+### --------------------------
+### 6. USER STATS & FILTERING
+### --------------------------
 
-### Create regular admin profile (user ID 3)
-POST http://localhost:3000/admin
-Content-Type: application/json
+### Get user statistics
+GET {{baseUrl}}/users/stats
 
-{
-  "userId": 3,
-  "adminLevel": "admin",
-  "permissions": {
-    "users": ["read", "write", "delete"],
-    "appointments": ["read", "write"],
-    "doctors": ["read", "write"],
-    "patients": ["read", "write"],
-    "orders": ["read", "write"]
-  },
-  "department": "IT Department",
-  "phoneNumber": "15551234567",
-  "emergencyContact": "15559876543",
-  "status": "active",
-  "notes": "System administrator with full access"
-}
+### Get users by role
+GET {{baseUrl}}/users/role/patient
+GET {{baseUrl}}/users/role/doctor
+GET {{baseUrl}}/users/role/admin
+GET {{baseUrl}}/users/role/pharmacy
 
-### Create super admin profile (user ID 4)
-POST http://localhost:3000/admin
-Content-Type: application/json
+### Get patients with specific criteria
+GET {{baseUrl}}/patients/by-gender/female
+GET {{baseUrl}}/patients/by-blood-type/B+
+GET {{baseUrl}}/patients/with-allergies
 
-{
-  "userId": 4,
-  "adminLevel": "super_admin",
-  "permissions": {
-    "users": ["read", "write", "delete"],
-    "appointments": ["read", "write", "delete"],
-    "doctors": ["read", "write", "delete"],
-    "patients": ["read", "write", "delete"],
-    "orders": ["read", "write", "delete"],
-    "admin": ["read", "write", "delete"],
-    "system": ["read", "write", "delete"]
-  },
-  "department": "Management",
-  "phoneNumber": "15551111111",
-  "emergencyContact": "15552222222",
-  "status": "active",
-  "notes": "Super administrator with complete system access"
-}
+### Get patients by doctor
+GET {{baseUrl}}/patients/doctor/{{doctorId}}
 
-### Create moderator profile (user ID 5)
-POST http://localhost:3000/admin
-Content-Type: application/json
+### --------------------------
+### 7. DELETE & CLEANUP
+### --------------------------
 
-{
-  "userId": 5,
-  "adminLevel": "moderator",
-  "permissions": {
-    "appointments": ["read", "write"],
-    "patients": ["read"],
-    "doctors": ["read"]
-  },
-  "department": "Customer Service",
-  "phoneNumber": "15553333333",
-  "emergencyContact": "15554444444",
-  "status": "active",
-  "notes": "Moderator with limited access"
-}
+### Delete a test user (confirm first)
+GET {{baseUrl}}/users/email/test.patient@example.com
 
-### Create department head admin (user ID 6)
-POST http://localhost:3000/admin
-Content-Type: application/json
+### Perform deletion
+DELETE {{baseUrl}}/users/email/test.patient@example.com
 
-{
-  "userId": 6,
-  "adminLevel": "admin",
-  "permissions": {
-    "users": ["read", "write"],
-    "appointments": ["read", "write", "delete"],
-    "doctors": ["read", "write"],
-    "patients": ["read", "write"],
-    "reports": ["read", "write"]
-  },
-  "department": "Medical Department",
-  "phoneNumber": "15556666666",
-  "emergencyContact": "15557777777",
-  "status": "active",
-  "notes": "Department head with reporting capabilities"
-}
+### Verify deletion - user should be gone
+GET {{baseUrl}}/users/email/test.patient@example.com
 
-### Create audit admin (user ID 7)
-POST http://localhost:3000/admin
-Content-Type: application/json
-
-{
-  "userId": 7,
-  "adminLevel": "moderator",
-  "permissions": {
-    "users": ["read"],
-    "appointments": ["read"],
-    "doctors": ["read"],
-    "patients": ["read"],
-    "orders": ["read"]
-  },
-  "department": "Audit Department",
-  "phoneNumber": "15550000000",
-  "status": "active",
-  "notes": "Read-only access for audit purposes"
-}
-
-### STEP 5: Verify Admin Creation ###
-
-### Get all admins
-GET http://localhost:3000/admin
-
-### Get all users with their admin profiles
-GET http://localhost:3000/users
-
-### STEP 6: Test Admin Functionality ###
-
-### Get admin statistics
-GET http://localhost:3000/admin/stats
-
-### Get active admins
-GET http://localhost:3000/admin/active
-
-### Get super admins
-GET http://localhost:3000/admin/super-admins
-
-### Search admins
-GET http://localhost:3000/admin/search?q=System
-
-### Get admins by level
-GET http://localhost:3000/admin/level/super_admin
-
-### Get admins by status
-GET http://localhost:3000/admin/status/active
-
-### Get admins by department
-GET http://localhost:3000/admin/department/IT
-
-### Get specific admin
-GET http://localhost:3000/admin/1
-
-### Update admin
-PATCH http://localhost:3000/admin/1
-Content-Type: application/json
-
-{
-  "status": "active",
-  "notes": "Status confirmed"
-}
-
-### STEP 7: Create Appointments ###
-
-### Create appointment
-POST http://localhost:3000/appointments
-Content-Type: application/json
-
-{
-  "patientId": 1,
-  "doctorId": 1,
-  "appointmentDate": "2025-07-05T10:00:00Z",
-  "appointmentTime": "10:00",
-  "duration": 30,
-  "reason": "Regular checkup",
-  "status": "scheduled",
-  "notes": "Patient requested morning appointment"
-}
-
-### STEP 8: Create Orders ###
-
-### Create order
-POST http://localhost:3000/orders
-Content-Type: application/json
-
-{
-  "patientId": 1,
-  "orderDate": "2025-07-01T10:00:00Z",
-  "status": "pending",
-  "totalAmount": 150.00,
-  "OrderId": "ORD-001"
-}
-
-### MEDICAL RECORDS ENDPOINTS ###
-
-### Create a diagnosis record
-POST http://localhost:3000/medical-records
-Content-Type: application/json
-
-{
-  "patientId": 1,
-  "doctorId": 1,
-  "appointmentId": 1,
-  "recordType": "diagnosis",
-  "title": "Hypertension Diagnosis",
-  "description": "Patient presented with elevated blood pressure readings during routine checkup. No symptoms reported.",
-  "diagnosis": "Essential Hypertension (Stage 1)",
-  "treatment": "Lifestyle modifications including diet and exercise. Medication therapy initiated.",
-  "medications": [
-    {
-      "name": "Lisinopril",
-      "dosage": "10mg",
-      "frequency": "once daily",
-      "duration": "ongoing"
-    }
-  ],
-  "vitals": {
-    "bloodPressure": "145/92",
-    "heartRate": "78",
-    "temperature": "98.6°F",
-    "weight": "180 lbs"
-  },
-  "followUpInstructions": "Return in 4 weeks for blood pressure monitoring. Continue medication as prescribed.",
-  "nextAppointmentDate": "2025-08-01T10:00:00Z",
-  "priority": "normal",
-  "notes": "Patient counseled on dietary modifications and regular exercise"
-}
-
-### Create a prescription record
-POST http://localhost:3000/medical-records
-Content-Type: application/json
-
-{
-  "patientId": 1,
-  "doctorId": 1,
-  "recordType": "prescription",
-  "title": "Antibiotic Prescription for UTI",
-  "description": "Patient diagnosed with urinary tract infection based on symptoms and urinalysis results.",
-  "diagnosis": "Urinary Tract Infection (UTI)",
-  "treatment": "Antibiotic therapy for 7 days",
-  "medications": [
-    {
-      "name": "Trimethoprim-Sulfamethoxazole",
-      "dosage": "800mg/160mg",
-      "frequency": "twice daily",
-      "duration": "7 days"
-    }
-  ],
-  "labResults": {
-    "urinalysis": {
-      "bacteria": "positive",
-      "whiteBloodCells": "elevated",
-      "nitrites": "positive"
-    }
-  },
-  "followUpInstructions": "Complete full course of antibiotics. Return if symptoms persist or worsen.",
-  "priority": "normal",
-  "notes": "Patient advised to increase fluid intake"
-}
-
-### Create a lab result record
-POST http://localhost:3000/medical-records
-Content-Type: application/json
-
-{
-  "patientId": 1,
-  "doctorId": 1,
-  "recordType": "lab_result",
-  "title": "Annual Blood Work Results",
-  "description": "Comprehensive metabolic panel and lipid profile results from annual physical examination.",
-  "labResults": {
-    "glucose": "95 mg/dL (normal)",
-    "cholesterol": {
-      "total": "200 mg/dL",
-      "HDL": "50 mg/dL",
-      "LDL": "130 mg/dL",
-      "triglycerides": "150 mg/dL"
-    },
-    "kidneyFunction": {
-      "creatinine": "1.0 mg/dL (normal)",
-      "BUN": "15 mg/dL (normal)"
-    },
-    "liverFunction": {
-      "ALT": "25 U/L (normal)",
-      "AST": "22 U/L (normal)"
-    }
-  },
-  "followUpInstructions": "Continue current lifestyle. Repeat labs in 1 year.",
-  "priority": "normal",
-  "notes": "All values within normal limits"
-}
-
-### Create an emergency record
-POST http://localhost:3000/medical-records
-Content-Type: application/json
-
-{
-  "patientId": 2,
-  "doctorId": 1,
-  "recordType": "emergency",
-  "title": "Emergency Department Visit - Chest Pain",
-  "description": "Patient presented to ED with acute onset chest pain, duration 2 hours. Pain described as crushing, radiating to left arm.",
-  "diagnosis": "Rule out myocardial infarction - chest pain evaluation",
-  "treatment": "Cardiac workup including EKG, chest X-ray, and cardiac enzymes. Pain management provided.",
-  "vitals": {
-    "bloodPressure": "160/95",
-    "heartRate": "92",
-    "temperature": "99.1°F",
-    "oxygenSaturation": "98%",
-    "respiratoryRate": "18"
-  },
-  "labResults": {
-    "troponin": "negative",
-    "CK-MB": "normal",
-    "EKG": "normal sinus rhythm"
-  },
-  "followUpInstructions": "Follow up with primary care physician within 48 hours. Return to ED if chest pain recurs.",
-  "priority": "critical",
-  "notes": "Patient discharged home after cardiac workup negative for acute MI"
-}
-
-### Create a surgery record
-POST http://localhost:3000/medical-records
-Content-Type: application/json
-
-{
-  "patientId": 2,
-  "doctorId": 1,
-  "recordType": "surgery",
-  "title": "Laparoscopic Cholecystectomy",
-  "description": "Patient underwent laparoscopic removal of gallbladder due to symptomatic cholelithiasis.",
-  "diagnosis": "Cholelithiasis with acute cholecystitis",
-  "treatment": "Laparoscopic cholecystectomy performed successfully. No complications.",
-  "followUpInstructions": "Post-operative care instructions provided. Follow up in 2 weeks for wound check.",
-  "nextAppointmentDate": "2025-07-15T14:00:00Z",
-  "priority": "normal",
-  "attachments": [
-    {
-      "name": "operative_report.pdf",
-      "type": "surgery_report",
-      "url": "/files/surgery_123.pdf"
-    },
-    {
-      "name": "post_op_instructions.pdf",
-      "type": "instructions",
-      "url": "/files/postop_123.pdf"
-    }
-  ],
-  "notes": "Surgery completed without complications. Patient tolerated procedure well."
-}
-
-### Get all medical records
-GET http://localhost:3000/medical-records
-
-### Get medical records statistics
-GET http://localhost:3000/medical-records/stats
-
-### Get urgent medical records
-GET http://localhost:3000/medical-records/urgent
-
-### Get recent medical records (last 7 days)
-GET http://localhost:3000/medical-records/recent
-
-### Get recent medical records (last 30 days)
-GET http://localhost:3000/medical-records/recent?days=30
-
-### Search medical records
-GET http://localhost:3000/medical-records/search?q=hypertension
-
-### Get medical records by patient ID
-GET http://localhost:3000/medical-records/patient/1
-
-### Get medical records by doctor ID
-GET http://localhost:3000/medical-records/doctor/1
-
-### Get medical records by appointment ID
-GET http://localhost:3000/medical-records/appointment/1
-
-### Get medical records by record type
-GET http://localhost:3000/medical-records/type/diagnosis
-
-### Get medical records by status
-GET http://localhost:3000/medical-records/status/active
-
-### Get medical records by priority
-GET http://localhost:3000/medical-records/priority/critical
-
-### Get medical records by date range
-GET http://localhost:3000/medical-records/date-range?startDate=2025-07-01&endDate=2025-07-31
-
-### Get specific medical record
-GET http://localhost:3000/medical-records/1
-
-### Update medical record
-PATCH http://localhost:3000/medical-records/1
-Content-Type: application/json
-
-{
-  "notes": "Patient responded well to treatment. Blood pressure improved.",
-  "followUpInstructions": "Continue current medication. Return in 8 weeks for follow-up.",
-  "nextAppointmentDate": "2025-08-30T10:00:00Z"
-}
-
-### Archive medical record
-PATCH http://localhost:3000/medical-records/1/archive
-
-### Bulk update status
-PATCH http://localhost:3000/medical-records/bulk-status
-Content-Type: application/json
-
-{
-  "recordIds": [1, 2, 3],
-  "status": "archived"
-}
-
-### Delete medical record
-DELETE http://localhost:3000/medical-records/1
-
-### COMPLEX MEDICAL RECORDS SCENARIOS ###
-
-### Create comprehensive consultation record
-POST http://localhost:3000/medical-records
-Content-Type: application/json
-
-{
-  "patientId": 1,
-  "doctorId": 1,
-  "recordType": "consultation",
-  "title": "Cardiology Consultation - Chest Pain Evaluation",
-  "description": "Patient referred for cardiology consultation due to recurrent chest pain episodes over past month.",
-  "diagnosis": "Atypical chest pain, rule out coronary artery disease",
-  "treatment": "Stress test ordered, lifestyle modifications recommended",
-  "vitals": {
-    "bloodPressure": "135/85",
-    "heartRate": "75",
-    "weight": "175 lbs",
-    "height": "70 inches"
-  },
-  "allergies": ["Penicillin", "Sulfa drugs"],
-  "followUpInstructions": "Schedule stress test within 2 weeks. Follow up after results available.",
-  "priority": "urgent",
-  "attachments": [
-    {
-      "name": "referral_letter.pdf",
-      "type": "referral",
-      "url": "/files/referral_456.pdf"
-    }
-  ],
-  "notes": "Patient anxious about symptoms. Reassurance provided regarding likelihood of serious cardiac pathology."
-}
-
-### Create imaging result record
-POST http://localhost:3000/medical-records
-Content-Type: application/json
-
-{
-  "patientId": 2,
-  "doctorId": 1,
-  "recordType": "imaging",
-  "title": "Chest X-ray - Follow-up Pneumonia",
-  "description": "Follow-up chest X-ray to assess resolution of pneumonia after antibiotic treatment.",
-  "diagnosis": "Resolving pneumonia",
-  "treatment": "Continue current antibiotic course",
-  "labResults": {
-    "imaging": {
-      "study": "Chest X-ray PA and lateral",
-      "findings": "Marked improvement in right lower lobe infiltrate. No pleural effusion.",
-      "impression": "Resolving right lower lobe pneumonia"
-    }
-  },
-  "followUpInstructions": "Complete antibiotic course. Repeat chest X-ray in 4 weeks if symptoms persist.",
-  "priority": "normal",
-  "attachments": [
-    {
-      "name": "chest_xray_followup.jpg",
-      "type": "imaging",
-      "url": "/files/xray_789.jpg"
-    }
-  ],
-  "notes": "Significant improvement noted compared to initial X-ray"
-}
-
-### Test search functionality
-GET http://localhost:3000/medical-records/search?q=chest pain
-
-### Test date range queries
-GET http://localhost:3000/medical-records/date-range?startDate=2025-07-01&endDate=2025-07-02
-
-### Test record type filtering
-GET http://localhost:3000/medical-records/type/emergency
+### Patient profile should also be gone (automatic cascade delete)
+GET {{baseUrl}}/patients

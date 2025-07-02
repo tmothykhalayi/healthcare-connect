@@ -1,5 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
 import { ApiProperty } from '@nestjs/swagger';
+import { Patient } from '../../../patients/entities/patient.entity';
+import { Doctor } from '../../../doctors/entities/doctor.entity';
 
 @Entity('medical_records')
 export class Medical {
@@ -12,18 +14,18 @@ export class Medical {
   patientId: number;
 
   @ApiProperty({ description: 'Patient associated with this record' })
-  @ManyToOne('Patient', { onDelete: 'CASCADE' })
+  @ManyToOne(() => Patient, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'patientId' })
-  patient: any;
+  patient: Patient;
 
   @ApiProperty({ description: 'Doctor ID who created the record' })
   @Column()
   doctorId: number;
 
   @ApiProperty({ description: 'Doctor associated with this record' })
-  @ManyToOne('Doctor', { onDelete: 'CASCADE' })
+  @ManyToOne(() => Doctor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'doctorId' })
-  doctor: any;
+  doctor: Doctor;
 
   @ApiProperty({ description: 'Appointment ID (if related to appointment)' })
   @Column({ nullable: true })

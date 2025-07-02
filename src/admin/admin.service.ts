@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Admin } from './entities/admin.entity';
+import { Users, UserRole } from '../users/entities/user.entity';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 
@@ -10,6 +11,7 @@ export class AdminService {
   constructor(
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
+    @InjectRepository(Users) private usersRepository: Repository<Users>
   ) {}
 
   async create(createAdminDto: CreateAdminDto): Promise<Admin> {
@@ -42,6 +44,44 @@ export class AdminService {
     } catch (error) {
       console.error('Database error:', error);
       throw new InternalServerErrorException('Failed to create admin');
+    }
+  }
+
+  // Add this method for automatic role assignment
+  async createFromUser(user: Users): Promise<Admin> {
+    // Check if admin record already exists
+    const existingAdmin = await this.adminRepository.findOne({
+      where: { user: { id: user.id } }
+    });
+
+    if (existingAdmin) {
+      return existingAdmin;
+    }
+
+    try {
+      const adminData = {
+        user: user,
+        adminLevel: 'admin',
+        department: 'General',
+        status: 'active',
+        permissions: {
+          users: ['read'],
+          appointments: ['read'],
+          medical_records: ['read']
+        }
+      };
+
+      const newAdmin = this.adminRepository.create(adminData);
+      return await this.adminRepository.save(newAdmin);
+
+    } catch (error) {
+      console.error('Error creating admin from user:', error);
+      
+      if (error.code === '23505') {
+        throw new ConflictException(`Admin profile already exists for user ID ${user.id}`);
+      }
+      
+      throw new InternalServerErrorException(`Failed to create admin profile: ${error.message}`);
     }
   }
 

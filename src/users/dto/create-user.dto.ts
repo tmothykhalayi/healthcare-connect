@@ -1,15 +1,16 @@
 // dto/create-user.dto.ts
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, IsEnum, IsOptional, IsBoolean } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsString, IsEnum, IsOptional, IsBoolean, MinLength } from 'class-validator';
 import { UserRole } from '../entities/user.entity';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'john.doe@example.com', description: 'User email address' })
+  @ApiProperty({ example: 'user@example.com', description: 'User email address' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'password123', description: 'User password' })
+  @ApiProperty({ example: 'password123', description: 'User password (minimum 6 characters)' })
   @IsString()
+  @MinLength(6)
   password: string;
 
   @ApiProperty({ example: 'John', description: 'User first name' })
@@ -20,20 +21,23 @@ export class CreateUserDto {
   @IsString()
   lastName: string;
 
-  @ApiProperty({ 
-    enum: UserRole, 
+  @ApiPropertyOptional({ 
     example: UserRole.PATIENT, 
-    description: 'User role' 
+    description: 'User role',
+    enum: UserRole,
+    default: UserRole.PATIENT
   })
+  @IsOptional()
   @IsEnum(UserRole)
-  role: UserRole;
+  role?: UserRole;
 
-  @ApiProperty({ 
-    example: false, 
-    description: 'Email verification status',
-    required: false 
-  })
+  @ApiPropertyOptional({ example: false, description: 'Email verification status', default: false })
   @IsOptional()
   @IsBoolean()
   isEmailVerified?: boolean;
+
+  @ApiPropertyOptional({ example: true, description: 'Account active status', default: true })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

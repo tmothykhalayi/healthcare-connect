@@ -1,6 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
+import { Doctor } from '../../doctors/entities/doctor.entity';
+
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+  OTHER = 'other'
+}
 
 @Entity('patients')
 export class Patient {
@@ -8,50 +15,71 @@ export class Patient {
   @PrimaryGeneratedColumn()
   id: number;
   
-  @ApiProperty({ description: 'User ID associated with the patient' })
-  @Column()
+  @ApiProperty({ description: 'User ID (from users table)' })
+  @Column({ unique: true })
   userId: number;
 
   @ApiProperty({ description: 'User associated with this patient' })
-  @ManyToOne(() => Users, { onDelete: 'CASCADE' })
+  @OneToOne(() => Users, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: Users;
-
-  @ApiProperty({ description: 'Orders associated with this patient' })
-  @OneToMany('Order', 'patient') // Use string reference to avoid circular import
-  orders: any[];
-
+  
+  @ApiProperty({ description: 'Patient gender', enum: Gender })
+  @Column({ type: 'enum', enum: Gender, nullable: true }) // Made nullable
+  gender: Gender;
+  
+  @ApiProperty({ description: 'Patient date of birth' })
+  @Column({ type: 'date', nullable: true }) // Made nullable
+  dateOfBirth: Date;
+  
+  @ApiProperty({ description: 'Patient phone number' })
+  @Column({ nullable: true }) // Made nullable
+  phoneNumber: string;
+  
+  @ApiProperty({ description: 'Patient address' })
+  @Column({ type: 'text', nullable: true })
+  address: string;
+  
+  @ApiProperty({ description: 'Emergency contact information' })
+  @Column({ type: 'text', nullable: true })
+  emergencyContact: string;
+  
+  @ApiProperty({ description: 'Medical history' })
+  @Column({ type: 'text', nullable: true })
+  medicalHistory: string;
+  
+  @ApiProperty({ description: 'List of allergies (JSON array)' })
+  @Column({ type: 'json', nullable: true })
+  allergies: string[];
+  
   @ApiProperty({ description: 'Assigned doctor ID' })
   @Column({ nullable: true })
   assignedDoctorId: number;
 
   @ApiProperty({ description: 'Assigned doctor' })
-  @ManyToOne('Doctor', 'patients', { 
-    nullable: true,
-    onDelete: 'SET NULL'
-  })
+  @ManyToOne(() => Doctor, doctor => doctor.patients, { nullable: true })
   @JoinColumn({ name: 'assignedDoctorId' })
-  assignedDoctor: any;
-
-  @ApiProperty({ description: 'Patient gender' })
-  @Column({ type: 'enum', enum: ['male', 'female', 'other'] })
-  gender: string;
+  assignedDoctor: Doctor;
   
-  @ApiProperty({ description: 'Patient phone number' })
-  @Column()
-  phoneNumber: string;
-  
-  @ApiProperty({ description: 'Patient address' })
+  @ApiProperty({ description: 'Blood type' })
   @Column({ nullable: true })
-  address: string;
+  bloodType: string;
   
-  @ApiProperty({ description: 'Patient date of birth' })
-  @Column({ type: 'date', nullable: true })
-  dateOfBirth: Date;
+  @ApiProperty({ description: 'Weight in kg' })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  weight: number;
   
-  @ApiProperty({ description: 'Patient medical history' })
-  @Column({ type: 'text', nullable: true })
-  medicalHistory: string;
+  @ApiProperty({ description: 'Height in cm' })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  height: number;
+  
+  @ApiProperty({ description: 'Patient status' })
+  @Column({ default: 'pending_profile_completion' })
+  status: string;
+  
+  @ApiProperty({ description: 'Last visit date' })
+  @Column({ type: 'timestamp', nullable: true })
+  lastVisit: Date;
   
   @ApiProperty({ description: 'Patient creation date' })
   @CreateDateColumn()
@@ -60,4 +88,10 @@ export class Patient {
   @ApiProperty({ description: 'Patient last update date' })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany('Appointment', 'patient')
+  appointments: any[];
+
+  @OneToMany('Medical', 'patient')
+  medicalRecords: any[];
 }

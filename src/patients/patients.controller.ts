@@ -16,8 +16,8 @@ export class PatientsController {
   @Post()
   async create(@Body() createPatientDto: CreatePatientDto) {
     return await this.patientsRepository
-      .save(createPatientDto)
-      .then((patient) => {
+      .save(createPatientDto as any)
+      .then((patient: Patient) => {
         return `Patient with ID ${patient.id} has been created`;
       })
       .catch((error) => {

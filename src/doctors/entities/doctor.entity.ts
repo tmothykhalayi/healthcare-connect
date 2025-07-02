@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn ,OneToMany} from "typeorm";
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
+import {Patient}from '../../patients/entities/patient.entity';
 
 @Entity('doctors')
 export class Doctor {
@@ -8,38 +9,54 @@ export class Doctor {
   @PrimaryGeneratedColumn()
   id: number;
   
-  @ApiProperty({ description: 'User ID associated with the doctor' })
-  @Column()
+  @ApiProperty({ description: 'User ID (from users table)' })
+  @Column({ unique: true })
   userId: number;
 
   @ApiProperty({ description: 'User associated with this doctor' })
-  @ManyToOne(() => Users, { onDelete: 'CASCADE' })
+  @OneToOne(() => Users, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: Users;
-
-  @ApiProperty({ description: 'Patients assigned to this doctor' })
-  @OneToMany('Patient', 'assignedDoctor') // Use string reference to avoid circular import
-  patients: any[];
-
+  
   @ApiProperty({ description: 'Doctor specialization' })
   @Column()
   specialization: string;
   
-  @ApiProperty({ description: 'Doctor license number' })
+  @ApiProperty({ description: 'Medical license number' })
   @Column({ unique: true })
   licenseNumber: string;
-
-  @ApiProperty({ description: 'Doctor years of experience' })
+  
+  @ApiProperty({ description: 'Years of experience' })
   @Column()
   yearsOfExperience: number;
-
+  
+  @ApiProperty({ description: 'Education/qualifications' })
+  @Column({ type: 'text', nullable: true })
+  education: string;
+  
   @ApiProperty({ description: 'Doctor phone number' })
   @Column()
   phoneNumber: string;
-
-  @ApiProperty({ description: 'Doctor office address' })
-  @Column({ nullable: true })
+  
+  @ApiProperty({ description: 'Office address' })
+  @Column()
   officeAddress: string;
+  
+  @ApiProperty({ description: 'Consultation fee' })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  consultationFee: number;
+  
+  @ApiProperty({ description: 'Available days (JSON array)' })
+  @Column({ type: 'json', nullable: true })
+  availableDays: string[];
+  
+  @ApiProperty({ description: 'Available hours' })
+  @Column({ nullable: true })
+  availableHours: string;
+  
+  @ApiProperty({ description: 'Doctor status (active, inactive, on_leave)' })
+  @Column({ default: 'active' })
+  status: string;
   
   @ApiProperty({ description: 'Doctor creation date' })
   @CreateDateColumn()
@@ -48,4 +65,8 @@ export class Doctor {
   @ApiProperty({ description: 'Doctor last update date' })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  
+@OneToMany(() => Patient, patient => patient.assignedDoctor)
+  patients: Patient[];
 }

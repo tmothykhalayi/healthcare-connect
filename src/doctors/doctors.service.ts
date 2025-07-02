@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, InternalServerErrorException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Doctor } from './entities/doctor.entity';
-import { Users } from '../users/entities/user.entity';
+import { Users, UserRole } from '../users/entities/user.entity';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 
@@ -109,5 +109,49 @@ export class DoctorsService {
             throw new NotFoundException(`Doctor with ID ${id} not found`);
         }
         return { message: `Doctor with ID ${id} deleted successfully` };
+    }
+
+    // Add this method for automatic role assignment
+    async createFromUser(user: Users): Promise<Doctor> {
+        console.log(`DoctorsService.createFromUser called for user ID ${user.id}`);
+        
+        // Check if doctor record already exists
+        const existingDoctor = await this.doctorsRepository.findOne({
+            where: { userId: user.id }
+        });
+
+        if (existingDoctor) {
+            console.log(`Doctor profile already exists for user ID ${user.id}`);
+            return existingDoctor;
+        }
+
+        try {
+            // Create basic doctor record
+            const doctorData = {
+                userId: user.id,
+                specialization: 'General Practice', // Default specialization
+                licenseNumber: `TEMP_${user.id}_${Date.now().toString().slice(-6)}`, // Temporary license
+                yearsOfExperience: 0,
+                education: '',
+                phoneNumber: '',
+                officeAddress: '',
+                status: 'pending_verification',
+            };
+
+            console.log(`Creating new doctor profile with data:`, doctorData);
+            const newDoctor = this.doctorsRepository.create(doctorData);
+            const savedDoctor = await this.doctorsRepository.save(newDoctor);
+            console.log(`Successfully created doctor profile with ID ${savedDoctor.id}`);
+
+            return savedDoctor;
+        } catch (error) {
+            console.error(`Error creating doctor from user ${user.id}:`, error);
+            
+            if (error.code === '23505') {
+                throw new ConflictException(`Doctor profile already exists for user ID ${user.id}`);
+            }
+            
+            throw new InternalServerErrorException(`Failed to create doctor profile: ${error.message}`);
+        }
     }
 }
