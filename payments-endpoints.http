@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:8000
-@patientId = 1
-@doctorId = 1
+@patientId = 2
+@doctorId = 2
 @paymentId = 1
 
 ### ------------------------------------------
@@ -13,7 +13,7 @@ Content-Type: application/json
 
 {
   "userId": "{{patientId}}",
-  "amount": 150.00,
+  "amount": 1500.00,
   "paymentMethod": "credit_card",
   "status": "completed",
   "relatedEntityType": "appointment",

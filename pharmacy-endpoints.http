@@ -1,9 +1,9 @@
 ### Pharmacy Management Endpoints - Complete Collection
 ### Base URL and Environment Variables
 @baseUrl = http://localhost:8000
-@userId = 1
+@userId = 2
 @pharmacyUserId = 2
-@pharmacyId = 1
+@pharmacyId = 100
 
 ### ------------------------------------------
 ### 1. PHARMACY CREATION & REGISTRATION
@@ -28,7 +28,7 @@ POST {{baseUrl}}/pharmacy
 Content-Type: application/json
 
 {
-  "userId": 2,
+  "userId": 3,
   "pharmacyName": "HealthFirst Community Pharmacy",
   "licenseNumber": "PH67890XYZ",
   "address": "456 Main Street, Downtown, DT 67890",
@@ -101,7 +101,7 @@ GET {{baseUrl}}/pharmacy/user/{{userId}}
 ###
 
 ### Get pharmacy by different user ID
-GET {{baseUrl}}/pharmacy/user/2
+GET {{baseUrl}}/pharmacy/user/3
 
 ###
 

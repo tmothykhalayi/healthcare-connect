@@ -1,17 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Injectable, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Req ,Delete, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam ,ApiBearerAuth} from '@nestjs/swagger';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { AtGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
+import { Request } from 'express';
 
 @ApiTags('doctors')
+@UseGuards(AtGuard, RolesGuard)
+@ApiBearerAuth()
 @Controller('doctors')
 export class DoctorsController {
   constructor(private doctorsService: DoctorsService) {}
 
   //create a new doctor 
   @Post()
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new doctor' })
   @ApiResponse({ status: 201, description: 'Doctor created successfully' })
   @ApiResponse({ status: 409, description: 'Doctor already exists' })
@@ -31,6 +38,7 @@ export class DoctorsController {
 
   //find all doctors
   @Get()
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all doctors' })
   @ApiResponse({ status: 200, description: 'Doctors retrieved successfully' })
   async findAll() {
@@ -44,6 +52,7 @@ export class DoctorsController {
 
   //find one doctor
   @Get(':id')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get doctor by ID' })
   @ApiParam({ name: 'id', description: 'Doctor ID' })
   @ApiResponse({ status: 200, description: 'Doctor found' })
@@ -59,11 +68,15 @@ export class DoctorsController {
 
   //update a doctor 
   @Patch(':id')
+  @Roles(Role.ADMIN , Role.DOCTOR)
   @ApiOperation({ summary: 'Update doctor' })
   @ApiParam({ name: 'id', description: 'Doctor ID' })
   @ApiResponse({ status: 200, description: 'Doctor updated successfully' })
-  @ApiResponse({ status: 404, description: 'Doctor not found' })
-  async update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
+  async update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto, @Req() req: Request) {
+    const currentUser = req.user as any;
+    if (currentUser.role === Role.DOCTOR && currentUser.id !== +id) {
+      throw new Error('You can only update your own details');
+    }
     const result = await this.doctorsService.update(+id, updateDoctorDto);
     return {
       statusCode: HttpStatus.OK,
@@ -73,6 +86,7 @@ export class DoctorsController {
 
   //delete a doctor
   @Delete(':id')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete doctor' })
   @ApiParam({ name: 'id', description: 'Doctor ID' })
   @ApiResponse({ status: 200, description: 'Doctor deleted successfully' })

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, InternalServerErrorException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Medicine } from './entities/medicine.entity';
@@ -69,6 +69,8 @@ export class MedicinesService {
     }
   }
 
+  // Fetch all medicines only user with pharmacy role and admin can access this
+
   async findAll(): Promise<Medicine[]> {
     try {
       return await this.medicineRepository.find({
@@ -80,6 +82,8 @@ export class MedicinesService {
       throw new InternalServerErrorException('Failed to fetch medicines');
     }
   }
+
+
 
   async findOne(id: number): Promise<Medicine> {
     try {
@@ -102,18 +106,39 @@ export class MedicinesService {
     }
   }
 
-  async findByUserId(userId: number): Promise<Medicine[]> {
-    try {
-      return await this.medicineRepository.find({
-        where: { userId },
-        relations: ['user'],
-        order: { createdAt: 'DESC' }
-      });
-    } catch (error) {
-      console.error('Error fetching medicines by user ID:', error);
-      throw new InternalServerErrorException('Failed to fetch medicines');
+  
+async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
+  try {
+    // Example logic: Check if the user is assigned to the doctor
+    // You should replace this with your actual assignment check logic
+    const doctor = await this.usersRepository.findOne({ where: { id: doctorId } });
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+
+    if (!doctor || !user) {
+      throw new NotFoundException(`User with ID ${userId} or Doctor with ID ${doctorId} not found`);
     }
+
+    // Replace this with your actual assignment logic
+    // For example, if you have an assignments table, query it here
+    const isAssigned = true; // Set to true or false based on your logic
+
+    if (!isAssigned) {
+      throw new ForbiddenException(`User with ID ${userId} is not assigned to doctor with ID ${doctorId}`);
+    }
+
+    return await this.medicineRepository.find({
+      where: { userId },
+      relations: ['user'],
+      order: { createdAt: 'DESC' }
+    });
+  } catch (error) {
+    console.log('Error fetching medicines by user ID:', error);
+    if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+      throw error;
+    }
+    throw new InternalServerErrorException('Failed to fetch medicines by user ID');
   }
+}
 
   async findByCategory(category: string): Promise<Medicine[]> {
     try {
@@ -327,7 +352,7 @@ export class MedicinesService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number ): Promise<void> {
     try {
       const medicine = await this.findOne(id);
       await this.medicineRepository.remove(medicine);

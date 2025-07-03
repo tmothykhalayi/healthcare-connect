@@ -106,31 +106,5 @@ export class AuthController {
     return this.authService.refreshTokens(userId, refreshToken);
   }
 
-  // ===== GET PROFILE =====
-  @UseGuards(AtGuard)
-  @Get('profile')
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({
-    status: 200,
-    description: 'User profile retrieved successfully',
-    schema: {
-      example: {
-        id: 1,
-        email: 'user@example.com',
-        role: 'patient',
-        firstName: 'John',
-        lastName: 'Doe'
-      },
-    },
-  })
-  async getProfile(@GetCurrentUserId() userId: number) {
-    const user = await this.usersService.findOne(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    
-    // Return user profile without sensitive data
-    const { password, hashedRefreshToken, ...profile } = user;
-    return profile;
-  }
+  
 }

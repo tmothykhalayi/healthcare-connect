@@ -1,8 +1,8 @@
 ### Clean Authentication Test - Esthy Nandwa
 ### Base URL and Environment Variables
 @baseUrl = http://localhost:8000
-@accessToken = 
-@refreshToken = 
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE1MTY5ODYsImV4cCI6MTc1MTUxNzg4Nn0._LlaVmGjKWWu1pnEOKwhrzxhdnqfxmB0cMkNY9kkSi4
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE1MTY5ODYsImV4cCI6MTc1MjEyMTc4Nn0.4MKflwShfYj7AmC-XyceFVTf6mexqX-iml2_Ooad6K0
 
 ### ------------------------------------------
 ### 1. CREATE TEST USER - ESTHY NANDWA
@@ -38,15 +38,13 @@ Content-Type: application/json
 
 ###
 
-### Get Esthy's profile (use accessToken from signin response)
-GET {{baseUrl}}/auth/profile
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE0ODk5NjAsImV4cCI6MTc1MTQ5MDg2MH0.3jFKBv6U_BLKmaJyuiD21ESPa747_f0XYub-JJLkpqQ
 
 ###
 
+
 ### Sign out Esthy
 POST {{baseUrl}}/auth/signout
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE0ODk5NjAsImV4cCI6MTc1MTQ5MDg2MH0.3jFKBv6U_BLKmaJyuiD21ESPa747_f0XYub-JJLkpqQ
+Authorization: Bearer {{accessToken}}
 
 ###
 
@@ -54,14 +52,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpb
 ### 3. TOKEN REFRESH TEST
 ### ------------------------------------------
 
+
 ### Refresh access token (use refreshToken from signin response)
 POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE0ODk5NjAsImV4cCI6MTc1MjA5NDc2MH0.MngQsMHHR4UfKByeDVhFqLFwhxzPr9RabIkk5pPXsNM
+Authorization: Bearer {{refreshToken}}
 
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJlbWFpbCI6ImVzdGh5Lm5hbmR3YUBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE0ODk5NjAsImV4cCI6MTc1MjA5NDc2MH0.MngQsMHHR4UfKByeDVhFqLFwhxzPr9RabIkk5pPXsNM"
-}
 
 ###
 

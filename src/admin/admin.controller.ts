@@ -14,6 +14,7 @@ export class AdminController {
   @ApiResponse({ status: 201, description: 'Admin created successfully' })
   @ApiResponse({ status: 409, description: 'Admin already exists' })
   async create(@Body() createAdminDto: CreateAdminDto) {
+    
     try {
       const admin = await this.adminService.create(createAdminDto);
       return {

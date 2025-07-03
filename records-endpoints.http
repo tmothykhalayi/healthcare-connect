@@ -1,6 +1,6 @@
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:8000
 @patientId = 1
-@doctorId = 1
+@doctorId = 2
 @recordId = 1
 
 ### ------------------------------------------

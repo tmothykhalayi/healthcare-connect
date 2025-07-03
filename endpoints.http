@@ -1,436 +1,110 @@
-### Set environment variables (update IDs after checking your database)
-@baseUrl = http://localhost:3000
-@patientId = 1
-@doctorId = 1
-@pharmacyId = 1
-@adminId = 1
+### BASE URL AND TOKENS
+@baseUrl = http://localhost:8000
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI1LCJlbWFpbCI6InRlc3QudXNlckBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE1MTczNzgsImV4cCI6MTc1MTUxODI3OH0.B24FhuqpjzDuAeiROiqrdIQawyATkMzfwRv2HyUkiXo
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI1LCJlbWFpbCI6InRlc3QudXNlckBleGFtcGxlLmNvbSIsInJvbGUiOiJkb2N0b3IiLCJpYXQiOjE3NTE1MTczNzgsImV4cCI6MTc1MjEyMjE3OH0.qCkr-rLULADbwhzcnwyVlg-32sbboYfLCXaYRiJzDBQ
 
 ### ------------------------------------------
-### 1. USER MANAGEMENT & AUTHENTICATION
+### 1. USER REGISTRATION
 ### ------------------------------------------
-
-### Register new users with different roles
 POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "email": "test.patient@example.com",
-  "password": "Password123!",
-  "firstName": "Test",
-  "lastName": "Patient",
-  "role": "patient",
-  "phoneNumber": "15551234567"
+  "email": "timothykhalayi@gmail.com",
+  "password": "123",
+  "firstName": "Timothy",
+  "lastName": "Khalayi",
+  "phoneNumber": "+254700000000",
+  "role": "admin"
 }
 
-### Register doctor
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-  "email": "test.doctor@example.com",
-  "password": "Password123!",
-  "firstName": "Test",
-  "lastName": "Doctor",
-  "role": "doctor",
-  "phoneNumber": "15552345678"
-}
-
-### Register admin
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-  "email": "test.admin@example.com",
-  "password": "Password123!",
-  "firstName": "Test",
-  "lastName": "Admin",
-  "role": "admin",
-  "phoneNumber": "15553456789"
-}
-
-### Register pharmacy
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-  "email": "test.pharmacy@example.com",
-  "password": "Password123!",
-  "firstName": "Test",
-  "lastName": "Pharmacy",
-  "role": "pharmacy",
-  "phoneNumber": "15554567890"
-}
-
-### Login (if authentication endpoint exists)
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "email": "test.patient@example.com",
-  "password": "Password123!"
-}
-
-### Get current logged in user profile
-GET {{baseUrl}}/auth/profile
-Authorization: Bearer {{authToken}}
-
-### Verify email (if implemented)
-POST {{baseUrl}}/auth/verify-email
-Content-Type: application/json
-
-{
-  "token": "email_verification_token_here"
-}
-
-### Request password reset
-POST {{baseUrl}}/auth/forgot-password
-Content-Type: application/json
-
-{
-  "email": "test.patient@example.com"
-}
-
-### Reset password
-POST {{baseUrl}}/auth/reset-password
-Content-Type: application/json
-
-{
-  "token": "reset_token_here",
-  "password": "NewPassword123!"
-}
+###
 
 ### ------------------------------------------
-### 2. USER PROFILE MANAGEMENT
+### 2. USER LOGIN (SIGN IN)
 ### ------------------------------------------
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
 
-### Get all users (admin operation)
+{
+  "email": "test.user@example.com",
+  "password": "Test123!"
+}
+
+###
+
+### ------------------------------------------
+### 3. GET USER PROFILE (PROTECTED)
+### ------------------------------------------
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ------------------------------------------
+### 4. SIGN OUT (PROTECTED)
+### ------------------------------------------
+POST {{baseUrl}}/auth/signout
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ------------------------------------------
+### 5. REFRESH TOKENS
+### ------------------------------------------
+POST {{baseUrl}}/auth/refresh
+Authorization: Bearer {{refreshToken}}
+
+###
+
+### ------------------------------------------
+### 6. GET ALL USERS (ADMIN/PROTECTED)
+### ------------------------------------------
 GET {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
 
-### Get specific user
+###
+
+### 7. GET USER BY ID (PROTECTED)
 GET {{baseUrl}}/users/1
+Authorization: Bearer {{accessToken}}
 
-### Get user by email
-GET {{baseUrl}}/users/email/test.patient@example.com
+###
 
-### Update user
+### 8. UPDATE USER (PROTECTED)
 PATCH {{baseUrl}}/users/1
+Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
   "firstName": "Updated",
-  "lastName": "Patient"
+  "lastName": "User"
 }
 
-### Change user role
-PATCH {{baseUrl}}/users/1/role
+###
+
+### 9. DELETE USER (PROTECTED)
+DELETE {{baseUrl}}/users/1
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ------------------------------------------
+### 10. (OPTIONAL) ADDITIONAL MODULES
+### ------------------------------------------
+# Add endpoints for appointments, medical records, etc. here if available.
+
+@baseUrl = http://localhost:8000
+
+### 1. Create a new user
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "role": "doctor"
-}
-
-### Get user statistics
-GET {{baseUrl}}/users/stats
-
-### ------------------------------------------
-### 3. PATIENT PROFILE MANAGEMENT
-### ------------------------------------------
-
-### Get all patients
-GET {{baseUrl}}/patients
-
-### Get specific patient
-GET {{baseUrl}}/patients/{{patientId}}
-
-### Complete patient profile
-PATCH {{baseUrl}}/patients/{{patientId}}
-Content-Type: application/json
-
-{
-  "gender": "female",
-  "dateOfBirth": "1990-05-15",
+  "email": "user@example.com",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "patient",
   "phoneNumber": "15551234567",
-  "address": "123 Main St, City, State 12345",
-  "emergencyContact": "John Smith - 15559876543",
-  "medicalHistory": "No significant medical history",
-  "allergies": ["Penicillin", "Peanuts"],
-  "bloodType": "O+",
-  "weight": 65.0,
-  "height": 170.0
-}
-
-### Get patients by doctor
-GET {{baseUrl}}/patients/doctor/{{doctorId}}
-
-### Get patients by gender
-GET {{baseUrl}}/patients/by-gender/female
-
-### Get patients by blood type (if implemented)
-GET {{baseUrl}}/patients/by-blood-type/O+
-
-### ------------------------------------------
-### 4. DOCTOR PROFILE MANAGEMENT
-### ------------------------------------------
-
-### Get all doctors
-GET {{baseUrl}}/doctors
-
-### Get specific doctor
-GET {{baseUrl}}/doctors/{{doctorId}}
-
-### Complete doctor profile
-PATCH {{baseUrl}}/doctors/{{doctorId}}
-Content-Type: application/json
-
-{
-  "specialization": "Cardiology",
-  "licenseNumber": "MD987654",
-  "yearsOfExperience": 8,
-  "education": "Medical University",
-  "phoneNumber": "15552345678",
-  "officeAddress": "456 Medical Plaza, City, State 12345",
-  "consultationFee": 180.00,
-  "availableDays": ["Monday", "Wednesday", "Friday"],
-  "availableHours": "10:00 AM - 6:00 PM",
-  "bio": "Board-certified cardiologist with 8 years of experience"
-}
-
-### Get doctors by specialization (if implemented)
-GET {{baseUrl}}/doctors/specialization/Cardiology
-
-### Get available doctors
-GET {{baseUrl}}/doctors/available
-
-### ------------------------------------------
-### 5. PHARMACY PROFILE MANAGEMENT
-### ------------------------------------------
-
-### Get all pharmacies
-GET {{baseUrl}}/pharmacy
-
-### Get specific pharmacy
-GET {{baseUrl}}/pharmacy/{{pharmacyId}}
-
-### Complete pharmacy profile
-PATCH {{baseUrl}}/pharmacy/{{pharmacyId}}
-Content-Type: application/json
-
-{
-  "pharmacyName": "Health First Pharmacy",
-  "licenseNumber": "PH456789",
-  "address": "789 Health Avenue, City, State 12345",
-  "phoneNumber": "15554567890",
-  "email": "pharmacy@example.com",
-  "operatingHours": "9:00 AM - 9:00 PM",
-  "services": ["Prescription filling", "Medication counseling", "Vaccinations"],
-  "deliveryAvailable": true,
-  "onlineOrderingAvailable": true,
-  "insurancePlansAccepted": ["BlueCross", "Aetna", "Medicare"],
-  "notes": "24-hour emergency service available"
-}
-
-### Get pharmacies by services (if implemented)
-GET {{baseUrl}}/pharmacy/services/Vaccinations
-
-### Get pharmacies with delivery
-GET {{baseUrl}}/pharmacy/delivery-available
-
-### ------------------------------------------
-### 6. APPOINTMENTS
-### ------------------------------------------
-
-### Create appointment
-POST {{baseUrl}}/appointments
-Content-Type: application/json
-
-{
-  "patientId": {{patientId}},
-  "doctorId": {{doctorId}},
-  "appointmentDate": "2025-08-15T10:30:00",
-  "duration": 30,
-  "reason": "Annual checkup",
-  "notes": "Patient has reported mild headaches",
-  "status": "scheduled"
-}
-
-### Get all appointments
-GET {{baseUrl}}/appointments
-
-### Get appointment by ID
-GET {{baseUrl}}/appointments/1
-
-### Get patient's appointments
-GET {{baseUrl}}/appointments/patient/{{patientId}}
-
-### Get doctor's appointments
-GET {{baseUrl}}/appointments/doctor/{{doctorId}}
-
-### Update appointment
-PATCH {{baseUrl}}/appointments/1
-Content-Type: application/json
-
-{
-  "appointmentDate": "2025-08-16T14:00:00",
-  "status": "rescheduled",
-  "notes": "Patient requested reschedule"
-}
-
-### Cancel appointment
-PATCH {{baseUrl}}/appointments/1/cancel
-Content-Type: application/json
-
-{
-  "cancellationReason": "Patient unavailable"
-}
-
-### Get upcoming appointments
-GET {{baseUrl}}/appointments/upcoming
-
-### ------------------------------------------
-### 7. MEDICAL RECORDS
-### ------------------------------------------
-
-### Create medical record
-POST {{baseUrl}}/medical-records
-Content-Type: application/json
-
-{
-  "patientId": {{patientId}},
-  "doctorId": {{doctorId}},
-  "visitDate": "2025-07-20T11:00:00",
-  "diagnosis": "Seasonal allergies",
-  "symptoms": ["Sneezing", "Itchy eyes", "Congestion"],
-  "treatment": "Antihistamine medication",
-  "prescription": "Loratadine 10mg, once daily",
-  "notes": "Follow up in two weeks if symptoms persist",
-  "attachments": []
-}
-
-### Get all medical records for patient
-GET {{baseUrl}}/medical-records/patient/{{patientId}}
-
-### Get medical record by ID
-GET {{baseUrl}}/medical-records/1
-
-### Update medical record
-PATCH {{baseUrl}}/medical-records/1
-Content-Type: application/json
-
-{
-  "diagnosis": "Updated diagnosis: Chronic seasonal allergies",
-  "treatment": "Updated treatment plan",
-  "notes": "Patient showing improvement"
-}
-
-### Get medical history summary
-GET {{baseUrl}}/medical-records/patient/{{patientId}}/summary
-
-### ------------------------------------------
-### 8. PRESCRIPTIONS
-### ------------------------------------------
-
-### Create prescription
-POST {{baseUrl}}/prescriptions
-Content-Type: application/json
-
-{
-  "patientId": {{patientId}},
-  "doctorId": {{doctorId}},
-  "medications": [
-    {
-      "name": "Amoxicillin",
-      "dosage": "500mg",
-      "frequency": "3 times daily",
-      "duration": "7 days"
-    }
-  ],
-  "issueDate": "2025-07-20T00:00:00",
-  "expiryDate": "2025-08-20T00:00:00",
-  "instructions": "Take with food. Complete full course.",
-  "status": "active"
-}
-
-### Get all prescriptions for patient
-GET {{baseUrl}}/prescriptions/patient/{{patientId}}
-
-### Get prescription by ID
-GET {{baseUrl}}/prescriptions/1
-
-### Update prescription
-PATCH {{baseUrl}}/prescriptions/1
-Content-Type: application/json
-
-{
-  "status": "filled",
-  "filledBy": {{pharmacyId}},
-  "filledDate": "2025-07-21T10:15:00"
-}
-
-### Get active prescriptions
-GET {{baseUrl}}/prescriptions/active/patient/{{patientId}}
-
-### ------------------------------------------
-### 9. NOTIFICATIONS (IF IMPLEMENTED)
-### ------------------------------------------
-
-### Get user notifications
-GET {{baseUrl}}/notifications/user/1
-
-### Mark notification as read
-PATCH {{baseUrl}}/notifications/1/read
-
-### Create notification (admin)
-POST {{baseUrl}}/notifications
-Content-Type: application/json
-
-{
-  "userId": 1,
-  "type": "appointment_reminder",
-  "title": "Upcoming Appointment",
-  "message": "You have an appointment tomorrow at 10:30 AM",
-  "data": {
-    "appointmentId": 1
-  }
-}
-
-### ------------------------------------------
-### 10. ADMIN OPERATIONS
-### ------------------------------------------
-
-### Get system statistics (admin)
-GET {{baseUrl}}/admin/statistics
-
-### Get user activity logs (admin)
-GET {{baseUrl}}/admin/logs/user-activity
-
-### Get system health (admin)
-GET {{baseUrl}}/admin/system-health
-
-### Update system settings (admin)
-PATCH {{baseUrl}}/admin/settings
-Content-Type: application/json
-
-{
-  "maintenanceMode": false,
-  "allowNewRegistrations": true,
-  "requireEmailVerification": true
-}
-
-### ------------------------------------------
-### 11. CLEANUP & DELETION
-### ------------------------------------------
-
-### Delete appointment
-DELETE {{baseUrl}}/appointments/1
-
-### Delete medical record
-DELETE {{baseUrl}}/medical-records/1
-
-### Delete prescription
-DELETE {{baseUrl}}/prescriptions/1
-
-### Delete a user (admin operation)
-DELETE {{baseUrl}}/users/email/test.patient@example.com
-
-### Verify user deletion
-GET {{baseUrl}}/users/email/test.patient@example.com
+  "isEmailVerified":
