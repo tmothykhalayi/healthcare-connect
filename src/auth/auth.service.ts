@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  BadRequestException,
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CreateAuthDto } from './dto/login.dto';
 import { Users } from '../users/entities/user.entity';
+import{ } from 
 
 @Injectable()
 export class AuthService {
@@ -192,4 +194,76 @@ export class AuthService {
       this.logger.log(`Refresh token updated successfully for user ID: ${userId}`);
     }
   }
+
+  async sendEmailResetOtp(body: { email: string }) {
+    const email = body.email;
+    const user = await this.usersService.findUserByEmail(email);
+    console.log('user in auth service for refresh is', user);
+    if (!user) {
+      throw new NotFoundException(
+        `User with email ${email} in sendEmailResetOtp not found`,
+      );
+    }
+    const id = user.id;
+    const { otp, secret } = this.generateOtp();
+
+    await this.usersService.update(id, {
+      otp,
+      secret,
+    });
+    await this.mailService.sendPasswordResetEmail(user, otp, secret);
+    return { otp, secret };
+  }
+
+  async resetPassword(body: ResetPasswordDto) {
+    const email = body.email;
+    const otp = body.otp;
+
+    if (!email) {
+      throw new BadRequestException('Email is required');
+    }
+
+    const user = await this.usersService.findUserByEmail(email);
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    if (!user.secret || !user.otp) {
+      throw new BadRequestException('Missing OTP or secret');
+    }
+
+    console.log('user in resetPassword', {
+      secret: user.secret,
+      otp: otp,
+    });
+
+    const id = user.id;
+
+    const isValidOtp = speakeasy.totp.verify({
+      secret: user.secret,
+      encoding: 'base32',
+      token: otp!,
+      step: 240,
+      digits: 6,
+      window: 0,
+    });
+
+    if (!isValidOtp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    // Add logic to actually reset the password
+    if (body.password) {
+      await this.usersService.update(id, {
+        password: body.password,
+        otp: '',
+        secret: '',
+      });
+
+      return { message: 'Password reset successful' };
+    } else {
+      throw new BadRequestException('New password is required');
+    }
+  }
 }
+

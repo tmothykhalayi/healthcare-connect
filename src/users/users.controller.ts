@@ -37,28 +37,45 @@ export class UsersController {
 
   // Get all users
   @Get()
-@Roles(Role.ADMIN)
-@ApiOperation({ summary: 'Get all users' })
-@ApiResponse({ status: 200, description: 'Users retrieved successfully' })
-async findAll(
-  @Req() req: Request & { user: { id: number; role: Role } }
-) {
-  const userRole = req.user.role;
-  const userId = req.user.id;
-
-  let users;
-  if (userRole === Role.ADMIN) {
-    users = await this.usersService.findAll();
-  } else {
-    users = await this.usersService.findOne(userId);
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
+  async findAll() {
+    try {
+      const users = await this.usersService.findAll();
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Users retrieved successfully',
+        data: users,
+      };
+    } catch (error) {
+      console.error('Error in findAll:', error);
+      throw error;
+    }
   }
 
-  return {
-    statusCode: HttpStatus.OK,
-    message: 'Users retrieved successfully',
-    data: users,
-  };
-}
+  // Get current user profile
+  @Get('profile')
+  @Roles(Role.PATIENT, Role.DOCTOR, Role.ADMIN, Role.PHARMACY)
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'User profile retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getCurrentUserProfile(
+    @Req() req: Request & { user: { id: number; role: Role } }
+  ) {
+    try {
+      const userId = req.user.id;
+      const user = await this.usersService.findOne(userId);
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'User profile retrieved successfully',
+        data: user
+      };
+    } catch (error) {
+      console.error('Error in getCurrentUserProfile:', error);
+      throw error;
+    }
+  }
 
   // Get user statistics
   @Get('stats')

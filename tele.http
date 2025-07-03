@@ -1,0 +1,287 @@
+### TELEMEDICINE MODULE ENDPOINTS
+### Base URL and Environment Variables
+@baseUrl = http://localhost:8000
+@authToken = your_jwt_token_here
+
+### ------------------------------------------
+### 1. TELEMEDICINE APPOINTMENT CREATION
+### ------------------------------------------
+
+### Create a new telemedicine appointment (basic)
+POST {{baseUrl}}/telemedicine
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "patientId": 1,
+  "doctorId": 5,
+  "appointmentDate": "2025-07-06",
+  "appointmentTime": "10:00",
+  "duration": 30,
+  "status": "scheduled",
+  "notes": "Telemedicine video call for routine consultation"
+}
+
+###
+
+### Create telemedicine appointment with minimal data
+POST {{baseUrl}}/telemedicine
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "patientId": 2,
+  "doctorId": 3,
+  "appointmentDate": "2025-07-08",
+  "appointmentTime": "14:30"
+}
+
+###
+
+### Create urgent telemedicine appointment
+POST {{baseUrl}}/telemedicine
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "patientId": 1,
+  "doctorId": 5,
+  "appointmentDate": "2025-07-05",
+  "appointmentTime": "09:00",
+  "duration": 45,
+  "status": "confirmed",
+  "notes": "Urgent consultation - patient experiencing chest pain"
+}
+
+###
+
+### ------------------------------------------
+### 2. TELEMEDICINE APPOINTMENT RETRIEVAL
+### ------------------------------------------
+
+### Get all telemedicine appointments (Admin/Doctor only)
+GET {{baseUrl}}/telemedicine
+Authorization: Bearer {{authToken}}
+
+###
+
+### Get telemedicine appointment by ID
+GET {{baseUrl}}/telemedicine/1
+Authorization: Bearer {{authToken}}
+
+###
+
+### Get telemedicine appointments for a specific patient
+GET {{baseUrl}}/telemedicine/patient/1
+Authorization: Bearer {{authToken}}
+
+###
+
+### Get telemedicine appointments for a specific doctor
+GET {{baseUrl}}/telemedicine/doctor/5
+Authorization: Bearer {{authToken}}
+
+###
+
+### ------------------------------------------
+### 3. TELEMEDICINE APPOINTMENT UPDATES
+### ------------------------------------------
+
+### Update telemedicine appointment (reschedule)
+PATCH {{baseUrl}}/telemedicine/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "appointmentDate": "2025-07-08",
+  "appointmentTime": "14:30",
+  "notes": "Rescheduled due to doctor availability"
+}
+
+###
+
+### Update appointment status to completed
+PATCH {{baseUrl}}/telemedicine/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "status": "completed",
+  "notes": "Consultation completed successfully. Patient prescribed medication."
+}
+
+###
+
+### Update appointment duration
+PATCH {{baseUrl}}/telemedicine/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "duration": 45,
+  "notes": "Extended duration due to complex case"
+}
+
+###
+
+### ------------------------------------------
+### 4. TELEMEDICINE APPOINTMENT DELETION
+### ------------------------------------------
+
+### Delete telemedicine appointment by ID
+DELETE {{baseUrl}}/telemedicine/1
+Authorization: Bearer {{authToken}}
+
+###
+
+### ------------------------------------------
+### 5. TELEMEDICINE STATISTICS
+### ------------------------------------------
+
+### Get telemedicine statistics overview (Admin only)
+GET {{baseUrl}}/telemedicine/stats/overview
+Authorization: Bearer {{authToken}}
+
+###
+
+### ------------------------------------------
+### 6. ERROR TESTING SCENARIOS
+### ------------------------------------------
+
+### Test creating appointment with non-existent patient (should fail)
+POST {{baseUrl}}/telemedicine
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "patientId": 999,
+  "doctorId": 5,
+  "appointmentDate": "2025-07-06",
+  "appointmentTime": "10:00"
+}
+
+###
+
+### Test creating appointment with non-existent doctor (should fail)
+POST {{baseUrl}}/telemedicine
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "patientId": 1,
+  "doctorId": 999,
+  "appointmentDate": "2025-07-06",
+  "appointmentTime": "10:00"
+}
+
+###
+
+### Test creating appointment with invalid date format (should fail)
+POST {{baseUrl}}/telemedicine
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "patientId": 1,
+  "doctorId": 5,
+  "appointmentDate": "invalid-date",
+  "appointmentTime": "10:00"
+}
+
+###
+
+### Test creating appointment with invalid duration (should fail)
+POST {{baseUrl}}/telemedicine
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "patientId": 1,
+  "doctorId": 5,
+  "appointmentDate": "2025-07-06",
+  "appointmentTime": "10:00",
+  "duration": 5
+}
+
+###
+
+### Test getting non-existent appointment (should return 404)
+GET {{baseUrl}}/telemedicine/999
+Authorization: Bearer {{authToken}}
+
+###
+
+### Test updating non-existent appointment (should fail)
+PATCH {{baseUrl}}/telemedicine/999
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "notes": "This should fail"
+}
+
+###
+
+### Test deleting non-existent appointment (should fail)
+DELETE {{baseUrl}}/telemedicine/999
+Authorization: Bearer {{authToken}}
+
+###
+
+### ------------------------------------------
+### 7. COMPREHENSIVE TESTING
+### ------------------------------------------
+
+### Complete workflow test:
+### 1. Create appointment
+### 2. Get appointment
+### 3. Update appointment
+### 4. Get updated appointment
+### 5. Delete appointment
+
+### Step 1: Create
+POST {{baseUrl}}/telemedicine
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "patientId": 1,
+  "doctorId": 5,
+  "appointmentDate": "2025-07-10",
+  "appointmentTime": "11:00",
+  "duration": 30,
+  "status": "scheduled",
+  "notes": "Test appointment for workflow"
+}
+
+###
+
+### Step 2: Get created appointment (use ID from step 1 response)
+GET {{baseUrl}}/telemedicine/1
+Authorization: Bearer {{authToken}}
+
+###
+
+### Step 3: Update appointment
+PATCH {{baseUrl}}/telemedicine/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "status": "confirmed",
+  "notes": "Appointment confirmed and ready"
+}
+
+###
+
+### Step 4: Get updated appointment
+GET {{baseUrl}}/telemedicine/1
+Authorization: Bearer {{authToken}}
+
+###
+
+### Step 5: Delete appointment
+DELETE {{baseUrl}}/telemedicine/1
+Authorization: Bearer {{authToken}}
+
+###

@@ -79,24 +79,33 @@ export class UsersService {
 
   // Find all users with optional role filter
   async findAll(): Promise<Users[]> {
-  return await this.usersRepository.find({
-    relations: ['patient', 'doctor', 'admin', 'pharmacy'],
-    order: { createdAt: 'DESC' },
-  });
-}
+    try {
+      // First try with basic query without relations
+      return await this.usersRepository.find({
+        order: { createdAt: 'DESC' },
+      });
+    } catch (error) {
+      console.error('Error in findAll:', error);
+      throw new InternalServerErrorException('Failed to fetch users');
+    }
+  }
   // Find user by ID with relations
 
   async findOne(id: number): Promise<Users> {
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
-    });
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id },
+      });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+
+      return user;
+    } catch (error) {
+      console.error('Error in findOne:', error);
+      throw new InternalServerErrorException('Failed to fetch user');
     }
-
-    return user;
   }
 
   // Find user by email

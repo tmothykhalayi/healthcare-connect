@@ -60,10 +60,27 @@ export class AppointmentsService {
   // Find all appointments
   async findAll(): Promise<Appointment[]> {
     try {
-      return await this.appointmentsRepository.find({
+      const appointments = await this.appointmentsRepository.find({
         relations: ['doctor', 'patient'],
         order: { appointmentDate: 'ASC' },
       });
+      
+      // Return appointments with limited user details
+      return appointments.map(appointment => ({
+        ...appointment,
+        doctor: appointment.doctor ? {
+          id: appointment.doctor.id,
+          firstName: appointment.doctor.firstName,
+          lastName: appointment.doctor.lastName,
+          specialization: appointment.doctor.specialization
+        } : null,
+        patient: appointment.patient ? {
+          id: appointment.patient.id,
+          firstName: appointment.patient.firstName,
+          lastName: appointment.patient.lastName,
+          dateOfBirth: appointment.patient.dateOfBirth
+        } : null
+      }));
     } catch (error) {
       throw new InternalServerErrorException('Failed to retrieve appointments');
     }
@@ -78,7 +95,23 @@ export class AppointmentsService {
     if (!appointment) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
     }
-    return appointment;
+    
+    // Return appointment with limited user details
+    return {
+      ...appointment,
+      doctor: appointment.doctor ? {
+        id: appointment.doctor.id,
+        firstName: appointment.doctor.firstName,
+        lastName: appointment.doctor.lastName,
+        specialization: appointment.doctor.specialization
+      } : null,
+      patient: appointment.patient ? {
+        id: appointment.patient.id,
+        firstName: appointment.patient.firstName,
+        lastName: appointment.patient.lastName,
+        dateOfBirth: appointment.patient.dateOfBirth
+      } : null
+    };
   }
 
   // Update appointment
@@ -139,7 +172,23 @@ export class AppointmentsService {
       relations: ['doctor', 'patient'],
       order: { appointmentDate: 'ASC' },
     });
-    return appointments; // Don't throw error for empty results
+    
+    // Return appointments with limited user details
+    return appointments.map(appointment => ({
+      ...appointment,
+      doctor: appointment.doctor ? {
+        id: appointment.doctor.id,
+        firstName: appointment.doctor.firstName,
+        lastName: appointment.doctor.lastName,
+        specialization: appointment.doctor.specialization
+      } : null,
+      patient: appointment.patient ? {
+        id: appointment.patient.id,
+        firstName: appointment.patient.firstName,
+        lastName: appointment.patient.lastName,
+        dateOfBirth: appointment.patient.dateOfBirth
+      } : null
+    }));
   }
 
   // Get appointments by patient id
@@ -149,7 +198,23 @@ export class AppointmentsService {
       relations: ['doctor', 'patient'],
       order: { appointmentDate: 'ASC' },
     });
-    return appointments;
+    
+    // Return appointments with limited user details
+    return appointments.map(appointment => ({
+      ...appointment,
+      doctor: appointment.doctor ? {
+        id: appointment.doctor.id,
+        firstName: appointment.doctor.firstName,
+        lastName: appointment.doctor.lastName,
+        specialization: appointment.doctor.specialization
+      } : null,
+      patient: appointment.patient ? {
+        id: appointment.patient.id,
+        firstName: appointment.patient.firstName,
+        lastName: appointment.patient.lastName,
+        dateOfBirth: appointment.patient.dateOfBirth
+      } : null
+    }));
   }
 
   // Get appointments by status
@@ -159,8 +224,23 @@ export class AppointmentsService {
       relations: ['doctor', 'patient'],
       order: { appointmentDate: 'ASC' },
     });
-    return appointments;
-
+    
+    // Return appointments with limited user details
+    return appointments.map(appointment => ({
+      ...appointment,
+      doctor: appointment.doctor ? {
+        id: appointment.doctor.id,
+        firstName: appointment.doctor.firstName,
+        lastName: appointment.doctor.lastName,
+        specialization: appointment.doctor.specialization
+      } : null,
+      patient: appointment.patient ? {
+        id: appointment.patient.id,
+        firstName: appointment.patient.firstName,
+        lastName: appointment.patient.lastName,
+        dateOfBirth: appointment.patient.dateOfBirth
+      } : null
+    }));
   }
 
   // Get today's appointments
@@ -176,7 +256,23 @@ export class AppointmentsService {
       relations: ['doctor', 'patient'],
       order: { appointmentDate: 'ASC' },
     });
-    return appointments;
+    
+    // Return appointments with limited user details
+    return appointments.map(appointment => ({
+      ...appointment,
+      doctor: appointment.doctor ? {
+        id: appointment.doctor.id,
+        firstName: appointment.doctor.firstName,
+        lastName: appointment.doctor.lastName,
+        specialization: appointment.doctor.specialization
+      } : null,
+      patient: appointment.patient ? {
+        id: appointment.patient.id,
+        firstName: appointment.patient.firstName,
+        lastName: appointment.patient.lastName,
+        dateOfBirth: appointment.patient.dateOfBirth
+      } : null
+    }));
   }
 
   // Get upcoming appointments (next 7 days)
@@ -192,7 +288,23 @@ export class AppointmentsService {
       relations: ['doctor', 'patient'],
       order: { appointmentDate: 'ASC' },
     });
-    return appointments;
+    
+    // Return appointments with limited user details
+    return appointments.map(appointment => ({
+      ...appointment,
+      doctor: appointment.doctor ? {
+        id: appointment.doctor.id,
+        firstName: appointment.doctor.firstName,
+        lastName: appointment.doctor.lastName,
+        specialization: appointment.doctor.specialization
+      } : null,
+      patient: appointment.patient ? {
+        id: appointment.patient.id,
+        firstName: appointment.patient.firstName,
+        lastName: appointment.patient.lastName,
+        dateOfBirth: appointment.patient.dateOfBirth
+      } : null
+    }));
   }
 
   // Delete appointment
