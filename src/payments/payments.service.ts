@@ -60,24 +60,7 @@ export class PaymentsService {
     }
 
     return payment;
-  }
-
-  //get payments by user ID
-  async findByUserId(userId: number): Promise<Payment[]> {
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
-    }
-    const payments = await this.paymentRepository.find({
-      where: { user },
-      relations: ['user'],
-    });
-    if (payments.length === 0) {
-      throw new NotFoundException(`No payments found for user with ID ${userId}`);
-    }
-    return payments;
+  
   }
   // Update a payment
   async update(id: number, updatePaymentDto: UpdatePaymentDto): Promise<string> {

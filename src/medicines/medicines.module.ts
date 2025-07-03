@@ -6,6 +6,7 @@ import { Medicine } from './entities/medicine.entity';
 import { Users } from '../users/entities/user.entity';
 
 @Module({
+  // Import TypeOrmModule to register the Medicine and User entities
   imports: [
     TypeOrmModule.forFeature([Medicine, Users]), // Register repositories for Medicine and User entities
   ],

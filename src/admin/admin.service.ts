@@ -118,6 +118,7 @@ export class AdminService {
     return admin;
   }
 
+  // Find admins by admin level
   async findByAdminLevel(adminLevel: string): Promise<Admin[]> {
     return await this.adminRepository.find({
       where: { adminLevel } as any,
@@ -126,6 +127,7 @@ export class AdminService {
     });
   }
 
+  // Find admins by status
   async findByStatus(status: string): Promise<Admin[]> {
     return await this.adminRepository.find({
       where: { status } as any,
@@ -134,6 +136,7 @@ export class AdminService {
     });
   }
 
+  // Find admins by department
   async findByDepartment(department: string): Promise<Admin[]> {
     return await this.adminRepository.find({
       where: { department: Like(`%${department}%`) },
@@ -169,7 +172,7 @@ export class AdminService {
       order: { createdAt: 'DESC' },
     });
   }
-
+//  async getAdminsByDepartment(department: string)
   async getAdminStats(): Promise<any> {
     const totalAdmins = await this.adminRepository.count();
     const activeAdmins = await this.adminRepository.count({ where: { status: 'active' } as any });
@@ -195,6 +198,7 @@ export class AdminService {
     };
   }
 
+  // Update last login timestamp for an admin
   async updateLastLogin(id: number): Promise<{ message: string }> {
     const admin = await this.adminRepository.findOne({ where: { id } });
     
@@ -212,6 +216,7 @@ export class AdminService {
     }
   }
 
+  // Update admin details
   async update(id: number, updateAdminDto: UpdateAdminDto): Promise<{ message: string }> {
     const admin = await this.adminRepository.findOne({ where: { id } });
     
@@ -236,6 +241,7 @@ export class AdminService {
     }
   }
 
+  // Remove an admin by ID
   async remove(id: number): Promise<{ message: string }> {
     const result = await this.adminRepository.delete({ id });
     
@@ -246,19 +252,8 @@ export class AdminService {
     return { message: `Admin with ID ${id} deleted successfully` };
   }
 
-  async bulkUpdateStatus(adminIds: number[], status: string): Promise<{ message: string }> {
-    try {
-      await this.adminRepository
-        .createQueryBuilder()
-        .update(Admin)
-        .set({ status } as Partial<Admin>)
-        .where('id IN (:...adminIds)', { adminIds })
-        .execute();
 
-      return { message: `${adminIds.length} admins updated successfully` };
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to bulk update admins');
-    }
+  
   }
-}
+
 

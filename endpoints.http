@@ -10,12 +10,14 @@ POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "email": "timothykhalayi@gmail.com",
+  "email": "timoth@gmail.com",
   "password": "123",
   "firstName": "Timothy",
-  "lastName": "Khalayi",
+  "lastName": "Kha",
   "phoneNumber": "+254700000000",
-  "role": "admin"
+  "role": "admin",
+  "isEmailVerified": true
+  
 }
 
 ###

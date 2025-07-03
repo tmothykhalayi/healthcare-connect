@@ -74,3 +74,163 @@ GET {{baseUrl}}/users
 GET {{baseUrl}}/users/1
 
 ###
+
+
+###
+POST http://localhost:8000/medical-records
+Content-Type: application/json
+
+{
+  "patientId": 3,
+  "doctorId": 2,
+  "appointmentId": 2,
+  "recordType": "diagnosis",
+  "title": "Routine Checkup Results",
+  "description": "Patient presented with symptoms of fatigue and mild chest discomfort.",
+  "diagnosis": "Hypertension, Stage 1",
+  "treatment": "Lifestyle modifications and medication",
+  "medications": [
+    { "name": "Lisinopril", "dosage": "10mg", "frequency": "once daily" }
+  ],
+  "labResults": {
+    "bloodPressure": "140/90",
+    "cholesterol": "220mg/dL"
+  },
+  "vitals": {
+    "bloodPressure": "140/90",
+    "heartRate": "75",
+    "temperature": "98.6°F"
+  },
+  "allergies": ["Penicillin", "Shellfish"],
+  "followUpInstructions": "Return in 3 months for follow-up",
+  "nextAppointmentDate": "2025-10-01T10:00:00Z",
+  "priority": "normal",
+  "status": "active",
+  "notes": "Patient responded well to treatment",
+  "attachments": [
+    { "name": "X-ray_chest.pdf", "url": "/files/xray123.pdf", "type": "imaging" }
+  ]
+}
+
+###
+POST http://localhost:8000/medical-records
+Content-Type: application/json
+
+{
+  "patientId": 2,
+  "doctorId": 3,
+  "appointmentId": 2,
+  "recordType": "diagnosis",
+  "title": "Follow-up Visit",
+  "description": "Follow-up after initial hypertension diagnosis.",
+  "diagnosis": "Stable Hypertension",
+  "treatment": "Continue medication, monitor BP",
+  "medications": [
+    { "name": "Amlodipine", "dosage": "5mg", "frequency": "once daily" }
+  ],
+  "labResults": { "bloodPressure": "130/85", "cholesterol": "210mg/dL" },
+  "vitals": { "bloodPressure": "130/85", "heartRate": "70", "temperature": "98.4°F" },
+  "allergies": [],
+  "followUpInstructions": "Check BP weekly at home",
+  "nextAppointmentDate": "2025-11-15T09:00:00Z",
+  "priority": "normal",
+  "status": "active",
+  "notes": "Improved since last visit",
+  "attachments": []
+}
+
+###
+POST http://localhost:8000/medical-records
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorId": 1,
+  "appointmentId": 1,
+  "recordType": "lab",
+  "title": "Blood Work Results",
+  "description": "Lab results after annual checkup.",
+  "diagnosis": "Mild Anemia",
+  "treatment": "Iron supplements",
+  "medications": [
+    { "name": "Ferrous sulfate", "dosage": "325mg", "frequency": "twice daily" }
+  ],
+  "labResults": {
+    "hemoglobin": "10.5 g/dL",
+    "hematocrit": "33%"
+  },
+  "vitals": {
+    "bloodPressure": "118/76",
+    "heartRate": "80",
+    "temperature": "98.2°F"
+  },
+  "allergies": ["Peanuts"],
+  "followUpInstructions": "Return in 6 weeks for re-test",
+  "nextAppointmentDate": "2025-08-20T11:30:00Z",
+  "priority": "normal",
+  "status": "active",
+  "notes": "Mild fatigue reported",
+  "attachments": []
+}
+
+###
+POST http://localhost:8000/medical-records
+Content-Type: application/json
+
+{
+  "patientId": 5,
+  "doctorId": 2,
+  "appointmentId": 3,
+  "recordType": "diagnosis",
+  "title": "Flu Symptoms",
+  "description": "Fever, cough, body aches",
+  "diagnosis": "Seasonal Influenza",
+  "treatment": "Rest, fluids, antiviral medication",
+  "medications": [
+    { "name": "Oseltamivir", "dosage": "75mg", "frequency": "twice daily" }
+  ],
+  "labResults": { "influenzaTest": "Positive" },
+  "vitals": {
+    "bloodPressure": "110/70",
+    "heartRate": "90",
+    "temperature": "101.3°F"
+  },
+  "allergies": [],
+  "followUpInstructions": "Return if symptoms worsen",
+  "nextAppointmentDate": "2025-07-10T15:00:00Z",
+  "priority": "urgent",
+  "status": "active",
+  "notes": "Prescribed antivirals immediately",
+  "attachments": []
+}
+
+###
+POST http://localhost:8000/medical-records
+Content-Type: application/json
+
+{
+  "patientId": 4,
+  "doctorId": 1,
+  "appointmentId": 5,
+  "recordType": "surgery",
+  "title": "Post-Surgery Follow-up",
+  "description": "Knee arthroscopy recovery progress",
+  "diagnosis": "Meniscus Tear Recovery",
+  "treatment": "Physiotherapy and rest",
+  "medications": [
+    { "name": "Ibuprofen", "dosage": "400mg", "frequency": "as needed" }
+  ],
+  "labResults": {},
+  "vitals": {
+    "bloodPressure": "122/78",
+    "heartRate": "72",
+    "temperature": "98.5°F"
+  },
+  "allergies": ["Latex"],
+  "followUpInstructions": "Begin physical therapy sessions",
+  "nextAppointmentDate": "2025-07-15T14:00:00Z",
+  "priority": "normal",
+  "status": "active",
+  "notes": "Healing well",
+  "attachments": []
+}

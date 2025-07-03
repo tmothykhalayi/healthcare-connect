@@ -6,8 +6,6 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { AtGuard, RolesGuard } from '../auth/guards';
 import { UserRole } from '../users/entities/user.entity';
-
-
 import { Role } from '../auth/enums/role.enum';
 
 @ApiTags('orders')

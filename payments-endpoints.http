@@ -106,3 +106,353 @@ GET {{baseUrl}}/payments/statistics
 
 ### Delete payment (use carefully)
 DELETE {{baseUrl}}/payments/1
+
+
+
+[
+  {
+    "userId": 3,
+    "amount": 1500.00,
+    "paymentMethod": "credit_card",
+    "status": "completed",
+    "relatedEntityType": "appointment",
+    "relatedEntityId": 1,
+    "transactionId": "txn_100001"
+  },
+  {
+    "userId": 3,
+    "amount": 800.00,
+    "paymentMethod": "cash",
+    "status": "completed",
+    "relatedEntityType": "appointment",
+    "relatedEntityId": 2,
+    "transactionId": "txn_100002"
+  },
+  {
+    "userId": 3,
+    "amount": 2000.00,
+    "paymentMethod": "debit_card",
+    "status": "pending",
+    "relatedEntityType": "lab_test",
+    "relatedEntityId": 3,
+    "transactionId": "txn_100003"
+  },
+  {
+    "userId": 3,
+    "amount": 600.00,
+    "paymentMethod": "mobile_money",
+    "status": "completed",
+    "relatedEntityType": "appointment",
+    "relatedEntityId": 4,
+    "transactionId": "txn_100004"
+  },
+  {
+    "userId": 3,
+    "amount": 1100.00,
+    "paymentMethod": "credit_card",
+    "status": "failed",
+    "relatedEntityType": "prescription",
+    "relatedEntityId": 5,
+    "transactionId": "txn_100005"
+  },
+  {
+    "userId": 3,
+    "amount": 950.00,
+    "paymentMethod": "paypal",
+    "status": "completed",
+    "relatedEntityType": "appointment",
+    "relatedEntityId": 6,
+    "transactionId": "txn_100006"
+  },
+  {
+    "userId": 3,
+    "amount": 400.00,
+    "paymentMethod": "credit_card",
+    "status": "refunded",
+    "relatedEntityType": "lab_test",
+    "relatedEntityId": 7,
+    "transactionId": "txn_100007"
+  },
+  {
+    "userId": 3,
+    "amount": 1230.00,
+    "paymentMethod": "mobile_money",
+    "status": "completed",
+    "relatedEntityType": "prescription",
+    "relatedEntityId": 9,
+    "transactionId": "txn_100009"
+  }
+  {
+    "userId": 3,
+    "amount": 1230.00,
+    "paymentMethod": "mobile_money",
+    "status": "completed",
+    "relatedEntityType": "prescription",
+    "relatedEntityId": 9,
+    "transactionId": "txn_100009"
+  },
+  {
+    "userId": 3,
+    "amount": 1800.00,
+    "paymentMethod": "credit_card",
+    "status": "pending",
+    "relatedEntityType": "appointment",
+    "relatedEntityId": 10,
+    "transactionId": "txn_100010"
+  }
+]
+
+
+
+### Appointment 1
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorId": 1,
+  "appointmentDate": "2025-07-05T10:00:00Z",
+  "appointmentTime": "10:00",
+  "duration": 30,
+  "reason": "Regular checkup",
+  "status": "scheduled",
+  "priority": "normal",
+  "parentAppointmentId": 1,
+  "notes": "Patient requested morning appointment",
+  "medicalNotes": "Initial consultation notes",
+  "diagnosis": "Routine examination",
+  "prescription": "No prescription at this time",
+  "vitals": {
+    "bloodPressure": "120/80",
+    "heartRate": "72",
+    "temperature": "98.6°F"
+  }
+}
+
+### Appointment 2
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 2,
+  "doctorId": 3,
+  "appointmentDate": "2025-07-06T14:30:00Z",
+  "appointmentTime": "14:30",
+  "duration": 45,
+  "reason": "Follow-up on blood test",
+  "status": "scheduled",
+  "priority": "high",
+  "parentAppointmentId": null,
+  "notes": "Patient feels fatigued",
+  "medicalNotes": null,
+  "diagnosis": null,
+  "prescription": null,
+  "vitals": {
+    "bloodPressure": "130/85",
+    "heartRate": "80",
+    "temperature": "98.7°F"
+  }
+}
+
+### Appointment 3
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 4,
+  "doctorId": 2,
+  "appointmentDate": "2025-07-07T09:00:00Z",
+  "appointmentTime": "09:00",
+  "duration": 60,
+  "reason": "Neurology consultation",
+  "status": "scheduled",
+  "priority": "normal",
+  "parentAppointmentId": null,
+  "notes": "Discuss recent headaches",
+  "medicalNotes": "MRI scheduled",
+  "diagnosis": null,
+  "prescription": null,
+  "vitals": {
+    "bloodPressure": "125/78",
+    "heartRate": "70",
+    "temperature": "98.4°F"
+  }
+}
+
+### Appointment 4
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 5,
+  "doctorId": 1,
+  "appointmentDate": "2025-07-08T11:15:00Z",
+  "appointmentTime": "11:15",
+  "duration": 30,
+  "reason": "Vaccination",
+  "status": "completed",
+  "priority": "normal",
+  "parentAppointmentId": null,
+  "notes": "First dose of vaccine",
+  "medicalNotes": "No adverse reaction",
+  "diagnosis": null,
+  "prescription": null,
+  "vitals": {
+    "bloodPressure": "118/76",
+    "heartRate": "68",
+    "temperature": "98.5°F"
+  }
+}
+
+### Appointment 5
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 3,
+  "doctorId": 4,
+  "appointmentDate": "2025-07-09T13:00:00Z",
+  "appointmentTime": "13:00",
+  "duration": 30,
+  "reason": "Dermatology check",
+  "status": "scheduled",
+  "priority": "normal",
+  "parentAppointmentId": null,
+  "notes": "Skin rash evaluation",
+  "medicalNotes": null,
+  "diagnosis": null,
+  "prescription": null,
+  "vitals": {
+    "bloodPressure": "122/80",
+    "heartRate": "75",
+    "temperature": "98.6°F"
+  }
+}
+
+### Appointment 6
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 6,
+  "doctorId": 2,
+  "appointmentDate": "2025-07-10T16:00:00Z",
+  "appointmentTime": "16:00",
+  "duration": 45,
+  "reason": "Physical therapy session",
+  "status": "scheduled",
+  "priority": "normal",
+  "parentAppointmentId": null,
+  "notes": "Post surgery rehabilitation",
+  "medicalNotes": null,
+  "diagnosis": "Knee injury",
+  "prescription": "Physical therapy exercises",
+  "vitals": {
+    "bloodPressure": "115/70",
+    "heartRate": "65",
+    "temperature": "98.3°F"
+  }
+}
+
+### Appointment 7
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 7,
+  "doctorId": 5,
+  "appointmentDate": "2025-07-11T08:30:00Z",
+  "appointmentTime": "08:30",
+  "duration": 20,
+  "reason": "Blood pressure check",
+  "status": "scheduled",
+  "priority": "normal",
+  "parentAppointmentId": null,
+  "notes": "Routine monitoring",
+  "medicalNotes": null,
+  "diagnosis": null,
+  "prescription": null,
+  "vitals": {
+    "bloodPressure": "140/90",
+    "heartRate": "78",
+    "temperature": "98.6°F"
+  }
+}
+
+### Appointment 8
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 8,
+  "doctorId": 3,
+  "appointmentDate": "2025-07-12T15:45:00Z",
+  "appointmentTime": "15:45",
+  "duration": 30,
+  "reason": "Eye examination",
+  "status": "scheduled",
+  "priority": "normal",
+  "parentAppointmentId": null,
+  "notes": "Check for vision changes",
+  "medicalNotes": null,
+  "diagnosis": null,
+  "prescription": null,
+  "vitals": {
+    "bloodPressure": "120/75",
+    "heartRate": "70",
+    "temperature": "98.5°F"
+  }
+}
+
+### Appointment 9
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 9,
+  "doctorId": 1,
+  "appointmentDate": "2025-07-13T10:30:00Z",
+  "appointmentTime": "10:30",
+  "duration": 30,
+  "reason": "Diabetes follow-up",
+  "status": "scheduled",
+  "priority": "high",
+  "parentAppointmentId": null,
+  "notes": "Review blood sugar logs",
+  "medicalNotes": null,
+  "diagnosis": "Type 2 diabetes",
+  "prescription": "Adjust medication",
+  "vitals": {
+    "bloodPressure": "130/85",
+    "heartRate": "74",
+    "temperature": "98.7°F"
+  }
+}
+
+### Appointment 10
+POST http://localhost:8000/appointments
+Content-Type: application/json
+
+{
+  "patientId": 10,
+  "doctorId": 4,
+  "appointmentDate": "2025-07-14T12:00:00Z",
+  "appointmentTime": "12:00",
+  "duration": 60,
+  "reason": "Cardiology consultation",
+  "status": "scheduled",
+  "priority": "high",
+  "parentAppointmentId": null,
+  "notes": "Chest pain evaluation",
+  "medicalNotes": null,
+  "diagnosis": null,
+  "prescription": null,
+  "vitals": {
+    "bloodPressure": "135/88",
+    "heartRate": "82",
+    "temperature": "98.6°F"
+  }
+}
+
+
+

@@ -20,6 +20,7 @@ import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { LoggerMiddleware } from './logger.middleware';
 import{LogsModule} from './logs/logs.module';
 import { APP_GUARD } from '@nestjs/core';
+import { TelemedicineModule } from './telemedicine/telemedicine.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { APP_GUARD } from '@nestjs/core';
       MedicinesModule, OrdersModule, 
      PaymentsModule, DatabaseModule, 
      LogsModule,
-     PharmacyModule],
+     PharmacyModule,
+     TelemedicineModule],
   controllers: [AppController],
   providers: [
     AppService,

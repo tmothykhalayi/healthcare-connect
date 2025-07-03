@@ -1,15 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpStatus, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards, Query, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import { MedicalService } from './medical.service';
 import { CreateMedicalDto } from './dto/create-medical.dto';
 import { UpdateMedicalDto } from './dto/update-medical.dto';
+import { UserRole, Users } from '../../users/entities/user.entity';
+import { AtGuard, RolesGuard } from '../../auth/guards';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { Role } from '../../auth/enums/role.enum';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger'
 
 @ApiTags('medical-records')
+@ApiBearerAuth()
+@UseGuards(AtGuard, RolesGuard)
 @Controller('medical-records')
 export class MedicalController {
   constructor(private readonly medicalService: MedicalService) {}
 
   @Post()
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Create a new medical record' })
   @ApiResponse({ status: 201, description: 'Medical record created successfully' })
   async create(@Body() createMedicalDto: CreateMedicalDto) {
@@ -26,6 +33,7 @@ export class MedicalController {
   }
 
   @Get()
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all medical records' })
   @ApiResponse({ status: 200, description: 'Medical records retrieved successfully' })
   async findAll() {
@@ -38,6 +46,7 @@ export class MedicalController {
   }
 
   @Get('stats')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get medical records statistics' })
   async getStats() {
     const stats = await this.medicalService.getRecordStats();
@@ -49,6 +58,7 @@ export class MedicalController {
   }
 
   @Get('urgent')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Get urgent and critical medical records' })
   async getUrgentRecords() {
     const records = await this.medicalService.findUrgentRecords();
@@ -60,6 +70,7 @@ export class MedicalController {
   }
 
   @Get('recent')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get recent medical records' })
   @ApiQuery({ name: 'days', required: false, description: 'Number of days (default: 7)' })
   async getRecentRecords(@Query('days') days?: string) {
@@ -73,6 +84,7 @@ export class MedicalController {
   }
 
   @Get('search')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Search medical records' })
   @ApiQuery({ name: 'q', description: 'Search query' })
   async search(@Query('q') query: string) {
@@ -85,6 +97,7 @@ export class MedicalController {
   }
 
   @Get('patient/:patientId')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Get medical records by patient ID' })
   @ApiParam({ name: 'patientId', description: 'Patient ID' })
   async findByPatientId(@Param('patientId', ParseIntPipe) patientId: number) {
@@ -96,19 +109,8 @@ export class MedicalController {
     };
   }
 
-  @Get('doctor/:doctorId')
-  @ApiOperation({ summary: 'Get medical records by doctor ID' })
-  @ApiParam({ name: 'doctorId', description: 'Doctor ID' })
-  async findByDoctorId(@Param('doctorId', ParseIntPipe) doctorId: number) {
-    const records = await this.medicalService.findByDoctorId(doctorId);
-    return {
-      statusCode: HttpStatus.OK,
-      message: `Medical records by doctor ${doctorId} retrieved successfully`,
-      data: records
-    };
-  }
-
   @Get('appointment/:appointmentId')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get medical records by appointment ID' })
   @ApiParam({ name: 'appointmentId', description: 'Appointment ID' })
   async findByAppointmentId(@Param('appointmentId', ParseIntPipe) appointmentId: number) {
@@ -120,59 +122,10 @@ export class MedicalController {
     };
   }
 
-  @Get('type/:recordType')
-  @ApiOperation({ summary: 'Get medical records by record type' })
-  @ApiParam({ name: 'recordType', description: 'Record type' })
-  async findByRecordType(@Param('recordType') recordType: string) {
-    const records = await this.medicalService.findByRecordType(recordType);
-    return {
-      statusCode: HttpStatus.OK,
-      message: `Medical records of type '${recordType}' retrieved successfully`,
-      data: records
-    };
-  }
-
-  @Get('status/:status')
-  @ApiOperation({ summary: 'Get medical records by status' })
-  @ApiParam({ name: 'status', description: 'Record status' })
-  async findByStatus(@Param('status') status: string) {
-    const records = await this.medicalService.findByStatus(status);
-    return {
-      statusCode: HttpStatus.OK,
-      message: `Medical records with status '${status}' retrieved successfully`,
-      data: records
-    };
-  }
-
-  @Get('priority/:priority')
-  @ApiOperation({ summary: 'Get medical records by priority' })
-  @ApiParam({ name: 'priority', description: 'Record priority' })
-  async findByPriority(@Param('priority') priority: string) {
-    const records = await this.medicalService.findByPriority(priority);
-    return {
-      statusCode: HttpStatus.OK,
-      message: `Medical records with priority '${priority}' retrieved successfully`,
-      data: records
-    };
-  }
-
-  @Get('date-range')
-  @ApiOperation({ summary: 'Get medical records by date range' })
-  @ApiQuery({ name: 'startDate', description: 'Start date (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'endDate', description: 'End date (YYYY-MM-DD)' })
-  async findByDateRange(
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string
-  ) {
-    const records = await this.medicalService.findByDateRange(startDate, endDate);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Medical records for date range retrieved successfully',
-      data: records
-    };
-  }
+  
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Get medical record by ID' })
   @ApiParam({ name: 'id', description: 'Medical record ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -185,6 +138,7 @@ export class MedicalController {
   }
 
   @Patch(':id/archive')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Archive medical record' })
   @ApiParam({ name: 'id', description: 'Medical record ID' })
   async archiveRecord(@Param('id', ParseIntPipe) id: number) {
@@ -195,17 +149,8 @@ export class MedicalController {
     };
   }
 
-  @Patch('bulk-status')
-  @ApiOperation({ summary: 'Bulk update medical record status' })
-  async bulkUpdateStatus(@Body() body: { recordIds: number[], status: string }) {
-    const result = await this.medicalService.bulkUpdateStatus(body.recordIds, body.status);
-    return {
-      statusCode: HttpStatus.OK,
-      ...result
-    };
-  }
-
   @Patch(':id')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Update medical record' })
   @ApiParam({ name: 'id', description: 'Medical record ID' })
   async update(@Param('id', ParseIntPipe) id: number, @Body() updateMedicalDto: UpdateMedicalDto) {
@@ -217,6 +162,7 @@ export class MedicalController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Delete medical record' })
   @ApiParam({ name: 'id', description: 'Medical record ID' })
   async remove(@Param('id', ParseIntPipe) id: number) {

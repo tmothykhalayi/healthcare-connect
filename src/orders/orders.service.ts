@@ -50,29 +50,38 @@ export class OrdersService {
         }
     }
 
-    // Find all orders with patient information
-    async findAll(orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC'): Promise<Order[]> {
-        try {
-            return await this.ordersRepository.find({
-                relations: ['patient', 'patient.user'],
-                order: { [orderBy]: order },
-            });
-        } catch (error) {
-            throw new InternalServerErrorException('Failed to retrieve orders');
-        }
+    //find all orders
+    async findAll(orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC'): Promise<Partial<Order>[]> {
+    try {
+        const orders = await this.ordersRepository.find({
+            relations: ['patient', 'patient.user'],
+            order: { [orderBy]: order },
+        });
+
+        // Remove patient info before returning
+        return orders.map(({ patient, ...order }) => order);
+    } catch (error) {
+        throw new InternalServerErrorException('Failed to retrieve orders');
     }
+}
+
 
     // Find one order by ID with patient information
-    async findOne(id: string): Promise<Order> {
-        const order = await this.ordersRepository.findOne({
-            where: { id: parseInt(id) },
-            relations: ['patient', 'patient.user'],
-        });
-        if (!order) {
-            throw new NotFoundException(`Order with ID ${id} not found`);
-        }
-        return order;
+   async findOne(id: string): Promise<Partial<Order>> {
+    const order = await this.ordersRepository.findOne({
+        where: { id: parseInt(id) },
+        relations: ['patient', 'patient.user'],
+    });
+
+    if (!order) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
     }
+
+    // Exclude patient from the returned object
+    const { patient, ...orderWithoutPatient } = order;
+    return orderWithoutPatient;
+}
+
 
     // Find orders by status with patient information
     async findByStatus(status: string, orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC'): Promise<Order[]> {
@@ -88,17 +97,25 @@ export class OrdersService {
     }       
 
     // Find orders by patient ID with patient information
-    async findByPatientId(patientId: string, orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC'): Promise<Order[]> {
-        try {
-            return await this.ordersRepository.find({
-                where: { patientId: parseInt(patientId) },
-                relations: ['patient', 'patient.user'],
-                order: { [orderBy]: order },
-            });
-        } catch (error) {
-            throw new InternalServerErrorException('Failed to retrieve orders by patient ID');
-        }
-    }   
+    async findByPatientId(
+  patientId: string,
+  orderBy: string = 'orderDate',
+  order: 'ASC' | 'DESC' = 'ASC'
+): Promise<Partial<Order>[]> {
+  try {
+    const orders = await this.ordersRepository.find({
+      where: { patientId: parseInt(patientId) },
+      relations: ['patient', 'patient.user'],
+      order: { [orderBy]: order },
+    });
+
+    // Strip out patient info from each order
+    return orders.map(({ patient, ...orderWithoutPatient }) => orderWithoutPatient);
+  } catch (error) {
+    throw new InternalServerErrorException('Failed to retrieve orders by patient ID');
+  }
+}
+
 
     // Update an order by ID
     async update(id: string, updateOrderDto: UpdateOrderDto): Promise<{ message: string }> {

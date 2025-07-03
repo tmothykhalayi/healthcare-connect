@@ -77,18 +77,14 @@ export class UsersService {
     }
   }
 
-  async findAll(role?: UserRole): Promise<Users[]> {
-    const queryOptions: any = {
-      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
-      order: { createdAt: 'DESC' },
-    };
-    
-    if (role) {
-      queryOptions.where = { role };
-    }
-    
-    return await this.usersRepository.find(queryOptions);
-  }
+  // Find all users with optional role filter
+  async findAll(): Promise<Users[]> {
+  return await this.usersRepository.find({
+    relations: ['patient', 'doctor', 'admin', 'pharmacy'],
+    order: { createdAt: 'DESC' },
+  });
+}
+  // Find user by ID with relations
 
   async findOne(id: number): Promise<Users> {
     const user = await this.usersRepository.findOne({
@@ -103,6 +99,7 @@ export class UsersService {
     return user;
   }
 
+  // Find user by email
   async findByEmail(email: string): Promise<Users> {
     const user = await this.usersRepository.findOne({
       where: { email },
@@ -247,53 +244,6 @@ export class UsersService {
       .getMany();
   }
 
-  async getActiveUsers(): Promise<Users[]> {
-    return await this.usersRepository.find({
-      where: { isActive: true },
-      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
-      order: { lastLogin: 'DESC' },
-    });
-  }
-
-  async getVerifiedUsers(): Promise<Users[]> {
-    return await this.usersRepository.find({
-      where: { isEmailVerified: true },
-      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
-      order: { createdAt: 'DESC' },
-    });
-  }
-
-  async updateLastLogin(id: number): Promise<{ message: string }> {
-    const user = await this.usersRepository.findOne({ where: { id } });
-    
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    user.lastLogin = new Date();
-
-    try {
-      await this.usersRepository.save(user);
-      return { message: `User last login updated successfully` };
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to update last login');
-    }
-  }
-
-  async bulkUpdateStatus(userIds: number[], isActive: boolean): Promise<{ message: string }> {
-    try {
-      await this.usersRepository
-        .createQueryBuilder()
-        .update(Users)
-        .set({ isActive })
-        .where('id IN (:...userIds)', { userIds })
-        .execute();
-
-      return { message: `${userIds.length} users updated successfully` };
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to bulk update users');
-    }
-  }
 
   async createUserWithRole(createUserDto: CreateUserDto): Promise<Users> {
     // Create the base user

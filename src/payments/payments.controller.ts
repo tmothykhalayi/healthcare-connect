@@ -1,15 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, HttpException,  UseGuards ,HttpStatus } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { UserRole, Users } from '../users/entities/user.entity';
+import { AtGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger'
 
+@ApiTags('payments')
 @Controller('payments')
+@UseGuards(AtGuard, RolesGuard)
+@ApiBearerAuth()
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
   // Create a new payment
 
   @Post()
-
+  @Roles(Role.ADMIN, Role.PHARMACY)
+  @ApiOperation({ summary: 'Create a new payment' })
+  @ApiResponse({ status: 201, description: 'Payment created successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   async create(@Body() createPaymentDto: CreatePaymentDto) {
     try {
       const payment = await this.paymentsService.create(createPaymentDto);
@@ -25,6 +36,10 @@ export class PaymentsController {
 
   // Get all payments
   @Get()
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get all payments' })
+  @ApiResponse({ status: 200, description: 'Payments retrieved successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   async findAll() {
     try {
       const payments = await this.paymentsService.findAll();
@@ -39,6 +54,12 @@ export class PaymentsController {
   }
   // Get a payment by ID
   @Get(':id')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get a payment by ID' })
+  @ApiParam({ name: 'id', description: 'Payment ID' })
+  @ApiResponse({ status: 200, description: 'Payment retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Payment not found' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   async findOne(@Param('id') id: string) {
     try {
       const payment = await this.paymentsService.findOne(Number(id));
@@ -57,6 +78,12 @@ export class PaymentsController {
 
   // Update a payment by ID
   @Put(':id')
+  @Roles(Role.ADMIN, Role.PHARMACY)
+  @ApiOperation({ summary: 'Update a payment by ID' })
+  @ApiParam({ name: 'id', description: 'Payment ID' })
+  @ApiResponse({ status: 200, description: 'Payment updated successfully' })
+  @ApiResponse({ status: 404, description: 'Payment not found' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   async update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
     try {
       const payment = await this.paymentsService.update(Number(id), updatePaymentDto);
@@ -75,6 +102,12 @@ export class PaymentsController {
 
   // Delete a payment by ID
   @Delete(':id')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete a payment by ID' })
+  @ApiParam({ name: 'id', description: 'Payment ID' })
+  @ApiResponse({ status: 200, description: 'Payment deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Payment not found' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   async remove(@Param('id') id: string) {
     try {
       const payment = await this.paymentsService.remove(Number(id));
@@ -90,18 +123,5 @@ export class PaymentsController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-  // Get payments by user ID
-  @Get('user/:userId')  
-  async findByUserId(@Param('userId') userId: string) {
-    try {
-      const payments = await this.paymentsService.findByUserId(Number(userId));
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Payments retrieved successfully',
-        data: payments
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
+
 }

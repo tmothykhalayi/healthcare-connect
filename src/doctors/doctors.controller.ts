@@ -18,7 +18,7 @@ export class DoctorsController {
 
   //create a new doctor 
   @Post()
-  @Roles(Role.ADMIN)
+   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new doctor' })
   @ApiResponse({ status: 201, description: 'Doctor created successfully' })
   @ApiResponse({ status: 409, description: 'Doctor already exists' })
@@ -52,7 +52,7 @@ export class DoctorsController {
 
   //find one doctor
   @Get(':id')
-  @Roles(Role.ADMIN)
+ @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get doctor by ID' })
   @ApiParam({ name: 'id', description: 'Doctor ID' })
   @ApiResponse({ status: 200, description: 'Doctor found' })
@@ -68,7 +68,7 @@ export class DoctorsController {
 
   //update a doctor 
   @Patch(':id')
-  @Roles(Role.ADMIN , Role.DOCTOR)
+  //@Roles(Role.ADMIN , Role.DOCTOR)
   @ApiOperation({ summary: 'Update doctor' })
   @ApiParam({ name: 'id', description: 'Doctor ID' })
   @ApiResponse({ status: 200, description: 'Doctor updated successfully' })
@@ -98,4 +98,4 @@ export class DoctorsController {
       ...result
     };
   }
-}
+ }

@@ -160,18 +160,7 @@ export class AppointmentsService {
       order: { appointmentDate: 'ASC' },
     });
     return appointments;
-  }
 
-  // Get appointments by date range
-  async findByDateRange(startDate: string, endDate: string): Promise<Appointment[]> {
-    const appointments = await this.appointmentsRepository.find({
-      where: {
-        appointmentDate: Between(new Date(startDate), new Date(endDate))
-      },
-      relations: ['doctor', 'patient'],
-      order: { appointmentDate: 'ASC' },
-    });
-    return appointments;
   }
 
   // Get today's appointments
