@@ -12,7 +12,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CreateAuthDto } from './dto/login.dto';
 import { Users } from '../users/entities/user.entity';
-import{ } from 
+import { MailService } from '../mail/mail.service';
+import * as speakeasy from 'speakeasy';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,7 @@ export class AuthService {
     private readonly userRepository: Repository<Users>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   // ===== SIGN IN =====
@@ -32,6 +34,13 @@ export class AuthService {
 
     accessToken: string;
     refreshToken: string;
+    user: {
+      id: number;
+      email: string;
+      firstName: string;
+      lastName: string;
+      role: string;
+    };
   
   }> {
     try {
@@ -61,16 +70,29 @@ export class AuthService {
 
       await this.updateRefreshToken(user.id, refreshToken);
 
+      // Send login notification email
+      try {
+        await this.mailService.sendLoginNotification(user, new Date());
+      } catch (emailError) {
+        this.logger.warn(`Failed to send login notification email: ${emailError.message}`);
+      
+      }
+
       // Destructure password and hashedRefreshToken to remove sensitive data
       const { password, hashedRefreshToken, ...userWithoutSensitive } = user;
 
       this.logger.log(`User logged in successfully: ${user.email}`);
 
       return {
-        
         accessToken,
         refreshToken,
-        
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        },
       };
     } catch (error) {
       this.logger.error(`Sign in error: ${error.message}`);
@@ -195,75 +217,110 @@ export class AuthService {
     }
   }
 
-  async sendEmailResetOtp(body: { email: string }) {
-    const email = body.email;
-    const user = await this.usersService.findUserByEmail(email);
-    console.log('user in auth service for refresh is', user);
-    if (!user) {
-      throw new NotFoundException(
-        `User with email ${email} in sendEmailResetOtp not found`,
-      );
-    }
-    const id = user.id;
-    const { otp, secret } = this.generateOtp();
-
-    await this.usersService.update(id, {
-      otp,
-      secret,
+  // ===== PASSWORD RESET =====
+  private generateOtp(): { otp: string; secret: string } {
+    const secret = speakeasy.generateSecret({ length: 20 }).base32;
+    const otp = speakeasy.totp({
+      secret: secret,
+      encoding: 'base32',
+      step: 240, // 4 minutes
+      digits: 6,
     });
-    await this.mailService.sendPasswordResetEmail(user, otp, secret);
     return { otp, secret };
   }
-
-  async resetPassword(body: ResetPasswordDto) {
-    const email = body.email;
-    const otp = body.otp;
-
-    if (!email) {
-      throw new BadRequestException('Email is required');
-    }
-
-    const user = await this.usersService.findUserByEmail(email);
-    if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
-    }
-
-    if (!user.secret || !user.otp) {
-      throw new BadRequestException('Missing OTP or secret');
-    }
-
-    console.log('user in resetPassword', {
-      secret: user.secret,
-      otp: otp,
-    });
-
-    const id = user.id;
-
-    const isValidOtp = speakeasy.totp.verify({
-      secret: user.secret,
-      encoding: 'base32',
-      token: otp!,
-      step: 240,
-      digits: 6,
-      window: 0,
-    });
-
-    if (!isValidOtp) {
-      throw new BadRequestException('Invalid OTP');
-    }
-
-    // Add logic to actually reset the password
-    if (body.password) {
-      await this.usersService.update(id, {
-        password: body.password,
-        otp: '',
-        secret: '',
+// ===== SEND PASSWORD RESET EMAIL =====
+  async sendPasswordResetEmail(email: string): Promise<{ message: string }> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { email },
+        select: ['id', 'email', 'firstName', 'lastName', 'role'],
+      
       });
 
+      if (!user) {
+        this.logger.warn(`Password reset requested for non-existent email: ${email}`);
+        throw new NotFoundException('User not found');
+      }
+
+      const { otp, secret } = this.generateOtp();
+
+      // Store OTP and secret in user record
+      await this.userRepository.update(user.id, {
+        otp: otp,
+        secret: secret,
+        otpExpiry: new Date(Date.now() + 4 * 60 * 1000), // 4 minutes from now
+      });
+
+      // Send password reset email
+      await this.mailService.sendPasswordResetEmail(user, otp);
+
+      this.logger.log(`Password reset email sent to ${email}`);
+
+      return { message: 'Password reset email sent successfully' };
+    } catch (error) {
+      this.logger.error(`Failed to send password reset email: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async resetPassword(email: string, otp: string, newPassword: string): Promise<{ message: string }> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { email },
+        select: ['id', 'email', 'firstName', 'lastName', 'role', 'otp', 'secret', 'otpExpiry'],
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (!user.otp || !user.secret || !user.otpExpiry) {
+        throw new BadRequestException('No password reset request found');
+      }
+
+      // Check if OTP has expired
+      if (new Date() > user.otpExpiry) {
+        throw new BadRequestException('OTP has expired');
+      }
+
+      // Verify OTP
+      const isValidOtp = speakeasy.totp.verify({
+        secret: user.secret,
+        encoding: 'base32',
+        token: otp,
+        step: 240,
+        digits: 6,
+        window: 0,
+      });
+
+      if (!isValidOtp) {
+        throw new BadRequestException('Invalid OTP');
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password and clear OTP data
+      await this.userRepository.update(user.id, {
+        password: hashedPassword,
+        otp: undefined,
+        secret: undefined,
+        otpExpiry: undefined,
+      });
+
+      // Send password reset success email
+      try {
+        await this.mailService.sendPasswordResetSuccessEmail(user);
+      } catch (emailError) {
+        this.logger.warn(`Failed to send password reset success email: ${emailError.message}`);
+      }
+
+      this.logger.log(`Password reset successful for ${email}`);
+
       return { message: 'Password reset successful' };
-    } else {
-      throw new BadRequestException('New password is required');
+    } catch (error) {
+      this.logger.error(`Password reset failed: ${error.message}`);
+      throw error;
     }
   }
 }
-

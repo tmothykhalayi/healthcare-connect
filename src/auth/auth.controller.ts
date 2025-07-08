@@ -16,6 +16,8 @@ import {
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Public } from './decorators/public.decorator';
 import { GetCurrentUserId } from './decorators/get-current-user-id.decorator';
 import { AtGuard, RtGuard } from './guards';
@@ -97,7 +99,7 @@ export class AuthController {
     @Headers('authorization') authHeader: string
   ) {
     const userId = req.user?.sub;
-    const refreshToken = authHeader?.replace('Bearer', '').trim();
+    const refreshToken = authHeader?.replace('Bearer ', '').trim();
 
     if (!userId || !refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -106,5 +108,53 @@ export class AuthController {
     return this.authService.refreshTokens(userId, refreshToken);
   }
 
-  
+  // ===== FORGOT PASSWORD =====
+  @Public()
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Request password reset email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset email sent successfully',
+    schema: {
+      example: {
+        message: 'Password reset email sent successfully'
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.sendPasswordResetEmail(forgotPasswordDto.email);
+  }
+
+  // ===== RESET PASSWORD =====
+  @Public()
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password with OTP' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset successful',
+    schema: {
+      example: {
+        message: 'Password reset successful'
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid OTP or expired OTP',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(
+      resetPasswordDto.email,
+      resetPasswordDto.otp,
+      resetPasswordDto.newPassword,
+    );
+  }
 }

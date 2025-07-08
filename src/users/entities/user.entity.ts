@@ -68,6 +68,18 @@ export class Users {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @ApiProperty({ description: 'OTP for password reset', required: false })
+  @Column({ nullable: true })
+  otp: string;
+
+  @ApiProperty({ description: 'OTP secret for verification', required: false })
+  @Column({ nullable: true })
+  secret: string;
+
+  @ApiProperty({ description: 'OTP expiry time', required: false })
+  @Column({ nullable: true, type: 'timestamp' })
+  otpExpiry: Date;
+
    @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
 }

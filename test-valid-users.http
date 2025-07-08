@@ -1,0 +1,73 @@
+### Test Valid Users and Email Functionality
+
+# Base URL
+@baseUrl = http://localhost:8000
+
+### 1. First, let's create a test user if it doesn't exist
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "timoth@gmail.com",
+  "password": "123",
+  "firstName": "Timothy",
+  "lastName": "Khalayi",
+  "phoneNumber": "+254700000000",
+  "role": "admin",
+  "isEmailVerified": true
+}
+
+### 2. Create another test user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "esthy.nandwa@example.com",
+  "password": "123",
+  "firstName": "Esthy",
+  "lastName": "Nandwa",
+  "phoneNumber": "+254712345679",
+  "role": "doctor"
+}
+
+### 3. Test login with Timothy (this should trigger login notification email)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "timoth@gmail.com",
+  "password": "123"
+}
+
+### 4. Test forgot password with Timothy (valid user)
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "timoth@gmail.com"
+}
+
+### 5. Test login with Esthy (this should trigger login notification email)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "esthy.nandwa@example.com",
+  "password": "123"
+}
+
+### 6. Test forgot password with Esthy (valid user)
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "esthy.nandwa@example.com"
+}
+
+### 7. Test with invalid email (should return 404 - this is expected behavior)
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com"
+} 

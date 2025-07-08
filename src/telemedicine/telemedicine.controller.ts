@@ -63,7 +63,7 @@ export class TelemedicineController {
   }
 
   @Get(':id')
-  @Roles(Role.PATIENT, Role.DOCTOR, Role.ADMIN)
+  @Roles(Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Get telemedicine appointment by ID' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   @ApiResponse({ status: 200, description: 'Appointment found' })

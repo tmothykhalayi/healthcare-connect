@@ -10,12 +10,15 @@ import { AtStrategy, RfStrategy } from './strategies/index';
 import { ConfigService, ConfigModule } from '@nestjs/config';
 import { RolesGuard } from './guards';
 import { UsersModule } from '../users/users.module';
+import { MailModule } from '../mail/mail.module';
 
 @Global()
 @Module({
   imports: [
     DatabaseModule,
-    UsersModule, // Add this import
+    TypeOrmModule.forFeature([Users]),
+    UsersModule, 
+    MailModule,
     PassportModule.register({ defaultStrategy: 'jwt-at' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -33,7 +36,7 @@ import { UsersModule } from '../users/users.module';
     AtStrategy,
     RfStrategy,
     ConfigService,
-    RolesGuard, // Add RolesGuard to providers
+    RolesGuard, 
   ],
   controllers: [AuthController],
   exports: [AuthService, JwtModule],
