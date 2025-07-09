@@ -14,6 +14,7 @@ import { Users } from '../../users/entities/user.entity';
 import { Medicine } from '../../medicines/entities/medicine.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Payment } from '../../payments/entities/payment.entity';
+import { Pharmacist } from '../../pharmacist/entities/pharmacist.entity';
 
 @Entity('pharmacies')
 export class Pharmacy {
@@ -102,6 +103,17 @@ export class Pharmacy {
 
   @OneToMany(() => Payment, (payment) => payment.pharmacy)
   payments: Payment[];
+
+  
+  @Column()
+  name: string;
+
+  // One Pharmacy has many Pharmacists
+  @OneToMany(() => Pharmacist, (pharmacist) => pharmacist.pharmacy)
+  pharmacists: Pharmacist[];
+
+ 
+
 }
 
 

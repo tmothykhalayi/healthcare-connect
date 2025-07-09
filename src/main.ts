@@ -86,7 +86,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter, logsService));
 
   const configService = app.get(ConfigService);
-  const PORT = configService.get<number>('PORT') || 3000;
+  const PORT = configService.get<number>('PORT') || 8000;
 
   // Swagger documentation setup
   const config = new DocumentBuilder()

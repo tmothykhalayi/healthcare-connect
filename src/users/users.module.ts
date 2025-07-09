@@ -7,6 +7,7 @@ import { AdminModule } from '../admin/admin.module';
 import { DoctorsModule } from '../doctors/doctors.module';
 import { PatientsModule } from '../patients/patients.module';
 import { PharmacyModule } from '../pharmacy/pharmacy.module';
+import { PharmacistModule } from '../pharmacist/pharmacist.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PharmacyModule } from '../pharmacy/pharmacy.module';
     DoctorsModule,
     PatientsModule,
     PharmacyModule,
+    PharmacistModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

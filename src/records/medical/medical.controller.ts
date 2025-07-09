@@ -14,10 +14,10 @@ import {
 import { MedicalService } from './medical.service';
 import { CreateMedicalDto } from './dto/create-medical.dto';
 import { UpdateMedicalDto } from './dto/update-medical.dto';
-import { UserRole, Users } from '../../users/entities/user.entity';
-import { AtGuard, RolesGuard } from '../../auth/guards';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { Role } from '../../auth/enums/role.enum';
+//import { UserRole, Users } from '../../users/entities/user.entity';
+//import { AtGuard, RolesGuard } from '../../auth/guards';
+//import { Roles } from '../../auth/decorators/roles.decorator';
+//import { Role } from '../../auth/enums/role.enum';
 import {
   ApiTags,
   ApiOperation,
@@ -29,13 +29,13 @@ import {
 
 @ApiTags('medical-records')
 @ApiBearerAuth()
-@UseGuards(AtGuard, RolesGuard)
+//@UseGuards(AtGuard, RolesGuard)
 @Controller('medical-records')
 export class MedicalController {
   constructor(private readonly medicalService: MedicalService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.DOCTOR)
+ // @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Create a new medical record' })
   @ApiResponse({
     status: 201,
@@ -55,7 +55,7 @@ export class MedicalController {
   }
 
   @Get()
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all medical records' })
   @ApiResponse({
     status: 200,
@@ -71,7 +71,7 @@ export class MedicalController {
   }
 
   @Get('stats')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get medical records statistics' })
   async getStats() {
     const stats = await this.medicalService.getRecordStats();
@@ -83,7 +83,7 @@ export class MedicalController {
   }
 
   @Get('urgent')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Get urgent and critical medical records' })
   async getUrgentRecords() {
     const records = await this.medicalService.findUrgentRecords();
@@ -95,7 +95,7 @@ export class MedicalController {
   }
 
   @Get('recent')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get recent medical records' })
   @ApiQuery({
     name: 'days',
@@ -113,7 +113,7 @@ export class MedicalController {
   }
 
   @Get('search')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Search medical records' })
   @ApiQuery({ name: 'q', description: 'Search query' })
   async search(@Query('q') query: string) {
@@ -126,7 +126,7 @@ export class MedicalController {
   }
 
   @Get('patient/:patientId')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Get medical records by patient ID' })
   @ApiParam({ name: 'patientId', description: 'Patient ID' })
   async findByPatientId(@Param('patientId', ParseIntPipe) patientId: number) {
@@ -139,7 +139,7 @@ export class MedicalController {
   }
 
   @Get('appointment/:appointmentId')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get medical records by appointment ID' })
   @ApiParam({ name: 'appointmentId', description: 'Appointment ID' })
   async findByAppointmentId(
@@ -155,7 +155,7 @@ export class MedicalController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Get medical record by ID' })
   @ApiParam({ name: 'id', description: 'Medical record ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -168,7 +168,7 @@ export class MedicalController {
   }
 
   @Patch(':id/archive')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Archive medical record' })
   @ApiParam({ name: 'id', description: 'Medical record ID' })
   async archiveRecord(@Param('id', ParseIntPipe) id: number) {
@@ -180,7 +180,7 @@ export class MedicalController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Update medical record' })
   @ApiParam({ name: 'id', description: 'Medical record ID' })
   async update(
@@ -195,7 +195,7 @@ export class MedicalController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Delete medical record' })
   @ApiParam({ name: 'id', description: 'Medical record ID' })
   async remove(@Param('id', ParseIntPipe) id: number) {

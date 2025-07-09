@@ -34,7 +34,7 @@ export class PharmacyService {
     if (user.role === UserRole.ADMIN) {
       role = UserRole.ADMIN;
     } else {
-      role = UserRole.PHARMACY;
+      role = UserRole.PHARMACIST;
     }
 
     try {
@@ -72,7 +72,8 @@ export class PharmacyService {
       // Create pharmacy with NO NULL values
       const pharmacyData = {
         userId: user.id,
-        pharmacyName: `${user.firstName} ${user.lastName} Pharmacy`,
+        name: `${user.firstName} ${user.lastName} Pharmacy`, // Required field
+        pharmacyName: `${user.firstName} ${user.lastName} Pharmacy`, // Also required
         licenseNumber: `PTEMP_${user.id}_${Date.now().toString().slice(-6)}`,
         address: 'Pending update',
         phoneNumber: user.phoneNumber || '(Not set)',
@@ -80,6 +81,10 @@ export class PharmacyService {
         openingHours: '9:00 AM - 6:00 PM',
         services: ['Prescription filling', 'Over-the-counter medication'],
         status: 'pending_verification',
+        deliveryAvailable: false,
+        onlineOrderingAvailable: false,
+        insurancePlansAccepted: [],
+        notes: '',
       };
 
       const newPharmacy = this.pharmacyRepository.create(pharmacyData);

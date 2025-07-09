@@ -11,14 +11,13 @@ import {
 } from 'typeorm';
 
 import { TelemedicineAppointment } from '../../telemedicine/entities/telemedicine.entity';
-
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
-import {} from '../../telemedicine/entities/telemedicine.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
 import { Medicine } from '../../medicines/entities/medicine.entity';
 import { Order } from '../../orders/entities/order.entity';
+
 export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
@@ -36,20 +35,20 @@ export class Patient {
   userId: number;
 
   @ApiProperty({ description: 'User associated with this patient' })
-  @OneToOne(() => Users, { onDelete: 'CASCADE' })
+  @OneToOne(() => Users, user => user.patient, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: Users;
 
   @ApiProperty({ description: 'Patient gender', enum: Gender })
-  @Column({ type: 'enum', enum: Gender, nullable: true }) // Made nullable
+  @Column({ type: 'enum', enum: Gender, nullable: true })
   gender: Gender;
 
   @ApiProperty({ description: 'Patient date of birth' })
-  @Column({ type: 'date', nullable: true }) // Made nullable
+  @Column({ type: 'date', nullable: true })
   dateOfBirth: Date;
 
   @ApiProperty({ description: 'Patient phone number' })
-  @Column({ nullable: true }) // Made nullable
+  @Column({ nullable: true })
   phoneNumber: string;
 
   @ApiProperty({ description: 'Patient address' })
@@ -111,15 +110,11 @@ export class Patient {
   @OneToMany('Medical', 'patient')
   medicalRecords: any[];
 
-
-
   @Column()
   firstName: string;
 
   @Column()
   lastName: string;
-
-
 
   @OneToMany(() => Order, (order) => order.patient)
   orders: Order[];

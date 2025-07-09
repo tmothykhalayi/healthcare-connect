@@ -15,6 +15,8 @@ import { AdminService } from '../admin/admin.service';
 import { DoctorsService } from '../doctors/doctors.service';
 import { PatientsService } from '../patients/patients.service';
 import { PharmacyService } from '../pharmacy/pharmacy.service';
+import { PharmacistService } from '../pharmacist/pharmacist.service';
+import { Pharmacist } from '../pharmacist/entities/pharmacist.entity';
 
 @Injectable()
 export class UsersService {
@@ -25,6 +27,7 @@ export class UsersService {
     private doctorsService: DoctorsService,
     private patientsService: PatientsService,
     private pharmacyService: PharmacyService,
+    private pharmacistService: PharmacistService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<Users> {
@@ -77,7 +80,11 @@ export class UsersService {
         );
       } catch (error) {
         console.error(`Error creating ${savedUser.role} profile:`, error);
-        // Don't fail the whole operation if role assignment fails
+        // If role assignment fails, delete the user and re-throw the error
+        await this.usersRepository.remove(savedUser);
+        throw new InternalServerErrorException(
+          `Failed to create ${savedUser.role} profile: ${error.message}`,
+        );
       }
 
       return savedUser;
@@ -86,7 +93,8 @@ export class UsersService {
 
       if (
         error instanceof ConflictException ||
-        error instanceof BadRequestException
+        error instanceof BadRequestException ||
+        error instanceof InternalServerErrorException
       ) {
         throw error;
       }
@@ -161,7 +169,7 @@ export class UsersService {
   }
 
   async getPharmacies(): Promise<Users[]> {
-    return await this.findByRole(UserRole.PHARMACY);
+    return await this.findByRole(UserRole.PHARMACIST);
   }
 
   async getUserStats(): Promise<any> {
@@ -183,7 +191,7 @@ export class UsersService {
       where: { role: UserRole.ADMIN },
     });
     const pharmacies = await this.usersRepository.count({
-      where: { role: UserRole.PHARMACY },
+      where: { role: UserRole.PHARMACIST },
     });
 
     return {
@@ -338,9 +346,12 @@ export class UsersService {
           await this.patientsService.createFromUser(user);
           break;
 
-        case UserRole.PHARMACY:
-          console.log(`Creating pharmacy profile for user ${user.id}`);
-          await this.pharmacyService.createFromUser(user);
+        case UserRole.PHARMACIST:
+          console.log(`Creating pharmacy and pharmacist profiles for user ${user.id}`);
+          // First create the pharmacy
+          const pharmacy = await this.pharmacyService.createFromUser(user);
+          // Then create the pharmacist and link to the pharmacy
+          await this.pharmacistService.createFromUser(user, pharmacy);
           break;
 
         default:

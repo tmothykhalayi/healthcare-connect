@@ -146,6 +146,8 @@ export class DoctorsService {
       // Create doctor with NO NULL values
       const doctorData = {
         userId: user.id,
+        firstName: user.firstName, // Add required firstName
+        lastName: user.lastName,   // Add required lastName
         specialization: 'General Practice',
         licenseNumber: `TEMP_${user.id}_${Date.now().toString().slice(-6)}`,
         yearsOfExperience: 0,

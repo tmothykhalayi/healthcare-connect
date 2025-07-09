@@ -6,21 +6,20 @@ import {
   UpdateDateColumn,
   OneToOne,
   OneToMany,
-  JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Payment } from '../../payments/entities/payment.entity';
-import { Pharmacy } from '../../pharmacy/entities/pharmacy.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Admin } from '../../admin/entities/admin.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
+import { Pharmacist } from '../../pharmacist/entities/pharmacist.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
   DOCTOR = 'doctor',
   PATIENT = 'patient',
-  PHARMACY = 'pharmacy',
+  PHARMACIST = 'pharmacist',
 }
 
 @Entity('users')
@@ -95,23 +94,23 @@ export class Users {
 
   // Relationships
 
-  // User one-to-one with Patient
+  // OneToOne with Patient (no FK here)
   @OneToOne(() => Patient, (patient) => patient.user)
   patient: Patient;
 
-  // User one-to-one with Doctor
+  // OneToOne with Doctor
   @OneToOne(() => Doctor, (doctor) => doctor.user)
   doctor: Doctor;
 
-  // User one-to-one with Pharmacy
-  @OneToOne(() => Pharmacy, (pharmacy) => pharmacy.user)
-  pharmacy: Pharmacy;
+  // OneToOne with Pharmacist
+  @OneToOne(() => Pharmacist, (pharmacist) => pharmacist.user)
+  pharmacist: Pharmacist;
 
-  // User one-to-one with Admin
+  // OneToOne with Admin
   @OneToOne(() => Admin, (admin) => admin.user)
   admin: Admin;
 
-  // User one-to-many with Payment
+  // OneToMany with Payment
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
 }
