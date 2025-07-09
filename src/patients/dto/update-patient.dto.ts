@@ -1,7 +1,14 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreatePatientDto } from './create-patient.dto';
-import { IsInt, IsString, IsOptional, IsDateString, Matches, IsPositive } from 'class-validator';
+import {
+  IsInt,
+  IsString,
+  IsOptional,
+  IsDateString,
+  Matches,
+  IsPositive,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdatePatientDto extends PartialType(CreatePatientDto) {
@@ -13,7 +20,7 @@ export class UpdatePatientDto extends PartialType(CreatePatientDto) {
   @ApiPropertyOptional({ example: '+15551234567' })
   @IsOptional()
   @Matches(/^\+?[1-9]\d{1,14}$/, {
-    message: 'phoneNumber must be a valid international phone number'
+    message: 'phoneNumber must be a valid international phone number',
   })
   phoneNumber?: string;
 
@@ -39,7 +46,10 @@ export class UpdatePatientDto extends PartialType(CreatePatientDto) {
   @IsString()
   medicalHistory?: string;
 
-  @ApiPropertyOptional({ example: '2025-07-01T10:00:00Z', description: 'Last visit timestamp' })
+  @ApiPropertyOptional({
+    example: '2025-07-01T10:00:00Z',
+    description: 'Last visit timestamp',
+  })
   @IsOptional()
   @IsDateString()
   lastVisit?: string;

@@ -6,7 +6,14 @@ import { IsString, IsOptional, IsDateString, IsIn } from 'class-validator';
 export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {
   @ApiPropertyOptional({ example: 'confirmed' })
   @IsOptional()
-  @IsIn(['scheduled', 'confirmed', 'cancelled', 'completed', 'no_show', 'rescheduled'])
+  @IsIn([
+    'scheduled',
+    'confirmed',
+    'cancelled',
+    'completed',
+    'no_show',
+    'rescheduled',
+  ])
   status?: string;
 
   @ApiPropertyOptional({ example: 'Updated notes' })
@@ -39,9 +46,9 @@ export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {
   @IsString()
   prescription?: string;
 
-  @ApiPropertyOptional({ 
-    example: { "bloodPressure": "120/80", "heartRate": "72" },
-    description: 'Vital signs' 
+  @ApiPropertyOptional({
+    example: { bloodPressure: '120/80', heartRate: '72' },
+    description: 'Vital signs',
   })
   @IsOptional()
   vitals?: any;

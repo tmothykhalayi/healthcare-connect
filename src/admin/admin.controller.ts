@@ -1,5 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Delete, Query, HttpStatus, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth,ApiQuery ,} from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Delete,
+  Query,
+  HttpStatus,
+  ParseIntPipe,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
@@ -20,13 +39,12 @@ export class AdminController {
   @ApiResponse({ status: 201, description: 'Admin created successfully' })
   @ApiResponse({ status: 409, description: 'Admin already exists' })
   async create(@Body() createAdminDto: CreateAdminDto) {
-    
     try {
       const admin = await this.adminService.create(createAdminDto);
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Admin created successfully',
-        data: admin
+        data: admin,
       };
     } catch (error) {
       throw error;
@@ -42,7 +60,7 @@ export class AdminController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Admins retrieved successfully',
-      data: admins
+      data: admins,
     };
   }
 
@@ -54,7 +72,7 @@ export class AdminController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Admin statistics retrieved successfully',
-      data: stats
+      data: stats,
     };
   }
 
@@ -66,7 +84,7 @@ export class AdminController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Active admins retrieved successfully',
-      data: admins
+      data: admins,
     };
   }
 
@@ -78,7 +96,7 @@ export class AdminController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Super admins retrieved successfully',
-      data: admins
+      data: admins,
     };
   }
 
@@ -91,33 +109,39 @@ export class AdminController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Search results retrieved successfully',
-      data: admins
+      data: admins,
     };
   }
 
   @Get('level/:adminLevel')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get admins by admin level' })
-  @ApiParam({ name: 'adminLevel', description: 'Admin level (super_admin, admin, moderator)' })
+  @ApiParam({
+    name: 'adminLevel',
+    description: 'Admin level (super_admin, admin, moderator)',
+  })
   async findByAdminLevel(@Param('adminLevel') adminLevel: string) {
     const admins = await this.adminService.findByAdminLevel(adminLevel);
     return {
       statusCode: HttpStatus.OK,
       message: `Admins with level '${adminLevel}' retrieved successfully`,
-      data: admins
+      data: admins,
     };
   }
 
   @Get('status/:status')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get admins by status' })
-  @ApiParam({ name: 'status', description: 'Admin status (active, inactive, suspended)' })
+  @ApiParam({
+    name: 'status',
+    description: 'Admin status (active, inactive, suspended)',
+  })
   async findByStatus(@Param('status') status: string) {
     const admins = await this.adminService.findByStatus(status);
     return {
       statusCode: HttpStatus.OK,
       message: `Admins with status '${status}' retrieved successfully`,
-      data: admins
+      data: admins,
     };
   }
 
@@ -130,12 +154,12 @@ export class AdminController {
     return {
       statusCode: HttpStatus.OK,
       message: `Admins in department '${department}' retrieved successfully`,
-      data: admins
+      data: admins,
     };
   }
 
   @Get('user/:userId')
-  @Roles( Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get admin by user ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
   async findByUserId(@Param('userId', ParseIntPipe) userId: number) {
@@ -143,7 +167,7 @@ export class AdminController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Admin found',
-      data: admin
+      data: admin,
     };
   }
 
@@ -156,21 +180,22 @@ export class AdminController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Admin found',
-      data: admin
+      data: admin,
     };
   }
-
-
 
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update admin' })
   @ApiParam({ name: 'id', description: 'Admin ID' })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateAdminDto: UpdateAdminDto) {
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAdminDto: UpdateAdminDto,
+  ) {
     const result = await this.adminService.update(id, updateAdminDto);
     return {
       statusCode: HttpStatus.OK,
-      ...result
+      ...result,
     };
   }
 
@@ -182,7 +207,7 @@ export class AdminController {
     const result = await this.adminService.remove(id);
     return {
       statusCode: HttpStatus.OK,
-      ...result
+      ...result,
     };
   }
 }

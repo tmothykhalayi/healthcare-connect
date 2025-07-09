@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsDateString, IsOptional, IsBoolean, Min } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsDateString,
+  IsOptional,
+  IsBoolean,
+  Min,
+} from 'class-validator';
 
 export class CreateMedicineDto {
   @ApiProperty({ description: 'User ID (who is adding this medicine)' })
@@ -32,12 +39,18 @@ export class CreateMedicineDto {
   @IsString()
   category?: string;
 
-  @ApiProperty({ description: 'Medicine dosage form (tablet, capsule, syrup, etc.)', required: false })
+  @ApiProperty({
+    description: 'Medicine dosage form (tablet, capsule, syrup, etc.)',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   dosageForm?: string;
 
-  @ApiProperty({ description: 'Medicine strength (e.g., 500mg, 10ml)', required: false })
+  @ApiProperty({
+    description: 'Medicine strength (e.g., 500mg, 10ml)',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   strength?: string;

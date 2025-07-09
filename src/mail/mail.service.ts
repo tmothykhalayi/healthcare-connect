@@ -11,7 +11,11 @@ export class MailService {
   /**
    * Send login notification email
    */
-  async sendLoginNotification(user: Users, loginTime: Date, ipAddress?: string): Promise<void> {
+  async sendLoginNotification(
+    user: Users,
+    loginTime: Date,
+    ipAddress?: string,
+  ): Promise<void> {
     try {
       await this.mailerService.sendMail({
         to: user.email,
@@ -29,7 +33,9 @@ export class MailService {
 
       this.logger.log(`Login notification sent to ${user.email}`);
     } catch (error) {
-      this.logger.error(`Failed to send login notification to ${user.email}: ${error.message}`);
+      this.logger.error(
+        `Failed to send login notification to ${user.email}: ${error.message}`,
+      );
     }
   }
 
@@ -53,7 +59,9 @@ export class MailService {
 
       this.logger.log(`Password reset email sent to ${user.email}`);
     } catch (error) {
-      this.logger.error(`Failed to send password reset email to ${user.email}: ${error.message}`);
+      this.logger.error(
+        `Failed to send password reset email to ${user.email}: ${error.message}`,
+      );
       throw new Error('Failed to send password reset email');
     }
   }
@@ -77,7 +85,9 @@ export class MailService {
 
       this.logger.log(`Password reset success email sent to ${user.email}`);
     } catch (error) {
-      this.logger.error(`Failed to send password reset success email to ${user.email}: ${error.message}`);
+      this.logger.error(
+        `Failed to send password reset success email to ${user.email}: ${error.message}`,
+      );
       // Don't throw error to avoid breaking password reset flow
     }
   }
@@ -101,7 +111,9 @@ export class MailService {
 
       this.logger.log(`Welcome email sent to ${user.email}`);
     } catch (error) {
-      this.logger.error(`Failed to send welcome email to ${user.email}: ${error.message}`);
+      this.logger.error(
+        `Failed to send welcome email to ${user.email}: ${error.message}`,
+      );
       // Don't throw error to avoid breaking registration flow
     }
   }
@@ -109,7 +121,11 @@ export class MailService {
   /**
    * Send account security alert
    */
-  async sendSecurityAlert(user: Users, alertType: string, details: any): Promise<void> {
+  async sendSecurityAlert(
+    user: Users,
+    alertType: string,
+    details: any,
+  ): Promise<void> {
     try {
       await this.mailerService.sendMail({
         to: user.email,
@@ -127,8 +143,9 @@ export class MailService {
 
       this.logger.log(`Security alert sent to ${user.email}`);
     } catch (error) {
-      this.logger.error(`Failed to send security alert to ${user.email}: ${error.message}`);
-    
+      this.logger.error(
+        `Failed to send security alert to ${user.email}: ${error.message}`,
+      );
     }
   }
-} 
+}

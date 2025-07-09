@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsString, IsDateString, IsOptional, IsPositive, IsIn } from 'class-validator';
+import {
+  IsInt,
+  IsString,
+  IsDateString,
+  IsOptional,
+  IsPositive,
+  IsIn,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateAppointmentDto {
@@ -15,11 +22,17 @@ export class CreateAppointmentDto {
   @IsPositive()
   doctorId: number;
 
-  @ApiProperty({ example: '2025-07-05T10:00:00Z', description: 'Appointment date and time' })
+  @ApiProperty({
+    example: '2025-07-05T10:00:00Z',
+    description: 'Appointment date and time',
+  })
   @IsDateString()
   appointmentDate: string;
 
-  @ApiProperty({ example: '10:00', description: 'Appointment time (HH:MM format)' })
+  @ApiProperty({
+    example: '10:00',
+    description: 'Appointment time (HH:MM format)',
+  })
   @IsString()
   appointmentTime: string;
 
@@ -29,77 +42,101 @@ export class CreateAppointmentDto {
   @IsPositive()
   duration: number;
 
-  @ApiProperty({ example: 'Regular checkup', description: 'Reason for appointment' })
+  @ApiProperty({
+    example: 'Regular checkup',
+    description: 'Reason for appointment',
+  })
   @IsString()
   reason: string;
 
-  @ApiPropertyOptional({ 
-    example: 'scheduled', 
+  @ApiPropertyOptional({
+    example: 'scheduled',
     description: 'Appointment status',
-    enum: ['scheduled', 'confirmed', 'cancelled', 'completed', 'no_show', 'rescheduled'],
-    default: 'scheduled'
+    enum: [
+      'scheduled',
+      'confirmed',
+      'cancelled',
+      'completed',
+      'no_show',
+      'rescheduled',
+    ],
+    default: 'scheduled',
   })
   @IsOptional()
-  @IsIn(['scheduled', 'confirmed', 'cancelled', 'completed', 'no_show', 'rescheduled'])
+  @IsIn([
+    'scheduled',
+    'confirmed',
+    'cancelled',
+    'completed',
+    'no_show',
+    'rescheduled',
+  ])
   status?: string;
 
-  @ApiPropertyOptional({ 
-    example: 'normal', 
+  @ApiPropertyOptional({
+    example: 'normal',
     description: 'Appointment priority',
     enum: ['normal', 'urgent', 'emergency'],
-    default: 'normal'
+    default: 'normal',
   })
   @IsOptional()
   @IsIn(['normal', 'urgent', 'emergency'])
   priority?: string;
 
-  @ApiPropertyOptional({ example: 1, description: 'Parent appointment ID for follow-ups' })
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Parent appointment ID for follow-ups',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @IsPositive()
   parentAppointmentId?: number;
 
-  @ApiPropertyOptional({ 
-    example: 'Patient requested morning appointment', 
+  @ApiPropertyOptional({
+    example: 'Patient requested morning appointment',
     description: 'General notes',
-    default: ''
+    default: '',
   })
   @IsOptional()
   @IsString()
   notes?: string;
 
-  @ApiPropertyOptional({ 
-    example: 'Initial consultation notes', 
+  @ApiPropertyOptional({
+    example: 'Initial consultation notes',
     description: 'Medical notes',
-    default: ''
+    default: '',
   })
   @IsOptional()
   @IsString()
   medicalNotes?: string;
 
-  @ApiPropertyOptional({ 
-    example: 'Routine examination', 
+  @ApiPropertyOptional({
+    example: 'Routine examination',
     description: 'Initial diagnosis or assessment',
-    default: ''
+    default: '',
   })
   @IsOptional()
   @IsString()
   diagnosis?: string;
 
-  @ApiPropertyOptional({ 
-    example: 'No prescription at this time', 
+  @ApiPropertyOptional({
+    example: 'No prescription at this time',
     description: 'Prescription details',
-    default: ''
+    default: '',
   })
   @IsOptional()
   @IsString()
   prescription?: string;
 
-  @ApiPropertyOptional({ 
-    example: { "bloodPressure": "120/80", "heartRate": "72", "temperature": "98.6°F" },
+  @ApiPropertyOptional({
+    example: {
+      bloodPressure: '120/80',
+      heartRate: '72',
+      temperature: '98.6°F',
+    },
     description: 'Vital signs',
-    default: {}
+    default: {},
   })
   @IsOptional()
   vitals?: any;

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Between } from 'typeorm';
 import { Medical } from './entities/medical.entity';
@@ -17,7 +22,7 @@ export class MedicalService {
       const medicalData = {
         ...createMedicalDto,
         ...(createMedicalDto.nextAppointmentDate && {
-          nextAppointmentDate: new Date(createMedicalDto.nextAppointmentDate)
+          nextAppointmentDate: new Date(createMedicalDto.nextAppointmentDate),
         }),
         priority: createMedicalDto.priority || 'normal',
         status: createMedicalDto.status || 'active',
@@ -28,23 +33,28 @@ export class MedicalService {
 
       const record = await this.medicalRepository.findOne({
         where: { id: savedRecord.id },
-        relations: ['patient', 'doctor', 'appointment']
+        relations: ['patient', 'doctor', 'appointment'],
       });
-      
-      if (!record) {
-        throw new NotFoundException(`Medical record with ID ${savedRecord.id} not found after creation`);
-      }
-      
-      return record;
 
+      if (!record) {
+        throw new NotFoundException(
+          `Medical record with ID ${savedRecord.id} not found after creation`,
+        );
+      }
+
+      return record;
     } catch (error) {
       console.error('Error creating medical record:', error);
-      
+
       if (error.code === '23503') {
-        throw new BadRequestException('Foreign key constraint violation: Patient, Doctor, or Appointment ID does not exist');
+        throw new BadRequestException(
+          'Foreign key constraint violation: Patient, Doctor, or Appointment ID does not exist',
+        );
       }
-      
-      throw new InternalServerErrorException(`Failed to create medical record: ${error.message}`);
+
+      throw new InternalServerErrorException(
+        `Failed to create medical record: ${error.message}`,
+      );
     }
   }
 
@@ -55,7 +65,9 @@ export class MedicalService {
         order: { createdAt: 'DESC' },
       });
     } catch (error) {
-      throw new InternalServerErrorException('Failed to retrieve medical records');
+      throw new InternalServerErrorException(
+        'Failed to retrieve medical records',
+      );
     }
   }
 
@@ -120,10 +132,13 @@ export class MedicalService {
     });
   }
 
-  async findByDateRange(startDate: string, endDate: string): Promise<Medical[]> {
+  async findByDateRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<Medical[]> {
     return await this.medicalRepository.find({
       where: {
-        createdAt: Between(new Date(startDate), new Date(endDate))
+        createdAt: Between(new Date(startDate), new Date(endDate)),
       },
       relations: ['patient', 'doctor', 'appointment'],
       order: { createdAt: 'DESC' },
@@ -132,10 +147,7 @@ export class MedicalService {
 
   async findUrgentRecords(): Promise<Medical[]> {
     return await this.medicalRepository.find({
-      where: [
-        { priority: 'urgent' },
-        { priority: 'critical' }
-      ],
+      where: [{ priority: 'urgent' }, { priority: 'critical' }],
       relations: ['patient', 'doctor', 'appointment'],
       order: { createdAt: 'DESC' },
     });
@@ -147,7 +159,7 @@ export class MedicalService {
 
     return await this.medicalRepository.find({
       where: {
-        createdAt: Between(startDate, new Date())
+        createdAt: Between(startDate, new Date()),
       },
       relations: ['patient', 'doctor', 'appointment'],
       order: { createdAt: 'DESC' },
@@ -175,12 +187,20 @@ export class MedicalService {
 
   async getRecordStats(): Promise<any> {
     const totalRecords = await this.medicalRepository.count();
-    const activeRecords = await this.medicalRepository.count({ where: { status: 'active' } });
-    const archivedRecords = await this.medicalRepository.count({ where: { status: 'archived' } });
-    
-    const urgentRecords = await this.medicalRepository.count({ where: { priority: 'urgent' } });
-    const criticalRecords = await this.medicalRepository.count({ where: { priority: 'critical' } });
-    
+    const activeRecords = await this.medicalRepository.count({
+      where: { status: 'active' },
+    });
+    const archivedRecords = await this.medicalRepository.count({
+      where: { status: 'archived' },
+    });
+
+    const urgentRecords = await this.medicalRepository.count({
+      where: { priority: 'urgent' },
+    });
+    const criticalRecords = await this.medicalRepository.count({
+      where: { priority: 'critical' },
+    });
+
     const recordsByType = await this.medicalRepository
       .createQueryBuilder('medical')
       .select('medical.recordType', 'type')
@@ -202,9 +222,12 @@ export class MedicalService {
     };
   }
 
-  async update(id: number, updateMedicalDto: UpdateMedicalDto): Promise<{ message: string }> {
+  async update(
+    id: number,
+    updateMedicalDto: UpdateMedicalDto,
+  ): Promise<{ message: string }> {
     const record = await this.medicalRepository.findOne({ where: { id } });
-    
+
     if (!record) {
       throw new NotFoundException(`Medical record with ID ${id} not found`);
     }
@@ -212,8 +235,8 @@ export class MedicalService {
     const updateData = {
       ...updateMedicalDto,
       ...(updateMedicalDto.nextAppointmentDate && {
-        nextAppointmentDate: new Date(updateMedicalDto.nextAppointmentDate)
-      })
+        nextAppointmentDate: new Date(updateMedicalDto.nextAppointmentDate),
+      }),
     };
 
     Object.assign(record, updateData);
@@ -228,7 +251,7 @@ export class MedicalService {
 
   async remove(id: number): Promise<{ message: string }> {
     const result = await this.medicalRepository.delete({ id });
-    
+
     if (result.affected === 0) {
       throw new NotFoundException(`Medical record with ID ${id} not found`);
     }
@@ -238,7 +261,7 @@ export class MedicalService {
 
   async archiveRecord(id: number): Promise<{ message: string }> {
     const record = await this.medicalRepository.findOne({ where: { id } });
-    
+
     if (!record) {
       throw new NotFoundException(`Medical record with ID ${id} not found`);
     }
@@ -249,11 +272,16 @@ export class MedicalService {
       await this.medicalRepository.save(record);
       return { message: `Medical record with ID ${id} archived successfully` };
     } catch (error) {
-      throw new InternalServerErrorException('Failed to archive medical record');
+      throw new InternalServerErrorException(
+        'Failed to archive medical record',
+      );
     }
   }
 
-  async bulkUpdateStatus(recordIds: number[], status: string): Promise<{ message: string }> {
+  async bulkUpdateStatus(
+    recordIds: number[],
+    status: string,
+  ): Promise<{ message: string }> {
     try {
       await this.medicalRepository
         .createQueryBuilder()
@@ -262,9 +290,13 @@ export class MedicalService {
         .where('id IN (:...recordIds)', { recordIds })
         .execute();
 
-      return { message: `${recordIds.length} medical records updated successfully` };
+      return {
+        message: `${recordIds.length} medical records updated successfully`,
+      };
     } catch (error) {
-      throw new InternalServerErrorException('Failed to bulk update medical records');
+      throw new InternalServerErrorException(
+        'Failed to bulk update medical records',
+      );
     }
   }
 }

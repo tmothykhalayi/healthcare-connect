@@ -18,10 +18,6 @@ import { PharmacyModule } from '../pharmacy/pharmacy.module';
   ],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService ,
-    TypeOrmModule,
-  ],
+  exports: [UsersService, TypeOrmModule],
 })
 export class UsersModule {}
-
-

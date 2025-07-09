@@ -1,6 +1,13 @@
 // dto/create-user.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsBoolean,
+} from 'class-validator';
 import { UserRole } from '../entities/user.entity';
 
 export class CreateUserDto {
@@ -24,7 +31,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   lastName: string;
 
-  @ApiProperty({ enum: UserRole, default: UserRole.PATIENT, description: 'User role' })
+  @ApiProperty({
+    enum: UserRole,
+    default: UserRole.PATIENT,
+    description: 'User role',
+  })
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;

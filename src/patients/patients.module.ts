@@ -17,4 +17,3 @@ import { DoctorsModule } from '../doctors/doctors.module';
   exports: [PatientsService],
 })
 export class PatientsModule {}
-

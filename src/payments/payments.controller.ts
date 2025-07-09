@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, HttpException,  UseGuards ,HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+  HttpException,
+  UseGuards,
+  HttpStatus,
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -6,7 +18,14 @@ import { UserRole, Users } from '../users/entities/user.entity';
 import { AtGuard, RolesGuard } from '../auth/guards';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -27,7 +46,7 @@ export class PaymentsController {
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Payment created successfully',
-        data: payment
+        data: payment,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -46,7 +65,7 @@ export class PaymentsController {
       return {
         statusCode: HttpStatus.OK,
         message: 'Payments retrieved successfully',
-        data: payments
+        data: payments,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -69,12 +88,12 @@ export class PaymentsController {
       return {
         statusCode: HttpStatus.OK,
         message: 'Payment retrieved successfully',
-        data: payment
+        data: payment,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-  } 
+  }
 
   // Update a payment by ID
   @Put(':id')
@@ -84,16 +103,22 @@ export class PaymentsController {
   @ApiResponse({ status: 200, description: 'Payment updated successfully' })
   @ApiResponse({ status: 404, description: 'Payment not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updatePaymentDto: UpdatePaymentDto,
+  ) {
     try {
-      const payment = await this.paymentsService.update(Number(id), updatePaymentDto);
+      const payment = await this.paymentsService.update(
+        Number(id),
+        updatePaymentDto,
+      );
       if (!payment) {
         throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
       }
       return {
         statusCode: HttpStatus.OK,
         message: 'Payment updated successfully',
-        data: payment
+        data: payment,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -117,11 +142,10 @@ export class PaymentsController {
       return {
         statusCode: HttpStatus.OK,
         message: 'Payment deleted successfully',
-        data: payment
+        data: payment,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
 }

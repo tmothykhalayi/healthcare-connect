@@ -3,6 +3,7 @@ import {
   NotFoundException,
   UnauthorizedException,
   BadRequestException,
+  ConflictException,
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,7 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CreateAuthDto } from './dto/login.dto';
-import { Users } from '../users/entities/user.entity';
+import { Users, UserRole } from '../users/entities/user.entity';
 import { MailService } from '../mail/mail.service';
 import * as speakeasy from 'speakeasy';
 
@@ -27,11 +28,61 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  // ===== SIGN IN =====
-  async signIn(
-    createAuthDto: CreateAuthDto,
-  ): Promise<{
+  //   // ===== SIGN UP =====
+  // async signUp(createAuthDto: CreateAuthDto): Promise<{
+  //   accessToken: string;
+  //   refreshToken: string;
+  //   user: {
+  //     id: number;
+  //     email: string;
+  //     firstName: string;
+  //     lastName: string;
+  //     role: string;
+  //   };
+  // }> {
+  //   // 1. Check if user already exists
+  //   const existingUser = await this.userRepository.findOne({ where: { email: createAuthDto.email } });
+  //   if (existingUser) {
+  //     throw new ConflictException('User with this email already exists');
+  //   }
 
+  //   // 2. Hash password
+  //   const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
+
+  //   // 3. Create user entity
+  //   const user = this.userRepository.create({
+  //     email: createAuthDto.email,
+  //     firstName: createAuthDto.firstName,
+  //     lastName: createAuthDto.lastName,
+  //     password: hashedPassword,
+  //     role: UserRole.PATIENT, // Default role, can be changed later
+  //     isEmailVerified: false, // Default to false, can be updated later
+
+  //   });
+
+  //   // 4. Save user to DB
+  //   await this.userRepository.save(user);
+
+  //   // 5. Generate tokens
+  //   const { accessToken, refreshToken } = await this.getTokens(user.id, user.email, user.role);
+  //   await this.updateRefreshToken(user.id, refreshToken);
+
+  //   // 6. Return tokens and user info
+  //   return {
+  //     accessToken,
+  //     refreshToken,
+  //     user: {
+  //       id: user.id,
+  //       email: user.email,
+  //       firstName: user.firstName,
+  //       lastName: user.lastName,
+  //       role: user.role,
+  //     },
+  //   };
+  // }
+
+  // ===== SIGN IN =====
+  async signIn(createAuthDto: CreateAuthDto): Promise<{
     accessToken: string;
     refreshToken: string;
     user: {
@@ -41,24 +92,38 @@ export class AuthService {
       lastName: string;
       role: string;
     };
-  
   }> {
     try {
       const user = await this.userRepository.findOne({
         where: { email: createAuthDto.email },
-    
-      select: ['id', 'email', 'password', 'firstName', 'lastName', 'role', 'hashedRefreshToken'],
+
+        select: [
+          'id',
+          'email',
+          'password',
+          'firstName',
+          'lastName',
+          'role',
+          'hashedRefreshToken',
+        ],
       });
 
       if (!user) {
-        this.logger.warn(`Login failed - user not found: ${createAuthDto.email}`);
+        this.logger.warn(
+          `Login failed - user not found: ${createAuthDto.email}`,
+        );
         throw new UnauthorizedException('Invalid credentials');
       }
 
       // Compare against 'user.password' which contains the hashed password
-      const isPasswordValid = await bcrypt.compare(createAuthDto.password, user.password);
+      const isPasswordValid = await bcrypt.compare(
+        createAuthDto.password,
+        user.password,
+      );
       if (!isPasswordValid) {
-        this.logger.warn(`Login failed - invalid password: ${createAuthDto.email}`);
+        this.logger.warn(
+          `Login failed - invalid password: ${createAuthDto.email}`,
+        );
         throw new UnauthorizedException('Invalid credentials');
       }
 
@@ -74,8 +139,9 @@ export class AuthService {
       try {
         await this.mailService.sendLoginNotification(user, new Date());
       } catch (emailError) {
-        this.logger.warn(`Failed to send login notification email: ${emailError.message}`);
-      
+        this.logger.warn(
+          `Failed to send login notification email: ${emailError.message}`,
+        );
       }
 
       // Destructure password and hashedRefreshToken to remove sensitive data
@@ -114,17 +180,21 @@ export class AuthService {
       });
 
       if (!user || !user.hashedRefreshToken) {
-        this.logger.warn(`Refresh failed - Invalid user or missing refresh token for ID: ${userId}`);
+        this.logger.warn(
+          `Refresh failed - Invalid user or missing refresh token for ID: ${userId}`,
+        );
         throw new UnauthorizedException('Access Denied');
       }
 
       const refreshTokenMatches = await bcrypt.compare(
         refreshToken,
-        user.hashedRefreshToken
+        user.hashedRefreshToken,
       );
 
       if (!refreshTokenMatches) {
-        this.logger.warn(`Refresh failed - Token mismatch for user ID: ${userId}`);
+        this.logger.warn(
+          `Refresh failed - Token mismatch for user ID: ${userId}`,
+        );
         throw new UnauthorizedException('Access Denied');
       }
 
@@ -136,7 +206,7 @@ export class AuthService {
       return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-        role: user.role
+        role: user.role,
       };
     } catch (error) {
       this.logger.error(`Token refresh failed: ${error.message}`);
@@ -167,7 +237,9 @@ export class AuthService {
         throw new NotFoundException(`User not found: ${userId}`);
       }
 
-      await this.userRepository.update(userId, { hashedRefreshToken: undefined });
+      await this.userRepository.update(userId, {
+        hashedRefreshToken: undefined,
+      });
 
       this.logger.log(`User signed out successfully: ID ${userId}`);
 
@@ -183,7 +255,11 @@ export class AuthService {
     userId: number,
     email: string,
     role: string,
-  ): Promise<{ accessToken: string; refreshToken: string; role: string | undefined }> {
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    role: string | undefined;
+  }> {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { sub: userId, email, role },
@@ -209,11 +285,15 @@ export class AuthService {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     this.logger.log(`Updating hashed refresh token for user ID: ${userId}`);
 
-    const result = await this.userRepository.update(userId, { hashedRefreshToken });
+    const result = await this.userRepository.update(userId, {
+      hashedRefreshToken,
+    });
     if (result.affected === 0) {
       this.logger.warn(`Failed to update refresh token for user ID: ${userId}`);
     } else {
-      this.logger.log(`Refresh token updated successfully for user ID: ${userId}`);
+      this.logger.log(
+        `Refresh token updated successfully for user ID: ${userId}`,
+      );
     }
   }
 
@@ -228,17 +308,18 @@ export class AuthService {
     });
     return { otp, secret };
   }
-// ===== SEND PASSWORD RESET EMAIL =====
+  // ===== SEND PASSWORD RESET EMAIL =====
   async sendPasswordResetEmail(email: string): Promise<{ message: string }> {
     try {
       const user = await this.userRepository.findOne({
         where: { email },
         select: ['id', 'email', 'firstName', 'lastName', 'role'],
-      
       });
 
       if (!user) {
-        this.logger.warn(`Password reset requested for non-existent email: ${email}`);
+        this.logger.warn(
+          `Password reset requested for non-existent email: ${email}`,
+        );
         throw new NotFoundException('User not found');
       }
 
@@ -258,16 +339,31 @@ export class AuthService {
 
       return { message: 'Password reset email sent successfully' };
     } catch (error) {
-      this.logger.error(`Failed to send password reset email: ${error.message}`);
+      this.logger.error(
+        `Failed to send password reset email: ${error.message}`,
+      );
       throw error;
     }
   }
 
-  async resetPassword(email: string, otp: string, newPassword: string): Promise<{ message: string }> {
+  async resetPassword(
+    email: string,
+    otp: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
     try {
       const user = await this.userRepository.findOne({
         where: { email },
-        select: ['id', 'email', 'firstName', 'lastName', 'role', 'otp', 'secret', 'otpExpiry'],
+        select: [
+          'id',
+          'email',
+          'firstName',
+          'lastName',
+          'role',
+          'otp',
+          'secret',
+          'otpExpiry',
+        ],
       });
 
       if (!user) {
@@ -312,7 +408,9 @@ export class AuthService {
       try {
         await this.mailService.sendPasswordResetSuccessEmail(user);
       } catch (emailError) {
-        this.logger.warn(`Failed to send password reset success email: ${emailError.message}`);
+        this.logger.warn(
+          `Failed to send password reset success email: ${emailError.message}`,
+        );
       }
 
       this.logger.log(`Password reset successful for ${email}`);
@@ -323,4 +421,6 @@ export class AuthService {
       throw error;
     }
   }
+
+  //
 }

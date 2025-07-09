@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -24,55 +30,67 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<Users> {
     // Check if user already exists
     const existingUser = await this.usersRepository.findOne({
-      where: { email: createUserDto.email }
+      where: { email: createUserDto.email },
     });
 
     if (existingUser) {
-      throw new ConflictException(`User with email ${createUserDto.email} already exists`);
+      throw new ConflictException(
+        `User with email ${createUserDto.email} already exists`,
+      );
     }
 
     try {
       // Hash the password before storing
       const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+      const hashedPassword = await bcrypt.hash(
+        createUserDto.password,
+        saltRounds,
+      );
 
       const userData = {
         ...createUserDto,
         password: hashedPassword, // Use hashed password
         role: createUserDto.role || UserRole.PATIENT,
         isEmailVerified: createUserDto.isEmailVerified || false,
-        isActive: createUserDto.isActive !== undefined ? createUserDto.isActive : true,
+        isActive:
+          createUserDto.isActive !== undefined ? createUserDto.isActive : true,
       };
 
       // Validate role
-      if (!Object.values(UserRole).includes(userData.role as UserRole)) {
+      if (!Object.values(UserRole).includes(userData.role)) {
         throw new BadRequestException(`Invalid role: ${userData.role}`);
       }
 
       // Create the user first
       const newUser = this.usersRepository.create(userData);
       const savedUser = await this.usersRepository.save(newUser);
-      
+
       // Now create the role-specific record
-      console.log(`Creating ${savedUser.role} profile for user ID ${savedUser.id}`);
-      
+      console.log(
+        `Creating ${savedUser.role} profile for user ID ${savedUser.id}`,
+      );
+
       try {
         await this.assignToRoleTable(savedUser);
-        console.log(`Successfully created ${savedUser.role} profile for user ID ${savedUser.id}`);
+        console.log(
+          `Successfully created ${savedUser.role} profile for user ID ${savedUser.id}`,
+        );
       } catch (error) {
         console.error(`Error creating ${savedUser.role} profile:`, error);
         // Don't fail the whole operation if role assignment fails
       }
-      
+
       return savedUser;
     } catch (error) {
       console.error('Error creating user:', error);
-      
-      if (error instanceof ConflictException || 
-          error instanceof BadRequestException) {
+
+      if (
+        error instanceof ConflictException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
-      
+
       throw new InternalServerErrorException('Failed to create user');
     }
   }
@@ -148,13 +166,25 @@ export class UsersService {
 
   async getUserStats(): Promise<any> {
     const totalUsers = await this.usersRepository.count();
-    const activeUsers = await this.usersRepository.count({ where: { isActive: true } });
-    const verifiedUsers = await this.usersRepository.count({ where: { isEmailVerified: true } });
-    
-    const doctors = await this.usersRepository.count({ where: { role: UserRole.DOCTOR } });
-    const patients = await this.usersRepository.count({ where: { role: UserRole.PATIENT } });
-    const admins = await this.usersRepository.count({ where: { role: UserRole.ADMIN } });
-    const pharmacies = await this.usersRepository.count({ where: { role: UserRole.PHARMACY } });
+    const activeUsers = await this.usersRepository.count({
+      where: { isActive: true },
+    });
+    const verifiedUsers = await this.usersRepository.count({
+      where: { isEmailVerified: true },
+    });
+
+    const doctors = await this.usersRepository.count({
+      where: { role: UserRole.DOCTOR },
+    });
+    const patients = await this.usersRepository.count({
+      where: { role: UserRole.PATIENT },
+    });
+    const admins = await this.usersRepository.count({
+      where: { role: UserRole.ADMIN },
+    });
+    const pharmacies = await this.usersRepository.count({
+      where: { role: UserRole.PHARMACY },
+    });
 
     return {
       total: totalUsers,
@@ -170,9 +200,12 @@ export class UsersService {
   }
 
   // Update by ID
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<{ message: string }> {
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<{ message: string }> {
     const user = await this.usersRepository.findOne({ where: { id } });
-    
+
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -180,7 +213,10 @@ export class UsersService {
     // Hash password if it's being updated
     if (updateUserDto.password) {
       const saltRounds = 10;
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds);
+      updateUserDto.password = await bcrypt.hash(
+        updateUserDto.password,
+        saltRounds,
+      );
     }
 
     Object.assign(user, updateUserDto);
@@ -194,9 +230,12 @@ export class UsersService {
   }
 
   // Update by email
-  async updateByEmail(email: string, updateUserDto: UpdateUserDto): Promise<{ message: string }> {
+  async updateByEmail(
+    email: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<{ message: string }> {
     const user = await this.usersRepository.findOne({ where: { email } });
-    
+
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
@@ -204,7 +243,10 @@ export class UsersService {
     // Hash password if it's being updated
     if (updateUserDto.password) {
       const saltRounds = 10;
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds);
+      updateUserDto.password = await bcrypt.hash(
+        updateUserDto.password,
+        saltRounds,
+      );
     }
 
     Object.assign(user, updateUserDto);
@@ -220,7 +262,7 @@ export class UsersService {
   // Delete by ID
   async remove(id: number): Promise<{ message: string }> {
     const result = await this.usersRepository.delete({ id });
-    
+
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -231,7 +273,7 @@ export class UsersService {
   // Delete by email
   async deleteByEmail(email: string): Promise<{ message: string }> {
     const result = await this.usersRepository.delete({ email });
-    
+
     if (result.affected === 0) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
@@ -253,57 +295,58 @@ export class UsersService {
       .getMany();
   }
 
-
   async createUserWithRole(createUserDto: CreateUserDto): Promise<Users> {
     // Create the base user
     const user = await this.create(createUserDto);
-    
+
     // Automatically assign to appropriate role table
     await this.assignToRoleTable(user);
-    
+
     return user;
   }
 
   async assignUserRole(userId: number, role: UserRole): Promise<void> {
     // Update user role
     await this.usersRepository.update(userId, { role });
-    
+
     // Get the updated user
     const user = await this.findOne(userId);
-    
+
     // Assign to appropriate role table
     await this.assignToRoleTable(user);
   }
 
   private async assignToRoleTable(user: Users): Promise<void> {
-    console.log(`Starting role assignment for user ${user.id} with role ${user.role}`);
-    
+    console.log(
+      `Starting role assignment for user ${user.id} with role ${user.role}`,
+    );
+
     try {
       switch (user.role) {
         case UserRole.ADMIN:
           console.log(`Creating admin profile for user ${user.id}`);
           await this.adminService.createFromUser(user);
           break;
-          
+
         case UserRole.DOCTOR:
           console.log(`Creating doctor profile for user ${user.id}`);
           await this.doctorsService.createFromUser(user);
           break;
-          
+
         case UserRole.PATIENT:
           console.log(`Creating patient profile for user ${user.id}`);
           await this.patientsService.createFromUser(user);
           break;
-          
+
         case UserRole.PHARMACY:
           console.log(`Creating pharmacy profile for user ${user.id}`);
           await this.pharmacyService.createFromUser(user);
           break;
-          
+
         default:
           throw new BadRequestException(`Invalid role: ${user.role}`);
       }
-      
+
       console.log(`Successfully completed role assignment for user ${user.id}`);
     } catch (error) {
       console.error(`Error in assignToRoleTable for user ${user.id}:`, error);

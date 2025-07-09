@@ -1,12 +1,28 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+
+import { TelemedicineAppointment } from '../../telemedicine/entities/telemedicine.entity';
+
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
-
+import {} from '../../telemedicine/entities/telemedicine.entity';
+import { Appointment } from '../../appointments/entities/appointment.entity';
+import { Medicine } from '../../medicines/entities/medicine.entity';
+import { Order } from '../../orders/entities/order.entity';
 export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 @Entity('patients')
@@ -14,7 +30,7 @@ export class Patient {
   @ApiProperty({ description: 'Patient unique identifier' })
   @PrimaryGeneratedColumn()
   id: number;
-  
+
   @ApiProperty({ description: 'User ID (from users table)' })
   @Column({ unique: true })
   userId: number;
@@ -23,68 +39,68 @@ export class Patient {
   @OneToOne(() => Users, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: Users;
-  
+
   @ApiProperty({ description: 'Patient gender', enum: Gender })
   @Column({ type: 'enum', enum: Gender, nullable: true }) // Made nullable
   gender: Gender;
-  
+
   @ApiProperty({ description: 'Patient date of birth' })
   @Column({ type: 'date', nullable: true }) // Made nullable
   dateOfBirth: Date;
-  
+
   @ApiProperty({ description: 'Patient phone number' })
   @Column({ nullable: true }) // Made nullable
   phoneNumber: string;
-  
+
   @ApiProperty({ description: 'Patient address' })
   @Column({ type: 'text', nullable: true })
   address: string;
-  
+
   @ApiProperty({ description: 'Emergency contact information' })
   @Column({ type: 'text', nullable: true })
   emergencyContact: string;
-  
+
   @ApiProperty({ description: 'Medical history' })
   @Column({ type: 'text', nullable: true })
   medicalHistory: string;
-  
+
   @ApiProperty({ description: 'List of allergies (JSON array)' })
   @Column({ type: 'json', nullable: true })
   allergies: string[];
-  
+
   @ApiProperty({ description: 'Assigned doctor ID' })
   @Column({ nullable: true })
   assignedDoctorId: number;
 
   @ApiProperty({ description: 'Assigned doctor' })
-  @ManyToOne(() => Doctor, doctor => doctor.patients, { nullable: true })
+  @ManyToOne(() => Doctor, (doctor) => doctor.patients, { nullable: true })
   @JoinColumn({ name: 'assignedDoctorId' })
   assignedDoctor: Doctor;
-  
+
   @ApiProperty({ description: 'Blood type' })
   @Column({ nullable: true })
   bloodType: string;
-  
+
   @ApiProperty({ description: 'Weight in kg' })
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   weight: number;
-  
+
   @ApiProperty({ description: 'Height in cm' })
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   height: number;
-  
+
   @ApiProperty({ description: 'Patient status' })
   @Column({ default: 'pending_profile_completion' })
   status: string;
-  
+
   @ApiProperty({ description: 'Last visit date' })
   @Column({ type: 'timestamp', nullable: true })
   lastVisit: Date;
-  
+
   @ApiProperty({ description: 'Patient creation date' })
   @CreateDateColumn()
   createdAt: Date;
-  
+
   @ApiProperty({ description: 'Patient last update date' })
   @UpdateDateColumn()
   updatedAt: Date;
@@ -94,4 +110,20 @@ export class Patient {
 
   @OneToMany('Medical', 'patient')
   medicalRecords: any[];
+
+
+
+  @Column()
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+
+
+  @OneToMany(() => Order, (order) => order.patient)
+  orders: Order[];
+
+  @OneToMany(() => TelemedicineAppointment, (appointment) => appointment.patient)
+  telemedicineAppointments: TelemedicineAppointment[];
 }

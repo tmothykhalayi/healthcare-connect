@@ -11,7 +11,3 @@ import { Medical } from './entities/medical.entity';
   providers: [MedicalService],
 })
 export class MedicalModule {}
-
-
-
-

@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, InternalServerErrorException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Admin } from './entities/admin.entity';
@@ -11,27 +17,29 @@ export class AdminService {
   constructor(
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
-    @InjectRepository(Users) private usersRepository: Repository<Users>
+    @InjectRepository(Users) private usersRepository: Repository<Users>,
   ) {}
 
   async create(createAdminDto: CreateAdminDto): Promise<Admin> {
     // Check if admin already exists for this user
     const existingAdmin = await this.adminRepository.findOne({
-      where: { userId: createAdminDto.userId }
+      where: { userId: createAdminDto.userId },
     });
 
     if (existingAdmin) {
-      throw new ConflictException(`Admin already exists for user ID ${createAdminDto.userId}`);
+      throw new ConflictException(
+        `Admin already exists for user ID ${createAdminDto.userId}`,
+      );
     }
 
     // Ensure permissions is an array of strings
     let permissions: string[] = [];
     if (createAdminDto.permissions) {
-      permissions = Array.isArray(createAdminDto.permissions) 
-        ? createAdminDto.permissions 
+      permissions = Array.isArray(createAdminDto.permissions)
+        ? createAdminDto.permissions
         : Object.keys(createAdminDto.permissions);
     }
-    
+
     const newAdmin = this.adminRepository.create({
       ...createAdminDto,
       userId: createAdminDto.userId,
@@ -51,7 +59,7 @@ export class AdminService {
   async createFromUser(user: Users): Promise<Admin> {
     // Check if admin record already exists
     const existingAdmin = await this.adminRepository.findOne({
-      where: { user: { id: user.id } }
+      where: { user: { id: user.id } },
     });
 
     if (existingAdmin) {
@@ -69,15 +77,17 @@ export class AdminService {
         permissions: {
           users: ['read'],
           appointments: ['read'],
-          medical_records: ['read']
-        }
+          medical_records: ['read'],
+        },
       };
 
       const newAdmin = this.adminRepository.create(adminData);
       return await this.adminRepository.save(newAdmin);
     } catch (error) {
       console.error('Error creating admin from user:', error);
-      throw new InternalServerErrorException(`Failed to create admin profile: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create admin profile: ${error.message}`,
+      );
     }
   }
 
@@ -172,16 +182,28 @@ export class AdminService {
       order: { createdAt: 'DESC' },
     });
   }
-//  async getAdminsByDepartment(department: string)
+  //  async getAdminsByDepartment(department: string)
   async getAdminStats(): Promise<any> {
     const totalAdmins = await this.adminRepository.count();
-    const activeAdmins = await this.adminRepository.count({ where: { status: 'active' } as any });
-    const inactiveAdmins = await this.adminRepository.count({ where: { status: 'inactive' } as any });
-    const suspendedAdmins = await this.adminRepository.count({ where: { status: 'suspended' } as any });
-    
-    const superAdmins = await this.adminRepository.count({ where: { adminLevel: 'super_admin' } as any });
-    const regularAdmins = await this.adminRepository.count({ where: { adminLevel: 'admin' } as any });
-    const moderators = await this.adminRepository.count({ where: { adminLevel: 'moderator' } as any });
+    const activeAdmins = await this.adminRepository.count({
+      where: { status: 'active' } as any,
+    });
+    const inactiveAdmins = await this.adminRepository.count({
+      where: { status: 'inactive' } as any,
+    });
+    const suspendedAdmins = await this.adminRepository.count({
+      where: { status: 'suspended' } as any,
+    });
+
+    const superAdmins = await this.adminRepository.count({
+      where: { adminLevel: 'super_admin' } as any,
+    });
+    const regularAdmins = await this.adminRepository.count({
+      where: { adminLevel: 'admin' } as any,
+    });
+    const moderators = await this.adminRepository.count({
+      where: { adminLevel: 'moderator' } as any,
+    });
 
     return {
       total: totalAdmins,
@@ -201,7 +223,7 @@ export class AdminService {
   // Update last login timestamp for an admin
   async updateLastLogin(id: number): Promise<{ message: string }> {
     const admin = await this.adminRepository.findOne({ where: { id } });
-    
+
     if (!admin) {
       throw new NotFoundException(`Admin with ID ${id} not found`);
     }
@@ -217,9 +239,12 @@ export class AdminService {
   }
 
   // Update admin details
-  async update(id: number, updateAdminDto: UpdateAdminDto): Promise<{ message: string }> {
+  async update(
+    id: number,
+    updateAdminDto: UpdateAdminDto,
+  ): Promise<{ message: string }> {
     const admin = await this.adminRepository.findOne({ where: { id } });
-    
+
     if (!admin) {
       throw new NotFoundException(`Admin with ID ${id} not found`);
     }
@@ -227,8 +252,8 @@ export class AdminService {
     const updateData = {
       ...updateAdminDto,
       ...(updateAdminDto.lastLogin && {
-        lastLogin: new Date(updateAdminDto.lastLogin)
-      })
+        lastLogin: new Date(updateAdminDto.lastLogin),
+      }),
     };
 
     Object.assign(admin, updateData);
@@ -244,16 +269,11 @@ export class AdminService {
   // Remove an admin by ID
   async remove(id: number): Promise<{ message: string }> {
     const result = await this.adminRepository.delete({ id });
-    
+
     if (result.affected === 0) {
       throw new NotFoundException(`Admin with ID ${id} not found`);
     }
 
     return { message: `Admin with ID ${id} deleted successfully` };
   }
-
-
-  
-  }
-
-
+}

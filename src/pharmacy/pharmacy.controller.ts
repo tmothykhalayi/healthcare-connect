@@ -1,8 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { PharmacyService } from './pharmacy.service';
 import { CreatePharmacyDto } from './dto/create-pharmacy.dto';
 import { UpdatePharmacyDto } from './dto/update-pharmacy.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 
 @ApiTags('pharmacy')
 @Controller('pharmacy')
@@ -21,14 +36,25 @@ export class PharmacyController {
   //get all pharmacies
   @Get()
   @ApiOperation({ summary: 'Get all pharmacies' })
-  @ApiQuery({ name: 'status', required: false, description: 'Filter by pharmacy status' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filter by pharmacy status',
+  })
   @ApiQuery({ name: 'city', required: false, description: 'Filter by city' })
-  @ApiQuery({ name: 'delivery', required: false, description: 'Filter by delivery availability' })
-  @ApiResponse({ status: 200, description: 'Pharmacies retrieved successfully' })
+  @ApiQuery({
+    name: 'delivery',
+    required: false,
+    description: 'Filter by delivery availability',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Pharmacies retrieved successfully',
+  })
   async findAll(
     @Query('status') status?: string,
     @Query('city') city?: string,
-    @Query('delivery') delivery?: string
+    @Query('delivery') delivery?: string,
   ) {
     return this.pharmacyService.findAll();
   }
@@ -55,7 +81,10 @@ export class PharmacyController {
   // Get pharmacies with delivery service
   @Get('delivery')
   @ApiOperation({ summary: 'Get pharmacies with delivery service' })
-  @ApiQuery({ name: 'available', description: 'Delivery availability (true/false)' })
+  @ApiQuery({
+    name: 'available',
+    description: 'Delivery availability (true/false)',
+  })
   @ApiResponse({ status: 200, description: 'Pharmacies with delivery service' })
   async findWithDelivery(@Query('available') available: string) {
     const isAvailable = available === 'true';
@@ -71,7 +100,7 @@ export class PharmacyController {
     return this.pharmacyService.findByLocation(city);
   }
 
-  //get one by id 
+  //get one by id
   @Get(':id')
   @ApiOperation({ summary: 'Get pharmacy by ID' })
   @ApiParam({ name: 'id', description: 'Pharmacy ID' })
@@ -81,13 +110,16 @@ export class PharmacyController {
     return this.pharmacyService.findOne(+id);
   }
 
-  //update by id 
+  //update by id
   @Patch(':id')
   @ApiOperation({ summary: 'Update pharmacy by ID' })
   @ApiParam({ name: 'id', description: 'Pharmacy ID' })
   @ApiResponse({ status: 200, description: 'Pharmacy updated successfully' })
   @ApiResponse({ status: 404, description: 'Pharmacy not found' })
-  async update(@Param('id') id: string, @Body() updatePharmacyDto: UpdatePharmacyDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updatePharmacyDto: UpdatePharmacyDto,
+  ) {
     return this.pharmacyService.update(+id, updatePharmacyDto);
   }
 
@@ -96,7 +128,10 @@ export class PharmacyController {
   @ApiOperation({ summary: 'Update pharmacy status' })
   @ApiParam({ name: 'id', description: 'Pharmacy ID' })
   @ApiResponse({ status: 200, description: 'Status updated successfully' })
-  async updateStatus(@Param('id') id: string, @Body() statusDto: { status: string }) {
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() statusDto: { status: string },
+  ) {
     return this.pharmacyService.updateStatus(+id, statusDto.status);
   }
 

@@ -1,65 +1,57 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Patient } from '../../patients/entities/patient.entity';
+import { Users } from '../../users/entities/user.entity';
+import { Appointment } from '../../appointments/entities/appointment.entity'; // if you want appointments relationship
 import { Doctor } from '../../doctors/entities/doctor.entity';
+import { Patient } from '../../patients/entities/patient.entity';
 
 @Entity('telemedicine_appointments')
 export class TelemedicineAppointment {
-  @ApiProperty({ description: 'Telemedicine appointment unique identifier' })
+  @ApiProperty({ description: 'Telemedicine appointment ID' })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ description: 'Patient ID' })
-  @Column()
-  patientId: number;
+  
+appointmentTime: string; 
+  notes?: string;
 
-  @ApiProperty({ description: 'Patient entity' })
-  @ManyToOne(() => Patient, { eager: true })
-  @JoinColumn({ name: 'patientId' })
-  patient: Patient;
-
-  @ApiProperty({ description: 'Doctor ID' })
-  @Column()
-  doctorId: number;
-
-  @ApiProperty({ description: 'Doctor entity' })
-  @ManyToOne(() => Doctor, { eager: true })
-  @JoinColumn({ name: 'doctorId' })
+duration?: number; 
+  @ApiProperty({ description: 'Doctor for the telemedicine appointment' })
+  @ManyToOne(() => Doctor, (doctor) => doctor.appointments, { nullable: false })
   doctor: Doctor;
 
-  @ApiProperty({ description: 'Appointment date' })
-  @Column('date')
-  appointmentDate: Date;
+  @ApiProperty({ description: 'Patient for the telemedicine appointment' })
+  @ManyToOne(() => Patient, (patient) => patient.telemedicineAppointments, { nullable: false })
+  patient: Patient;
 
-  @ApiProperty({ description: 'Appointment time' })
-  @Column()
-  appointmentTime: string;
+  @ApiProperty({ description: 'Scheduled date and time' })
+  @Column({ type: 'timestamp' })
+  scheduledAt: Date;
 
-  @ApiProperty({ description: 'Duration in minutes' })
-  @Column({ default: 30 })
-  duration: number;
-
-  @ApiProperty({ description: 'Appointment status' })
+  @ApiProperty({ description: 'Status (scheduled, completed, canceled, etc.)' })
   @Column({ default: 'scheduled' })
   status: string;
 
-  @ApiProperty({ description: 'Additional notes' })
-  @Column({ type: 'text', nullable: true })
-  notes: string;
-
-  @ApiProperty({ description: 'Video call URL' })
-  @Column({ nullable: true })
-  videoCallUrl: string;
-
-  @ApiProperty({ description: 'Meeting ID for video call' })
-  @Column({ nullable: true })
-  meetingId: string;
-
-  @ApiProperty({ description: 'Appointment creation date' })
+  @ApiProperty({ description: 'Creation timestamp' })
   @CreateDateColumn()
   createdAt: Date;
 
-  @ApiProperty({ description: 'Appointment last update date' })
+  @ApiProperty({ description: 'Last update timestamp' })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  order: {
+  scheduledAt: 'ASC'
+}
+
 }

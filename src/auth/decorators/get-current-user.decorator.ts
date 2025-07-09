@@ -5,11 +5,11 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
  * Usage: @GetCurrentUser() user: { sub: number; email: string }
  */
 export const GetCurrentUser = createParamDecorator(
-    (data: string | undefined, context: ExecutionContext) => {
-        const request = context.switchToHttp().getRequest();
-        if (data) {
-            return request.user[data]; 
-        }
-        return request.user; // Return entire user object
-    },
+  (data: string | undefined, context: ExecutionContext) => {
+    const request = context.switchToHttp().getRequest();
+    if (data) {
+      return request.user[data];
+    }
+    return request.user; // Return entire user object
+  },
 );

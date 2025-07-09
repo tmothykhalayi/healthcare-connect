@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, InternalServerErrorException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Medicine } from './entities/medicine.entity';
@@ -20,7 +26,9 @@ export class MedicinesService {
 
     try {
       // Check if the user exists
-      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+      });
       if (!user) {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
@@ -46,26 +54,31 @@ export class MedicinesService {
         where: { id: savedMedicine.id },
         relations: ['user'],
       });
-      
-      if (!result) {
-        throw new NotFoundException(`Medicine with ID ${savedMedicine.id} not found after creation`);
-      }
-      
-      return result;
 
+      if (!result) {
+        throw new NotFoundException(
+          `Medicine with ID ${savedMedicine.id} not found after creation`,
+        );
+      }
+
+      return result;
     } catch (error) {
       console.error('Error creating medicine:', error);
-      
+
       if (error instanceof NotFoundException) {
         throw error;
       }
-      
+
       // Handle database errors
       if (error.code === '23505') {
-        throw new ConflictException('Medicine with these details already exists');
+        throw new ConflictException(
+          'Medicine with these details already exists',
+        );
       }
-      
-      throw new InternalServerErrorException(`Failed to create medicine: ${error.message}`);
+
+      throw new InternalServerErrorException(
+        `Failed to create medicine: ${error.message}`,
+      );
     }
   }
 
@@ -75,15 +88,13 @@ export class MedicinesService {
     try {
       return await this.medicineRepository.find({
         relations: ['user'],
-        order: { createdAt: 'DESC' }
+        order: { createdAt: 'DESC' },
       });
     } catch (error) {
       console.error('Error fetching medicines:', error);
       throw new InternalServerErrorException('Failed to fetch medicines');
     }
   }
-
-
 
   async findOne(id: number): Promise<Medicine> {
     try {
@@ -106,46 +117,58 @@ export class MedicinesService {
     }
   }
 
-  
-async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
-  try {
-    // Example logic: Check if the user is assigned to the doctor
-    // You should replace this with your actual assignment check logic
-    const doctor = await this.usersRepository.findOne({ where: { id: doctorId } });
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
+  async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
+    try {
+      // Example logic: Check if the user is assigned to the doctor
+      // You should replace this with your actual assignment check logic
+      const doctor = await this.usersRepository.findOne({
+        where: { id: doctorId },
+      });
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+      });
 
-    if (!doctor || !user) {
-      throw new NotFoundException(`User with ID ${userId} or Doctor with ID ${doctorId} not found`);
+      if (!doctor || !user) {
+        throw new NotFoundException(
+          `User with ID ${userId} or Doctor with ID ${doctorId} not found`,
+        );
+      }
+
+      // Replace this with your actual assignment logic
+      // For example, if you have an assignments table, query it here
+      const isAssigned = true; // Set to true or false based on your logic
+
+      if (!isAssigned) {
+        throw new ForbiddenException(
+          `User with ID ${userId} is not assigned to doctor with ID ${doctorId}`,
+        );
+      }
+
+      return await this.medicineRepository.find({
+        where: { userId },
+        relations: ['user'],
+        order: { createdAt: 'DESC' },
+      });
+    } catch (error) {
+      console.log('Error fetching medicines by user ID:', error);
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Failed to fetch medicines by user ID',
+      );
     }
-
-    // Replace this with your actual assignment logic
-    // For example, if you have an assignments table, query it here
-    const isAssigned = true; // Set to true or false based on your logic
-
-    if (!isAssigned) {
-      throw new ForbiddenException(`User with ID ${userId} is not assigned to doctor with ID ${doctorId}`);
-    }
-
-    return await this.medicineRepository.find({
-      where: { userId },
-      relations: ['user'],
-      order: { createdAt: 'DESC' }
-    });
-  } catch (error) {
-    console.log('Error fetching medicines by user ID:', error);
-    if (error instanceof ForbiddenException || error instanceof NotFoundException) {
-      throw error;
-    }
-    throw new InternalServerErrorException('Failed to fetch medicines by user ID');
   }
-}
 
   async findByCategory(category: string): Promise<Medicine[]> {
     try {
       return await this.medicineRepository.find({
         where: { category },
         relations: ['user'],
-        order: { name: 'ASC' }
+        order: { name: 'ASC' },
       });
     } catch (error) {
       console.error('Error fetching medicines by category:', error);
@@ -158,7 +181,7 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
       return await this.medicineRepository.find({
         where: { manufacturer },
         relations: ['user'],
-        order: { name: 'ASC' }
+        order: { name: 'ASC' },
       });
     } catch (error) {
       console.error('Error fetching medicines by manufacturer:', error);
@@ -173,14 +196,16 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
 
       return await this.medicineRepository.find({
         where: {
-          expiryDate: Between(new Date(), futureDate)
+          expiryDate: Between(new Date(), futureDate),
         },
         relations: ['user'],
-        order: { expiryDate: 'ASC' }
+        order: { expiryDate: 'ASC' },
       });
     } catch (error) {
       console.error('Error fetching expiring medicines:', error);
-      throw new InternalServerErrorException('Failed to fetch expiring medicines');
+      throw new InternalServerErrorException(
+        'Failed to fetch expiring medicines',
+      );
     }
   }
 
@@ -194,7 +219,9 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
         .getMany();
     } catch (error) {
       console.error('Error fetching low stock medicines:', error);
-      throw new InternalServerErrorException('Failed to fetch low stock medicines');
+      throw new InternalServerErrorException(
+        'Failed to fetch low stock medicines',
+      );
     }
   }
 
@@ -215,18 +242,23 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
     }
   }
 
-  async findByPriceRange(minPrice: number, maxPrice: number): Promise<Medicine[]> {
+  async findByPriceRange(
+    minPrice: number,
+    maxPrice: number,
+  ): Promise<Medicine[]> {
     try {
       return await this.medicineRepository.find({
         where: {
-          price: Between(minPrice, maxPrice)
+          price: Between(minPrice, maxPrice),
         },
         relations: ['user'],
-        order: { price: 'ASC' }
+        order: { price: 'ASC' },
       });
     } catch (error) {
       console.error('Error fetching medicines by price range:', error);
-      throw new InternalServerErrorException('Failed to fetch medicines by price range');
+      throw new InternalServerErrorException(
+        'Failed to fetch medicines by price range',
+      );
     }
   }
 
@@ -235,11 +267,13 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
       return await this.medicineRepository.find({
         where: { prescriptionRequired: true },
         relations: ['user'],
-        order: { name: 'ASC' }
+        order: { name: 'ASC' },
       });
     } catch (error) {
       console.error('Error fetching prescription medicines:', error);
-      throw new InternalServerErrorException('Failed to fetch prescription medicines');
+      throw new InternalServerErrorException(
+        'Failed to fetch prescription medicines',
+      );
     }
   }
 
@@ -248,7 +282,7 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
       return await this.medicineRepository.find({
         where: { prescriptionRequired: false },
         relations: ['user'],
-        order: { name: 'ASC' }
+        order: { name: 'ASC' },
       });
     } catch (error) {
       console.error('Error fetching OTC medicines:', error);
@@ -259,13 +293,19 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
   async getMedicineStats(): Promise<any> {
     try {
       const totalMedicines = await this.medicineRepository.count();
-      const activeMedicines = await this.medicineRepository.count({ where: { status: 'active' } });
-      const prescriptionMedicines = await this.medicineRepository.count({ where: { prescriptionRequired: true } });
-      const otcMedicines = await this.medicineRepository.count({ where: { prescriptionRequired: false } });
-      
+      const activeMedicines = await this.medicineRepository.count({
+        where: { status: 'active' },
+      });
+      const prescriptionMedicines = await this.medicineRepository.count({
+        where: { prescriptionRequired: true },
+      });
+      const otcMedicines = await this.medicineRepository.count({
+        where: { prescriptionRequired: false },
+      });
+
       const expiringSoon = await this.findExpiringSoon(30);
       const lowStock = await this.findLowStock();
-      
+
       const categoriesStats = await this.medicineRepository
         .createQueryBuilder('medicine')
         .select('medicine.category', 'category')
@@ -292,11 +332,16 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
       };
     } catch (error) {
       console.error('Error fetching medicine statistics:', error);
-      throw new InternalServerErrorException('Failed to fetch medicine statistics');
+      throw new InternalServerErrorException(
+        'Failed to fetch medicine statistics',
+      );
     }
   }
 
-  async update(id: number, updateMedicineDto: UpdateMedicineDto): Promise<Medicine> {
+  async update(
+    id: number,
+    updateMedicineDto: UpdateMedicineDto,
+  ): Promise<Medicine> {
     try {
       // First check if medicine exists
       const medicine = await this.findOne(id);
@@ -305,16 +350,15 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
       const updateData = {
         ...updateMedicineDto,
         ...(updateMedicineDto.expiryDate && {
-          expiryDate: new Date(updateMedicineDto.expiryDate)
-        })
+          expiryDate: new Date(updateMedicineDto.expiryDate),
+        }),
       };
 
       // Update the medicine
       await this.medicineRepository.update(id, updateData);
-      
+
       // Return updated medicine
       return await this.findOne(id);
-
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -348,11 +392,13 @@ async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
         throw error;
       }
       console.error('Error updating medicine status:', error);
-      throw new InternalServerErrorException('Failed to update medicine status');
+      throw new InternalServerErrorException(
+        'Failed to update medicine status',
+      );
     }
   }
 
-  async remove(id: number ): Promise<void> {
+  async remove(id: number): Promise<void> {
     try {
       const medicine = await this.findOne(id);
       await this.medicineRepository.remove(medicine);

@@ -1,7 +1,13 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateOrderDto } from './create-order.dto';
-import { IsUUID, IsDateString, IsString, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsUUID,
+  IsDateString,
+  IsString,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 
 export class UpdateOrderDto extends PartialType(CreateOrderDto) {
   @ApiPropertyOptional({ example: 12345 })

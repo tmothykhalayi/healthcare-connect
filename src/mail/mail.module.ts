@@ -13,7 +13,7 @@ import { join } from 'path';
         transport: {
           host: configService.get('MAIL_HOST', 'smtp.gmail.com'),
           port: configService.get('MAIL_PORT', 587),
-          secure: false, 
+          secure: false,
           auth: {
             user: configService.get('MAIL_USER'),
             pass: configService.get('MAIL_PASSWORD'),
@@ -36,4 +36,4 @@ import { join } from 'path';
   providers: [MailService],
   exports: [MailService],
 })
-export class MailModule {} 
+export class MailModule {}

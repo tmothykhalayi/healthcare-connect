@@ -5,5 +5,3 @@ export enum Role {
   PHARMACY = 'pharmacy',
   SUPER_ADMIN = 'super_admin',
 }
-
-

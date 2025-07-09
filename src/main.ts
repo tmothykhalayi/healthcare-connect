@@ -1,18 +1,35 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe, Catch, ExceptionFilter, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  ValidationPipe,
+  Catch,
+  ExceptionFilter,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { LogsService } from './logs/logs.service';
 import helmet from 'helmet';
+import { IsEmail, IsString, MinLength } from 'class-validator';
+
+export class CreateAuthDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+}
 
 // Global Exception Filter with LogsService
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
     private readonly httpAdapter: any,
-    private readonly logsService: LogsService
+    private readonly logsService: LogsService,
   ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
@@ -40,7 +57,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // Log exception
     this.logsService.error(
       `Error on ${request.method} ${request.url}`,
-      JSON.stringify({ status, message })
+      JSON.stringify({ status, message }),
     );
 
     this.httpAdapter.reply(response, responseBody, status);
@@ -61,14 +78,7 @@ async function bootstrap() {
 
   // Global validation pipe
   app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-    }),
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
 
   const httpAdapter = app.getHttpAdapter();

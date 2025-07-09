@@ -20,7 +20,10 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiPropertyOptional({ example: true })
   isEmailVerified?: boolean;
 
-  @ApiPropertyOptional({ example: '2025-07-01T10:00:00Z', description: 'Last login timestamp' })
+  @ApiPropertyOptional({
+    example: '2025-07-01T10:00:00Z',
+    description: 'Last login timestamp',
+  })
   @IsOptional()
   @IsDateString()
   lastLogin?: string;

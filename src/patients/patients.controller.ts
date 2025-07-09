@@ -8,7 +8,8 @@ import {
   Delete,
   Req,
   UseGuards,
-  HttpException,HttpStatus,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -44,7 +45,9 @@ export class PatientsController {
       );
     }
     try {
-      const patient = await this.patientsRepository.save(createPatientDto as any);
+      const patient = await this.patientsRepository.save(
+        createPatientDto as any,
+      );
       return `Patient with ID ${patient.id} has been created`;
     } catch (error) {
       console.error('Error creating patient:', error);
@@ -56,7 +59,7 @@ export class PatientsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.PATIENT)
+  //@Roles(Role.ADMIN, Role.DOCTOR, Role.PATIENT)
   async findAll(@Req() req) {
     const currentUser = req.user;
 
@@ -177,7 +180,10 @@ export class PatientsController {
     @Body() updatePatientDto: UpdatePatientDto,
   ) {
     try {
-      await this.patientsRepository.update({ id: parseInt(id, 10) }, updatePatientDto);
+      await this.patientsRepository.update(
+        { id: parseInt(id, 10) },
+        updatePatientDto,
+      );
       return `Patient with ID ${id} has been updated`;
     } catch (error) {
       console.error('Error updating patient:', error);
@@ -191,7 +197,9 @@ export class PatientsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
-      const result = await this.patientsRepository.delete({ id: parseInt(id, 10) });
+      const result = await this.patientsRepository.delete({
+        id: parseInt(id, 10),
+      });
       if (result.affected === 0) {
         throw new HttpException(
           `No patient found with ID ${id}`,

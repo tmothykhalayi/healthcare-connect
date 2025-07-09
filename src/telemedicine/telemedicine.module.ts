@@ -9,10 +9,15 @@ import { TelemedicineAppointment } from './entities/telemedicine.entity';
 import { Payment } from '../payments/entities/payment.entity';
 import { Medical } from '../records/medical/entities/medical.entity';
 
-
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Patient, Doctor, TelemedicineAppointment, Medical, Payment]),
+    TypeOrmModule.forFeature([
+      Patient,
+      Doctor,
+      TelemedicineAppointment,
+      Medical,
+      Payment,
+    ]),
   ],
   controllers: [TelemedicineController],
   providers: [TelemedicineService],

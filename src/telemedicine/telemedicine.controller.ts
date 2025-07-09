@@ -1,14 +1,23 @@
 import {
   Controller,
-  Post,Body,
-  Get,Param,
+  Post,
+  Body,
+  Get,
+  Param,
   Patch,
   Delete,
   ParseIntPipe,
-  HttpStatus,UseGuards,
+  HttpStatus,
+  UseGuards,
   Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { TelemedicineService } from './telemedicine.service';
 import { CreateTelemedicineDto } from './dto/create-telemedicine.dto';
 import { UpdateTelemedicineDto } from './dto/update-telemedicine.dto';
@@ -27,18 +36,30 @@ export class TelemedicineController {
   @Post()
   @Roles(Role.PATIENT, Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Create a new telemedicine appointment' })
-  @ApiResponse({ status: 201, description: 'Telemedicine appointment created successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request - validation error or doctor not available' })
+  @ApiResponse({
+    status: 201,
+    description: 'Telemedicine appointment created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - validation error or doctor not available',
+  })
   @ApiResponse({ status: 404, description: 'Patient or doctor not found' })
   async createAppointment(
-    @Body() createTelemedicineDto: CreateTelemedicineDto
-  ): Promise<{ statusCode: number; message: string; data: TelemedicineAppointment }> {
+    @Body() createTelemedicineDto: CreateTelemedicineDto,
+  ): Promise<{
+    statusCode: number;
+    message: string;
+    data: TelemedicineAppointment;
+  }> {
     try {
-      const appointment = await this.telemedicineService.createAppointment(createTelemedicineDto);
+      const appointment = await this.telemedicineService.createAppointment(
+        createTelemedicineDto,
+      );
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Telemedicine appointment created successfully',
-        data: appointment
+        data: appointment,
       };
     } catch (error) {
       throw error;
@@ -48,14 +69,21 @@ export class TelemedicineController {
   @Get()
   @Roles(Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Get all telemedicine appointments' })
-  @ApiResponse({ status: 200, description: 'Telemedicine appointments retrieved successfully' })
-  async findAllAppointments(): Promise<{ statusCode: number; message: string; data: any[] }> {
+  @ApiResponse({
+    status: 200,
+    description: 'Telemedicine appointments retrieved successfully',
+  })
+  async findAllAppointments(): Promise<{
+    statusCode: number;
+    message: string;
+    data: any[];
+  }> {
     try {
       const appointments = await this.telemedicineService.findAllAppointments();
       return {
         statusCode: HttpStatus.OK,
         message: 'Telemedicine appointments retrieved successfully',
-        data: appointments
+        data: appointments,
       };
     } catch (error) {
       throw error;
@@ -69,14 +97,15 @@ export class TelemedicineController {
   @ApiResponse({ status: 200, description: 'Appointment found' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async findAppointmentById(
-    @Param('id', ParseIntPipe) id: number
+    @Param('id', ParseIntPipe) id: number,
   ): Promise<{ statusCode: number; message: string; data: any }> {
     try {
-      const appointment = await this.telemedicineService.findAppointmentById(id);
+      const appointment =
+        await this.telemedicineService.findAppointmentById(id);
       return {
         statusCode: HttpStatus.OK,
         message: 'Telemedicine appointment found',
-        data: appointment
+        data: appointment,
       };
     } catch (error) {
       throw error;
@@ -89,17 +118,23 @@ export class TelemedicineController {
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   @ApiResponse({ status: 200, description: 'Appointment updated successfully' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  @ApiResponse({ status: 400, description: 'Bad request - validation error or doctor not available' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - validation error or doctor not available',
+  })
   async updateAppointment(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateTelemedicineDto: UpdateTelemedicineDto
+    @Body() updateTelemedicineDto: UpdateTelemedicineDto,
   ): Promise<{ statusCode: number; message: string; data: any }> {
     try {
-      const appointment = await this.telemedicineService.updateAppointment(id, updateTelemedicineDto);
+      const appointment = await this.telemedicineService.updateAppointment(
+        id,
+        updateTelemedicineDto,
+      );
       return {
         statusCode: HttpStatus.OK,
         message: 'Telemedicine appointment updated successfully',
-        data: appointment
+        data: appointment,
       };
     } catch (error) {
       throw error;
@@ -113,13 +148,13 @@ export class TelemedicineController {
   @ApiResponse({ status: 200, description: 'Appointment deleted successfully' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async deleteAppointment(
-    @Param('id', ParseIntPipe) id: number
+    @Param('id', ParseIntPipe) id: number,
   ): Promise<{ statusCode: number; message: string }> {
     try {
       await this.telemedicineService.deleteAppointment(id);
       return {
         statusCode: HttpStatus.OK,
-        message: `Telemedicine appointment with ID ${id} deleted successfully`
+        message: `Telemedicine appointment with ID ${id} deleted successfully`,
       };
     } catch (error) {
       throw error;

@@ -1,7 +1,13 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateAdminDto } from './create-admin.dto';
-import { IsString, IsOptional, IsIn, IsDateString, Matches } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsIn,
+  IsDateString,
+  Matches,
+} from 'class-validator';
 
 export class UpdateAdminDto extends PartialType(CreateAdminDto) {
   @ApiPropertyOptional({ example: 'super_admin' })
@@ -19,25 +25,27 @@ export class UpdateAdminDto extends PartialType(CreateAdminDto) {
   @IsString()
   notes?: string;
 
-  @ApiPropertyOptional({ 
-    example: '15559999999', 
-    description: 'Admin phone number (digits only)' 
+  @ApiPropertyOptional({
+    example: '15559999999',
+    description: 'Admin phone number (digits only)',
   })
   @IsOptional()
   @IsString()
   @Matches(/^\d{10,15}$/, {
-    message: 'phoneNumber must be a valid phone number with 10-15 digits (no special characters)'
+    message:
+      'phoneNumber must be a valid phone number with 10-15 digits (no special characters)',
   })
   phoneNumber?: string;
 
-  @ApiPropertyOptional({ 
-    example: '15558888888', 
-    description: 'Emergency contact (digits only)' 
+  @ApiPropertyOptional({
+    example: '15558888888',
+    description: 'Emergency contact (digits only)',
   })
   @IsOptional()
   @IsString()
   @Matches(/^\d{10,15}$/, {
-    message: 'emergencyContact must be a valid phone number with 10-15 digits (no special characters)'
+    message:
+      'emergencyContact must be a valid phone number with 10-15 digits (no special characters)',
   })
   emergencyContact?: string;
 

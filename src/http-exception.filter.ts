@@ -18,7 +18,10 @@ interface MyResponseObj {
 
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
-  constructor(httpAdapter: any, private readonly logs: LogsService) {
+  constructor(
+    httpAdapter: any,
+    private readonly logs: LogsService,
+  ) {
     super(httpAdapter);
   }
 

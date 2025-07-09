@@ -16,6 +16,7 @@ import {
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import {} from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Public } from './decorators/public.decorator';
@@ -40,6 +41,38 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
   ) {}
+  // ===== SIGN UP =====
+  // @Public()
+  // @Post('signup')
+  // @ApiOperation({ summary: 'Sign up user' })
+  // async signUp(
+  //   @Body() createAuthDto: CreateAuthDto,
+  // ) {
+  //   // Check if the user already exists
+  //   const existingUser = await this.usersService.findByEmail(createAuthDto.email);
+  //   if (existingUser) {
+  //     throw new UnauthorizedException('User already exists');
+  //   }
+  // //create a new user
+  //   this.logger.log(`Creating user with email: ${createAuthDto.email}`);
+  //   // Validate the DTO
+  //   if (!createAuthDto.email || !createAuthDto.password) {
+  //     throw new UnauthorizedException('Email and password are required');
+  //   }
+
+  //   // Create the user
+  //   const result = await this.authService.signUp(createAuthDto);
+
+  //   // Check if we have the required user data
+  //   if (!result.user?.id || !result.user?.email) {
+  //     throw new UnauthorizedException('Invalid user data returned from authentication');
+  //   }
+
+  //   // Optionally, send a welcome email or any other post-signup logic
+  //   // await this.usersService.sendWelcomeEmail(result.user.email);
+
+  //   return result;
+  // }
 
   // ===== SIGN IN =====
   @Public()
@@ -55,7 +88,7 @@ export class AuthController {
 
     // Remove the welcome email logic or replace with an existing method
     // If you still want to send a welcome email, implement the method in UsersService
-    
+
     return result;
   }
 
@@ -69,7 +102,7 @@ export class AuthController {
     description: 'User successfully signed out',
     schema: {
       example: {
-        message: 'Successfully signed out'
+        message: 'Successfully signed out',
       },
     },
   })
@@ -96,7 +129,7 @@ export class AuthController {
   })
   async refreshTokens(
     @Req() req: any,
-    @Headers('authorization') authHeader: string
+    @Headers('authorization') authHeader: string,
   ) {
     const userId = req.user?.sub;
     const refreshToken = authHeader?.replace('Bearer ', '').trim();
@@ -117,7 +150,7 @@ export class AuthController {
     description: 'Password reset email sent successfully',
     schema: {
       example: {
-        message: 'Password reset email sent successfully'
+        message: 'Password reset email sent successfully',
       },
     },
   })
@@ -138,7 +171,7 @@ export class AuthController {
     description: 'Password reset successful',
     schema: {
       example: {
-        message: 'Password reset successful'
+        message: 'Password reset successful',
       },
     },
   })

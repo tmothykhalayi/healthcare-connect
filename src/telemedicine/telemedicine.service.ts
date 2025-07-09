@@ -1,9 +1,13 @@
-import { Injectable  , NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateTelemedicineDto } from './dto/create-telemedicine.dto';
 import { UpdateTelemedicineDto } from './dto/update-telemedicine.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Patient} from '../patients/entities/patient.entity';
+import { Repository, MoreThanOrEqual } from 'typeorm';
+import { Patient } from '../patients/entities/patient.entity';
 import { Doctor } from '../doctors/entities/doctor.entity';
 import { TelemedicineAppointment } from './entities/telemedicine.entity';
 import { Payment } from '../payments/entities/payment.entity';
@@ -29,63 +33,82 @@ export class TelemedicineService {
   ) {}
 
   // Create telemedicine appointment with checks
-  async createAppointment(dto: CreateTelemedicineDto): Promise<TelemedicineAppointment> {
-    const patient = await this.patientRepo.findOne({ where: { id: dto.patientId } });
-    if (!patient) throw new NotFoundException('Patient not found');
+  async createAppointment(
+  dto: CreateTelemedicineDto,
+): Promise<TelemedicineAppointment> {
+  // Find patient and doctor by ID
+  const patient = await this.patientRepo.findOne({ where: { id: dto.patientId } });
+  if (!patient) throw new NotFoundException('Patient not found');
 
-    const doctor = await this.doctorRepo.findOne({ where: { id: dto.doctorId } });
-    if (!doctor) throw new NotFoundException('Doctor not found');
+  const doctor = await this.doctorRepo.findOne({ where: { id: dto.doctorId } });
+  if (!doctor) throw new NotFoundException('Doctor not found');
 
-    //check if doctor is available 
-    const existingAppt = await this.telemedicineRepo.findOne({
-      where: {
-        doctor: { id: dto.doctorId },
-        appointmentDate: new Date(dto.appointmentDate),
-        appointmentTime: dto.appointmentTime,
-      },
-    });
-
-    if (existingAppt) {
-      throw new BadRequestException(
-        `Doctor is not available at ${dto.appointmentDate} ${dto.appointmentTime}`
-      );
-    }
-
-    const appointment = this.telemedicineRepo.create({
-      patient,
-      doctor,
-      appointmentDate: new Date(dto.appointmentDate),
-      appointmentTime: dto.appointmentTime,
-      duration: dto.duration || 30,
-      status: dto.status || 'scheduled',
-      notes: dto.notes,
-    });
-
-    return this.telemedicineRepo.save(appointment);
+  // Parse scheduledAt date from dto (assumed to be ISO string or Date)
+  const scheduledAt = new Date(dto.scheduledAt);
+  if (isNaN(scheduledAt.getTime())) {
+    throw new BadRequestException('Invalid scheduledAt date');
   }
+
+  // Check if doctor is available at scheduledAt time
+  const existingAppt = await this.telemedicineRepo.findOne({
+    where: {
+      doctor: { id: dto.doctorId },
+      scheduledAt: scheduledAt,
+    },
+    relations: ['doctor'],
+  });
+
+  if (existingAppt) {
+    throw new BadRequestException(
+      `Doctor is not available at ${scheduledAt.toISOString()}`,
+    );
+  }
+
+  // Create new TelemedicineAppointment entity
+  const appointment = this.telemedicineRepo.create({
+    scheduledAt,
+    status: dto.status || 'scheduled',
+    // add other properties as defined in TelemedicineAppointment entity
+  });
+
+  // Set relations after creation if needed
+  appointment.patient = patient;
+  appointment.doctor = doctor;
+  if ('notes' in appointment) {
+    // Only set notes if it exists in the entity
+    (appointment as any).notes = dto.notes;
+  }
+
+  // Save and return the appointment
+  return this.telemedicineRepo.save(appointment);
+}
 
   // Get all telemedicine appointments
   async findAllAppointments(): Promise<any[]> {
     const appointments = await this.telemedicineRepo.find({
       relations: ['patient', 'patient.user', 'doctor', 'doctor.user'],
-      order: { appointmentDate: 'DESC', appointmentTime: 'DESC' },
+      order: { scheduledAt: 'DESC' },
     });
-    
+
     // Return appointments with limited user details
-    return appointments.map(appointment => ({
+    return appointments.map((appointment) => ({
       ...appointment,
-      doctor: appointment.doctor ? {
-        id: appointment.doctor.id,
-        firstName: appointment.doctor.user?.firstName,
-        lastName: appointment.doctor.user?.lastName,
-        specialization: appointment.doctor.specialization
-      } : null,
-      patient: appointment.patient ? {
-        id: appointment.patient.id,
-        firstName: appointment.patient.user?.firstName,
-        lastName: appointment.patient.user?.lastName,
-        dateOfBirth: appointment.patient.dateOfBirth
-      } : null
+      doctor: appointment.doctor
+        ? {
+            id: appointment.doctor.id,
+            firstName: appointment.doctor.user?.firstName,
+            lastName: appointment.doctor.user?.lastName,
+            specialization: appointment.doctor.specialization,
+          }
+        : null,
+      patient: appointment.patient
+        ? {
+            id: appointment.patient.id,
+            firstName: appointment.patient.user?.firstName,
+            lastName: appointment.patient.user?.lastName,
+            dateOfBirth: appointment.patient.dateOfBirth,
+          }
+        : null,
     }));
   }
 
@@ -96,60 +119,73 @@ export class TelemedicineService {
       relations: ['patient', 'patient.user', 'doctor', 'doctor.user'],
     });
     if (!appointment) throw new NotFoundException('Appointment not found');
-    
+
     // Return appointment with limited user details
     return {
       ...appointment,
-      doctor: appointment.doctor ? {
-        id: appointment.doctor.id,
-        firstName: appointment.doctor.user?.firstName,
-        lastName: appointment.doctor.user?.lastName,
-        specialization: appointment.doctor.specialization
-      } : null,
-      patient: appointment.patient ? {
-        id: appointment.patient.id,
-        firstName: appointment.patient.user?.firstName,
-        lastName: appointment.patient.user?.lastName,
-        dateOfBirth: appointment.patient.dateOfBirth
-      } : null
+      doctor: appointment.doctor
+        ? {
+            id: appointment.doctor.id,
+            firstName: appointment.doctor.user?.firstName,
+            lastName: appointment.doctor.user?.lastName,
+            specialization: appointment.doctor.specialization,
+          }
+        : null,
+      patient: appointment.patient
+        ? {
+            id: appointment.patient.id,
+            firstName: appointment.patient.user?.firstName,
+            lastName: appointment.patient.user?.lastName,
+            dateOfBirth: appointment.patient.dateOfBirth,
+          }
+        : null,
     };
   }
 
   // Update appointment
-  async updateAppointment(id: number, dto: UpdateTelemedicineDto): Promise<TelemedicineAppointment> {
-    const appointment = await this.telemedicineRepo.findOne({ where: { id } }); 
+  async updateAppointment(
+    id: number,
+    dto: UpdateTelemedicineDto,
+  ): Promise<TelemedicineAppointment> {
+    const appointment = await this.telemedicineRepo.findOne({ where: { id } });
     if (!appointment) throw new NotFoundException('Appointment not found');
-    
+
     if (dto.patientId) {
-      const patient = await this.patientRepo.findOne({ where: { id: dto.patientId } });
+      const patient = await this.patientRepo.findOne({
+        where: { id: dto.patientId },
+      });
       if (!patient) throw new NotFoundException('Patient not found');
       appointment.patient = patient;
     }
-    
+
     if (dto.doctorId) {
-      const doctor = await this.doctorRepo.findOne({ where: { id: dto.doctorId } });
+      const doctor = await this.doctorRepo.findOne({
+        where: { id: dto.doctorId },
+      });
       if (!doctor) throw new NotFoundException('Doctor not found');
       appointment.doctor = doctor;
     }
-    
-    // Check if doctor is available at the new time
-    if (dto.appointmentDate || dto.appointmentTime) {
+
+    // Check if doctor is available at the new scheduledAt or appointmentTime
+    if (dto.scheduledAt || dto.appointmentTime) {
+      const scheduledAt = dto.scheduledAt
+        ? new Date(dto.scheduledAt)
+        : appointment['scheduledAt'];
       const existingAppt = await this.telemedicineRepo.findOne({
         where: {
-          doctor: { id: dto.doctorId || appointment.doctorId },
-          appointmentDate: dto.appointmentDate ? new Date(dto.appointmentDate) : appointment.appointmentDate,
-          appointmentTime: dto.appointmentTime || appointment.appointmentTime,
+          doctor: { id: dto.doctorId || (appointment.doctor && appointment.doctor.id) },
+          scheduledAt: scheduledAt,
         },
       });
       if (existingAppt && existingAppt.id !== id) {
         throw new BadRequestException(
-          `Doctor is not available at ${dto.appointmentDate} ${dto.appointmentTime}`
+          `Doctor is not available at ${scheduledAt.toISOString()}`,
         );
       }
     }
-    
-    if (dto.appointmentDate !== undefined) {
-      appointment.appointmentDate = new Date(dto.appointmentDate);
+
+    if (dto.scheduledAt !== undefined) {
+      appointment.scheduledAt = new Date(dto.scheduledAt);
     }
     if (dto.appointmentTime !== undefined) {
       appointment.appointmentTime = dto.appointmentTime;
@@ -165,7 +201,7 @@ export class TelemedicineService {
     }
     return this.telemedicineRepo.save(appointment);
   }
-  
+
   // Delete appointment
   async deleteAppointment(id: number): Promise<void> {
     const appointment = await this.telemedicineRepo.findOne({ where: { id } });
@@ -175,30 +211,36 @@ export class TelemedicineService {
 
   // Get appointments by patient
   async findAppointmentsByPatient(patientId: number): Promise<any[]> {
-    const patient = await this.patientRepo.findOne({ where: { id: patientId } });
+    const patient = await this.patientRepo.findOne({
+      where: { id: patientId },
+    });
     if (!patient) throw new NotFoundException('Patient not found');
 
     const appointments = await this.telemedicineRepo.find({
       where: { patient: { id: patientId } },
       relations: ['patient', 'patient.user', 'doctor', 'doctor.user'],
-      order: { appointmentDate: 'DESC', appointmentTime: 'DESC' },
+      order: { scheduledAt: 'DESC', appointmentTime: 'DESC' },
     });
-    
+
     // Return appointments with limited user details
-    return appointments.map(appointment => ({
+    return appointments.map((appointment) => ({
       ...appointment,
-      doctor: appointment.doctor ? {
-        id: appointment.doctor.id,
-        firstName: appointment.doctor.user?.firstName,
-        lastName: appointment.doctor.user?.lastName,
-        specialization: appointment.doctor.specialization
-      } : null,
-      patient: appointment.patient ? {
-        id: appointment.patient.id,
-        firstName: appointment.patient.user?.firstName,
-        lastName: appointment.patient.user?.lastName,
-        dateOfBirth: appointment.patient.dateOfBirth
-      } : null
+      doctor: appointment.doctor
+        ? {
+            id: appointment.doctor.id,
+            firstName: appointment.doctor.user?.firstName,
+            lastName: appointment.doctor.user?.lastName,
+            specialization: appointment.doctor.specialization,
+          }
+        : null,
+      patient: appointment.patient
+        ? {
+            id: appointment.patient.id,
+            firstName: appointment.patient.user?.firstName,
+            lastName: appointment.patient.user?.lastName,
+            dateOfBirth: appointment.patient.dateOfBirth,
+          }
+        : null,
     }));
   }
 
@@ -210,47 +252,51 @@ export class TelemedicineService {
     const appointments = await this.telemedicineRepo.find({
       where: { doctor: { id: doctorId } },
       relations: ['patient', 'patient.user', 'doctor', 'doctor.user'],
-      order: { appointmentDate: 'DESC', appointmentTime: 'DESC' },
+      order: { scheduledAt: 'DESC', appointmentTime: 'DESC' },
     });
-    
+
     // Return appointments with limited user details
-    return appointments.map(appointment => ({
+    return appointments.map((appointment) => ({
       ...appointment,
-      doctor: appointment.doctor ? {
-        id: appointment.doctor.id,
-        firstName: appointment.doctor.user?.firstName,
-        lastName: appointment.doctor.user?.lastName,
-        specialization: appointment.doctor.specialization
-      } : null,
-      patient: appointment.patient ? {
-        id: appointment.patient.id,
-        firstName: appointment.patient.user?.firstName,
-        lastName: appointment.patient.user?.lastName,
-        dateOfBirth: appointment.patient.dateOfBirth
-      } : null
+      doctor: appointment.doctor
+        ? {
+            id: appointment.doctor.id,
+            firstName: appointment.doctor.user?.firstName,
+            lastName: appointment.doctor.user?.lastName,
+            specialization: appointment.doctor.specialization,
+          }
+        : null,
+      patient: appointment.patient
+        ? {
+            id: appointment.patient.id,
+            firstName: appointment.patient.user?.firstName,
+            lastName: appointment.patient.user?.lastName,
+            dateOfBirth: appointment.patient.dateOfBirth,
+          }
+        : null,
     }));
   }
 
   // Get telemedicine statistics
   async getTelemedicineStats(): Promise<any> {
     const totalAppointments = await this.telemedicineRepo.count();
-    const scheduledAppointments = await this.telemedicineRepo.count({ 
-      where: { status: 'scheduled' } 
+    const scheduledAppointments = await this.telemedicineRepo.count({
+      where: { status: 'scheduled' },
     });
-    const completedAppointments = await this.telemedicineRepo.count({ 
-      where: { status: 'completed' } 
+    const completedAppointments = await this.telemedicineRepo.count({
+      where: { status: 'completed' },
     });
-    const cancelledAppointments = await this.telemedicineRepo.count({ 
-      where: { status: 'cancelled' } 
+    const cancelledAppointments = await this.telemedicineRepo.count({
+      where: { status: 'cancelled' },
     });
 
     // Get appointments by date range (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const recentAppointments = await this.telemedicineRepo.count({
       where: {
-        appointmentDate: new Date(thirtyDaysAgo),
+        scheduledAt: MoreThanOrEqual(thirtyDaysAgo),
       },
     });
 
@@ -273,7 +319,10 @@ export class TelemedicineService {
       recent: recentAppointments,
       uniquePatients: uniquePatients.length,
       uniqueDoctors: uniqueDoctors.length,
-      completionRate: totalAppointments > 0 ? (completedAppointments / totalAppointments * 100).toFixed(2) : 0,
+      completionRate:
+        totalAppointments > 0
+          ? ((completedAppointments / totalAppointments) * 100).toFixed(2)
+          : 0,
     };
   }
 }

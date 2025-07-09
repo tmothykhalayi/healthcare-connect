@@ -18,10 +18,11 @@ import { PaymentsModule } from './payments/payments.module';
 import { DatabaseModule } from './database/database.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { LoggerMiddleware } from './logger.middleware';
-import{LogsModule} from './logs/logs.module';
+import { LogsModule } from './logs/logs.module';
 import { APP_GUARD } from '@nestjs/core';
 import { TelemedicineModule } from './telemedicine/telemedicine.module';
 import { MailModule } from './mail/mail.module';
+import { PharmacistModule } from './pharmacist/pharmacist.module';
 
 @Module({
   imports: [
@@ -29,20 +30,27 @@ import { MailModule } from './mail/mail.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-     ThrottlerModule.forRoot({
-    ttl: 60,   // time window in seconds
-    limit: 10, // max 10 requests per IP
-}),
+    ThrottlerModule.forRoot({
+      ttl: 60, // time window in seconds
+      limit: 10, // max 10 requests per IP
+    }),
     AuthModule,
-    UsersModule, DoctorsModule, 
-    PatientsModule, AppointmentsModule,
-     AdminModule, MedicalModule, 
-      MedicinesModule, OrdersModule, 
-     PaymentsModule, DatabaseModule, 
-     LogsModule,
-     PharmacyModule,
-     TelemedicineModule,
-     MailModule],
+    UsersModule,
+    DoctorsModule,
+    PatientsModule,
+    AppointmentsModule,
+    AdminModule,
+    MedicalModule,
+    MedicinesModule,
+    OrdersModule,
+    PaymentsModule,
+    DatabaseModule,
+    LogsModule,
+    PharmacyModule,
+    TelemedicineModule,
+    MailModule,
+    PharmacistModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
@@ -54,8 +62,6 @@ import { MailModule } from './mail/mail.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes('*'); // Apply to all routes
+    consumer.apply(LoggerMiddleware).forRoutes('*'); // Apply to all routes
   }
 }

@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsString, IsOptional, IsPositive, IsIn, IsDateString, Min, Max } from 'class-validator';
+import {
+  IsInt,
+  IsString,
+  IsOptional,
+  IsPositive,
+  IsIn,
+  IsDateString,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateTelemedicineDto {
@@ -15,7 +24,10 @@ export class CreateTelemedicineDto {
   @IsPositive()
   doctorId: number;
 
-  @ApiProperty({ example: '2025-07-06', description: 'Appointment date (YYYY-MM-DD)' })
+  @ApiProperty({
+    example: '2025-07-06',
+    description: 'Appointment date (YYYY-MM-DD)',
+  })
   @IsDateString()
   appointmentDate: string;
 
@@ -23,7 +35,11 @@ export class CreateTelemedicineDto {
   @IsString()
   appointmentTime: string;
 
-  @ApiPropertyOptional({ example: 30, description: 'Duration in minutes', default: 30 })
+  @ApiPropertyOptional({
+    example: 30,
+    description: 'Duration in minutes',
+    default: 30,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -31,21 +47,40 @@ export class CreateTelemedicineDto {
   @Max(120)
   duration?: number;
 
-  @ApiPropertyOptional({ 
-    example: 'scheduled', 
+  @ApiPropertyOptional({
+    example: 'scheduled',
     description: 'Appointment status',
-    enum: ['scheduled', 'confirmed', 'in-progress', 'completed', 'cancelled', 'no-show'],
-    default: 'scheduled'
+    enum: [
+      'scheduled',
+      'confirmed',
+      'in-progress',
+      'completed',
+      'cancelled',
+      'no-show',
+    ],
+    default: 'scheduled',
   })
   @IsOptional()
-  @IsIn(['scheduled', 'confirmed', 'in-progress', 'completed', 'cancelled', 'no-show'])
+  @IsIn([
+    'scheduled',
+    'confirmed',
+    'in-progress',
+    'completed',
+    'cancelled',
+    'no-show',
+  ])
   status?: string;
 
-  @ApiPropertyOptional({ 
-    example: 'Telemedicine video call for routine consultation', 
-    description: 'Additional notes about the appointment' 
+  @ApiPropertyOptional({
+    example: 'Telemedicine video call for routine consultation',
+    description: 'Additional notes about the appointment',
   })
   @IsOptional()
   @IsString()
   notes?: string;
+
+  
+  scheduledAt: string | Date;
+ 
+
 }

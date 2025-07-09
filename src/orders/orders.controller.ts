@@ -1,5 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards , Logger, UnauthorizedException,ParseIntPipe ,HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth ,ApiParam } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Logger,
+  UnauthorizedException,
+  ParseIntPipe,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -16,7 +35,7 @@ export class OrdersController {
   constructor(private ordersService: OrdersService) {}
 
   @Post()
-  @Roles(Role.ADMIN ,Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACY)
   @ApiOperation({ summary: 'Create a new order' })
   @ApiResponse({ status: 201, description: 'Order created successfully' })
   @ApiResponse({ status: 409, description: 'Order already exists' })
@@ -27,7 +46,7 @@ export class OrdersController {
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Order created successfully',
-        data: order
+        data: order,
       };
     } catch (error) {
       throw error;
@@ -35,7 +54,7 @@ export class OrdersController {
   }
 
   @Get()
-  @Roles(Role.ADMIN,Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACY)
   @ApiOperation({ summary: 'Get all orders' })
   @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
   async findAll(orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC') {
@@ -43,10 +62,10 @@ export class OrdersController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Orders retrieved successfully',
-      data: orders
+      data: orders,
     };
   }
-@Roles(Role.ADMIN,Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACY)
   @Get('status/:status')
   @ApiOperation({ summary: 'Get orders by status' })
   @ApiParam({ name: 'status', description: 'Order status' })
@@ -56,14 +75,18 @@ export class OrdersController {
     orderBy: string = 'orderDate',
     order: 'ASC' | 'DESC' = 'ASC',
   ) {
-    const orders = await this.ordersService.findByStatus(status, orderBy, order);
+    const orders = await this.ordersService.findByStatus(
+      status,
+      orderBy,
+      order,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Orders retrieved successfully',
-      data: orders
+      data: orders,
     };
   }
-@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @Get('patient/:patientId')
   @ApiOperation({ summary: 'Get orders by patient ID' })
   @ApiParam({ name: 'patientId', description: 'Patient ID' })
@@ -73,16 +96,20 @@ export class OrdersController {
     orderBy: string = 'orderDate',
     order: 'ASC' | 'DESC' = 'ASC',
   ) {
-    const orders = await this.ordersService.findByPatientId(patientId, orderBy, order);
+    const orders = await this.ordersService.findByPatientId(
+      patientId,
+      orderBy,
+      order,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Orders retrieved successfully',
-      data: orders
+      data: orders,
     };
-  } 
+  }
 
   @Get(':id')
-  @Roles(Role.ADMIN,Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACY)
   @ApiOperation({ summary: 'Get order by ID' })
   @ApiParam({ name: 'id', description: 'Order ID' })
   @ApiResponse({ status: 200, description: 'Order found' })
@@ -92,31 +119,39 @@ export class OrdersController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Order found',
-      data: order
+      data: order,
     };
   }
 
-  @Roles(Role.ADMIN,Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACY)
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update order status' })
   @ApiParam({ name: 'id', description: 'Order ID' })
-  @ApiResponse({ status: 200, description: 'Order status updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order status updated successfully',
+  })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  async updateStatus(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
     if (!updateOrderDto.status) {
       return {
         statusCode: HttpStatus.BAD_REQUEST,
-        message: 'Status is required'
+        message: 'Status is required',
       };
     }
-    
-    const result = await this.ordersService.updateStatus(id, updateOrderDto.status);
+
+    const result = await this.ordersService.updateStatus(
+      id,
+      updateOrderDto.status,
+    );
     return {
       statusCode: HttpStatus.OK,
-      ...result
+      ...result,
     };
   }
-
 
   @Patch(':id')
   @Roles(Role.ADMIN)
@@ -124,15 +159,18 @@ export class OrdersController {
   @ApiParam({ name: 'id', description: 'Order ID' })
   @ApiResponse({ status: 200, description: 'Order updated successfully' })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  async update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
     const result = await this.ordersService.update(id, updateOrderDto);
     return {
       statusCode: HttpStatus.OK,
-      ...result
+      ...result,
     };
   }
 
-  @Roles(Role.ADMIN ,Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACY)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete order' })
   @ApiParam({ name: 'id', description: 'Order ID' })
@@ -142,7 +180,7 @@ export class OrdersController {
     const result = await this.ordersService.remove(id);
     return {
       statusCode: HttpStatus.OK,
-      ...result
+      ...result,
     };
-  } 
+  }
 }

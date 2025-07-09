@@ -3,10 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-export type JWTPayload ={
-  sub :number ;
-  email:string ;
-  role:string;
+export type JWTPayload = {
+  sub: number;
+  email: string;
+  role: string;
 };
 
 @Injectable()
@@ -16,7 +16,7 @@ export class AtStrategy extends PassportStrategy(Strategy, 'jwt-at') {
     if (!secret) {
       throw new Error('JWT_ACCESS_TOKEN_SECRET not configured');
     }
-    
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: secret,

@@ -12,4 +12,3 @@ import { Patient } from '../patients/entities/patient.entity';
   exports: [OrdersService],
 })
 export class OrdersModule {}
-

@@ -1,6 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
+import { Pharmacy } from '../../pharmacy/entities/pharmacy.entity';
 
 @Entity('medicines')
 export class Medicine {
@@ -8,7 +19,9 @@ export class Medicine {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ description: 'User ID (foreign key to User - who added this medicine)' })
+  @ApiProperty({
+    description: 'User ID (foreign key to User - who added this medicine)',
+  })
   @Column()
   userId: number;
 
@@ -45,7 +58,6 @@ export class Medicine {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // Additional useful fields for medicines
   @ApiProperty({ description: 'Medicine category' })
   @Column({ nullable: true })
   category: string;
@@ -73,4 +85,13 @@ export class Medicine {
   @ApiProperty({ description: 'Minimum stock level' })
   @Column({ default: 10 })
   minimumStockLevel: number;
+
+  // Many-to-many relationship: Medicine available in multiple pharmacies
+  @ManyToMany(() => Pharmacy, (pharmacy) => pharmacy.medicines)
+  @JoinTable({
+    name: 'pharmacy_medicines', // join table name
+    joinColumn: { name: 'medicineId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'pharmacyId', referencedColumnName: 'id' },
+  })
+  pharmacies: Pharmacy[];
 }

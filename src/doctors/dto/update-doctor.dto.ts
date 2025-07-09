@@ -1,7 +1,13 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateDoctorDto } from './create-doctor.dto';
-import { IsInt, IsString, IsOptional, Matches, IsPositive } from 'class-validator';
+import {
+  IsInt,
+  IsString,
+  IsOptional,
+  Matches,
+  IsPositive,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateDoctorDto extends PartialType(CreateDoctorDto) {
@@ -25,7 +31,7 @@ export class UpdateDoctorDto extends PartialType(CreateDoctorDto) {
   @ApiPropertyOptional({ example: '+15559876543' })
   @IsOptional()
   @Matches(/^\+?[1-9]\d{1,14}$/, {
-    message: 'phoneNumber must be a valid international phone number'
+    message: 'phoneNumber must be a valid international phone number',
   })
   phoneNumber?: string;
 

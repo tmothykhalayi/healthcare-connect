@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsEmail, IsOptional, IsBoolean, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsEmail,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+} from 'class-validator';
 
 export class CreatePharmacyDto {
   @ApiProperty({ description: 'User ID (from users table)' })

@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards, Query, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  HttpStatus,
+  ParseIntPipe,
+  Req,
+} from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -6,73 +19,113 @@ import { UserRole, Users } from '../users/entities/user.entity';
 import { AtGuard, RolesGuard } from '../auth/guards';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { Request } from 'express';
 
 @ApiTags('appointments')
 @ApiBearerAuth()
-@UseGuards(AtGuard, RolesGuard)
+//@UseGuards(AtGuard, RolesGuard)
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Create a new appointment' })
   @ApiResponse({ status: 201, description: 'Appointment created successfully' })
   @ApiResponse({ status: 409, description: 'Scheduling conflict' })
   async create(@Body() createAppointmentDto: CreateAppointmentDto) {
     try {
-      const appointment = await this.appointmentsService.create(createAppointmentDto);
+      const appointment =
+        await this.appointmentsService.create(createAppointmentDto);
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Appointment created successfully',
-        data: appointment
+        data: appointment,
       };
     } catch (error) {
       throw error;
     }
   }
 
+  @Get('doctor')
+  async findByCurrentDoctor(@Req() req: any) {
+    console.log('Request user:', req.user);
+
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found in request');
+    }
+
+    const appointments = await this.appointmentsService.findByDoctorId(
+      req.user.id,
+    );
+    return {
+      statusCode: 200,
+      message: 'Appointments for the current doctor retrieved successfully',
+      data: appointments,
+    };
+  }
+
+  @Get('doctor/:doctorId')
+  async findByDoctorId(@Param('doctorId', ParseIntPipe) doctorId: number) {
+    const appointments =
+      await this.appointmentsService.findByDoctorId(doctorId);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Doctor appointments retrieved successfully',
+      data: appointments,
+    };
+  }
+
   @Get()
-  @Roles(Role.ADMIN)
+  ///@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all appointments' })
-  @ApiResponse({ status: 200, description: 'Appointments retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Appointments retrieved successfully',
+  })
   async findAll() {
     const appointments = await this.appointmentsService.findAll();
     return {
       statusCode: HttpStatus.OK,
       message: 'Appointments retrieved successfully',
-      data: appointments
+      data: appointments,
     };
   }
 
   @Get('today')
-  @Roles(Role.ADMIN, Role.DOCTOR)
-  @ApiOperation({ summary: 'Get today\'s appointments' })
+  //@Roles(Role.ADMIN, Role.DOCTOR)
+  @ApiOperation({ summary: "Get today's appointments" })
   async findToday() {
     const appointments = await this.appointmentsService.findToday();
     return {
       statusCode: HttpStatus.OK,
-      message: 'Today\'s appointments retrieved successfully',
-      data: appointments
+      message: "Today's appointments retrieved successfully",
+      data: appointments,
     };
   }
 
   @Get('upcoming')
-  @Roles(Role.ADMIN)
+  // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get upcoming appointments (next 7 days)' })
   async findUpcoming() {
     const appointments = await this.appointmentsService.findUpcoming();
     return {
       statusCode: HttpStatus.OK,
       message: 'Upcoming appointments retrieved successfully',
-      data: appointments
+      data: appointments,
     };
   }
 
-
   @Get('status/:status')
-@Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get appointments by status' })
   @ApiParam({ name: 'status', description: 'Appointment status' })
   async findByStatus(@Param('status') status: string) {
@@ -80,39 +133,26 @@ export class AppointmentsController {
     return {
       statusCode: HttpStatus.OK,
       message: `Appointments with status '${status}' retrieved successfully`,
-      data: appointments
-    };
-  }
-
-  @Get('doctor/:doctorId')
-@Roles(Role.ADMIN)
-
-  @ApiOperation({ summary: 'Get appointments by doctor ID' })
-  @ApiParam({ name: 'doctorId', description: 'Doctor ID' })
-  async findByDoctorId(@Param('doctorId', ParseIntPipe) doctorId: number) {
-    const appointments = await this.appointmentsService.findByDoctorId(doctorId);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Doctor appointments retrieved successfully',
-      data: appointments
+      data: appointments,
     };
   }
 
   @Get('patient/:patientId')
-@Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get appointments by patient ID' })
   @ApiParam({ name: 'patientId', description: 'Patient ID' })
   async findByPatientId(@Param('patientId', ParseIntPipe) patientId: number) {
-    const appointments = await this.appointmentsService.findByPatientId(patientId);
+    const appointments =
+      await this.appointmentsService.findByPatientId(patientId);
     return {
       statusCode: HttpStatus.OK,
       message: 'Patient appointments retrieved successfully',
-      data: appointments
+      data: appointments,
     };
   }
 
   @Get(':id')
-@Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get appointment by ID' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -120,31 +160,37 @@ export class AppointmentsController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Appointment found',
-      data: appointment
+      data: appointment,
     };
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update appointment' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateAppointmentDto: UpdateAppointmentDto) {
-    const result = await this.appointmentsService.update(id, updateAppointmentDto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAppointmentDto: UpdateAppointmentDto,
+  ) {
+    const result = await this.appointmentsService.update(
+      id,
+      updateAppointmentDto,
+    );
     return {
       statusCode: HttpStatus.OK,
-      ...result
+      ...result,
     };
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete appointment' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   async remove(@Param('id', ParseIntPipe) id: number) {
     const result = await this.appointmentsService.remove(id);
     return {
       statusCode: HttpStatus.OK,
-      ...result
+      ...result,
     };
   }
 }

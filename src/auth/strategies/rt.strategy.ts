@@ -44,12 +44,18 @@ export class RfStrategy extends PassportStrategy(Strategy, 'jwt-rt') {
 
     console.log('Auth header:', authHeader);
     console.log('Decoded payload:', payload);
-    const user = await this.userRepository.findOne({ where: { id: payload.sub }, select: ['id', 'email', 'role', 'hashedRefreshToken'] });
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+      select: ['id', 'email', 'role', 'hashedRefreshToken'],
+    });
     console.log('User from DB:', user);
     if (user) {
       console.log('User hashedRefreshToken:', user.hashedRefreshToken);
     }
-    const refreshTokenMatches = user && user.hashedRefreshToken ? await bcrypt.compare(refreshToken, user.hashedRefreshToken) : false;
+    const refreshTokenMatches =
+      user && user.hashedRefreshToken
+        ? await bcrypt.compare(refreshToken, user.hashedRefreshToken)
+        : false;
     console.log('Refresh token matches:', refreshTokenMatches);
 
     if (!refreshTokenMatches || !user) {
