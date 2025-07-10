@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsNumber,
@@ -6,6 +6,8 @@ import {
   IsOptional,
   IsBoolean,
   IsArray,
+  ArrayNotEmpty,
+  ArrayUnique,
 } from 'class-validator';
 
 export class CreatePharmacyDto {
@@ -29,42 +31,48 @@ export class CreatePharmacyDto {
   @IsString()
   address: string;
 
-  @ApiProperty({ description: 'Pharmacy email', required: false })
+  @ApiPropertyOptional({ description: 'Pharmacy email' })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiProperty({ description: 'Pharmacy opening hours', required: false })
+  @ApiPropertyOptional({ description: 'Pharmacy opening hours' })
   @IsOptional()
   @IsString()
   openingHours?: string;
 
-  @ApiProperty({ description: 'Services offered', required: false })
+  @ApiPropertyOptional({ description: 'Services offered' })
   @IsOptional()
   @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @IsString({ each: true })
   services?: string[];
 
-  @ApiProperty({ description: 'Delivery available', required: false })
+  @ApiPropertyOptional({ description: 'Delivery available' })
   @IsOptional()
   @IsBoolean()
   deliveryAvailable?: boolean;
 
-  @ApiProperty({ description: 'Online ordering available', required: false })
+  @ApiPropertyOptional({ description: 'Online ordering available' })
   @IsOptional()
   @IsBoolean()
   onlineOrderingAvailable?: boolean;
 
-  @ApiProperty({ description: 'Insurance plans accepted', required: false })
+  @ApiPropertyOptional({ description: 'Insurance plans accepted' })
   @IsOptional()
   @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @IsString({ each: true })
   insurancePlansAccepted?: string[];
 
-  @ApiProperty({ description: 'Pharmacy status', required: false })
+  @ApiPropertyOptional({ description: 'Pharmacy status' })
   @IsOptional()
   @IsString()
   status?: string;
 
-  @ApiProperty({ description: 'Additional notes', required: false })
+  @ApiPropertyOptional({ description: 'Additional notes' })
   @IsOptional()
   @IsString()
   notes?: string;

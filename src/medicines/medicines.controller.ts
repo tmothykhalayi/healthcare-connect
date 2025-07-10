@@ -20,19 +20,19 @@ import {
 import { MedicinesService } from './medicines.service';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
-import { AtGuard, RolesGuard } from '../auth/guards';
+//import { AtGuard, RolesGuard } from '../auth/guards';
 import { Role } from '../auth/enums/role.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiBearerAuth()
-@UseGuards(AtGuard, RolesGuard)
+//@UseGuards(AtGuard, RolesGuard)
 @ApiTags('medicines')
 @Controller('medicines')
 export class MedicinesController {
   constructor(private readonly medicinesService: MedicinesService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  //@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Create a new medicine' })
   @ApiResponse({ status: 201, description: 'Medicine created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid medicine data' })
@@ -41,7 +41,7 @@ export class MedicinesController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  //@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get all medicines' })
   @ApiResponse({ status: 200, description: 'Medicines retrieved successfully' })
   findAll() {
@@ -60,7 +60,7 @@ export class MedicinesController {
   }
 
   @Get('expiring-soon')
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get medicines expiring soon' })
   @ApiQuery({
     name: 'days',
@@ -88,7 +88,7 @@ export class MedicinesController {
   }
 
   @Get('prescription')
-  @Roles(Role.ADMIN, Role.PHARMACY, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.PHARMACIST, Role.DOCTOR)
   @ApiOperation({ summary: 'Get prescription medicines' })
   @ApiResponse({
     status: 200,
@@ -99,7 +99,7 @@ export class MedicinesController {
   }
 
   @Get('otc')
-  @Roles(Role.ADMIN, Role.PHARMACY, Role.DOCTOR, Role.PATIENT)
+  @Roles(Role.ADMIN, Role.PHARMACIST, Role.DOCTOR, Role.PATIENT)
   @ApiOperation({ summary: 'Get over-the-counter medicines' })
   @ApiResponse({
     status: 200,
@@ -110,7 +110,7 @@ export class MedicinesController {
   }
 
   @Get('search')
-  @Roles(Role.ADMIN, Role.PHARMACY, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.PHARMACIST, Role.DOCTOR)
   @ApiOperation({ summary: 'Search medicines' })
   @ApiQuery({ name: 'q', description: 'Search query' })
   @ApiResponse({ status: 200, description: 'Search results' })
@@ -119,7 +119,7 @@ export class MedicinesController {
   }
 
   @Get('category/:category')
-  @Roles(Role.ADMIN, Role.PHARMACY, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.PHARMACIST, Role.DOCTOR)
   @ApiOperation({ summary: 'Get medicines by category' })
   @ApiParam({ name: 'category', description: 'Medicine category' })
   @ApiResponse({
@@ -131,7 +131,7 @@ export class MedicinesController {
   }
 
   @Get('manufacturer/:manufacturer')
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get medicines by manufacturer' })
   @ApiParam({ name: 'manufacturer', description: 'Medicine manufacturer' })
   @ApiResponse({
@@ -143,7 +143,7 @@ export class MedicinesController {
   }
 
   @Get('user/:userId')
-  @Roles(Role.ADMIN, Role.PHARMACY, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.PHARMACIST, Role.DOCTOR)
   @ApiOperation({ summary: 'Get medicines by user ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @ApiQuery({ name: 'doctorId', description: 'Doctor ID', required: true })
@@ -159,7 +159,7 @@ export class MedicinesController {
   }
 
   @Get('price-range')
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get medicines by price range' })
   @ApiQuery({ name: 'min', description: 'Minimum price' })
   @ApiQuery({ name: 'max', description: 'Maximum price' })
@@ -172,7 +172,7 @@ export class MedicinesController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get medicine by ID' })
   @ApiParam({ name: 'id', description: 'Medicine ID' })
   @ApiResponse({ status: 200, description: 'Medicine found' })
@@ -182,7 +182,7 @@ export class MedicinesController {
   }
 
   @Patch(':id')
-  @Roles(Role.PHARMACY)
+  @Roles(Role.PHARMACIST)
   @ApiOperation({ summary: 'Update medicine by ID' })
   @ApiParam({ name: 'id', description: 'Medicine ID' })
   @ApiResponse({ status: 200, description: 'Medicine updated successfully' })
@@ -195,7 +195,7 @@ export class MedicinesController {
   }
 
   @Patch(':id/stock')
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  @Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Update medicine stock' })
   @ApiParam({ name: 'id', description: 'Medicine ID' })
   @ApiResponse({ status: 200, description: 'Stock updated successfully' })
@@ -218,7 +218,7 @@ export class MedicinesController {
     return this.medicinesService.updateStatus(+id, statusData.status);
   }
 
-  @Roles(Role.ADMIN, Role.PHARMACY, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.PHARMACIST, Role.DOCTOR)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete medicine by ID' })
   @ApiParam({ name: 'id', description: 'Medicine ID' })

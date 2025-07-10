@@ -14,10 +14,10 @@ import {
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
-import { UserRole, Users } from '../users/entities/user.entity';
-import { AtGuard, RolesGuard } from '../auth/guards';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../auth/enums/role.enum';
+//import { UserRole, Users } from '../users/entities/user.entity';
+//import { AtGuard, RolesGuard } from '../auth/guards';
+//import { Roles } from '../auth/decorators/roles.decorator';
+//import { Role } from '../auth/enums/role.enum';
 import {
   ApiTags,
   ApiOperation,
@@ -29,14 +29,14 @@ import {
 
 @ApiTags('payments')
 @Controller('payments')
-@UseGuards(AtGuard, RolesGuard)
+//@UseGuards(AtGuard, RolesGuard)
 @ApiBearerAuth()
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
   // Create a new payment
 
   @Post()
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  ///@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Create a new payment' })
   @ApiResponse({ status: 201, description: 'Payment created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -55,7 +55,7 @@ export class PaymentsController {
 
   // Get all payments
   @Get()
-  @Roles(Role.ADMIN)
+  ///@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all payments' })
   @ApiResponse({ status: 200, description: 'Payments retrieved successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -73,7 +73,7 @@ export class PaymentsController {
   }
   // Get a payment by ID
   @Get(':id')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
   @ApiResponse({ status: 200, description: 'Payment retrieved successfully' })
@@ -97,7 +97,7 @@ export class PaymentsController {
 
   // Update a payment by ID
   @Put(':id')
-  @Roles(Role.ADMIN, Role.PHARMACY)
+  //@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Update a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
   @ApiResponse({ status: 200, description: 'Payment updated successfully' })
@@ -127,7 +127,7 @@ export class PaymentsController {
 
   // Delete a payment by ID
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
   @ApiResponse({ status: 200, description: 'Payment deleted successfully' })

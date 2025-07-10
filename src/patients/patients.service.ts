@@ -176,4 +176,8 @@ export class PatientsService {
       );
     }
   }
+
+  async deleteByUserId(userId: number): Promise<void> {
+    await this.patientsRepository.delete({ user: { id: userId } });
+  }
 }

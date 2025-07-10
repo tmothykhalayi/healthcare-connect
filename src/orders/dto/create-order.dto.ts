@@ -50,4 +50,9 @@ export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   OrderId: string;
+
+  
+  @IsNumber()
+  @IsNotEmpty()
+  pharmacyId: number;
 }

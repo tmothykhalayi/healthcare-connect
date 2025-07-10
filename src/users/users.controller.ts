@@ -56,7 +56,7 @@ export class UsersController {
 
   // Get all users
   @Get()
-  //@Roles(Role.ADMIN)
+  // @Roles(Role.ADMIN) // <--- Commented out to remove admin-only restriction
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   async findAll() {

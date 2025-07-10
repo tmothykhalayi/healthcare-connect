@@ -104,12 +104,20 @@ export class UsersService {
   }
 
   // Find all users with optional role filter
-  async findAll(): Promise<Users[]> {
+  async findAll(): Promise<any[]> {
     try {
       // First try with basic query without relations
-      return await this.usersRepository.find({
+      const users = await this.usersRepository.find({
         order: { createdAt: 'DESC' },
       });
+      // Map to only return id, email, firstName, lastName, and role
+      return users.map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      }));
     } catch (error) {
       console.error('Error in findAll:', error);
       throw new InternalServerErrorException('Failed to fetch users');

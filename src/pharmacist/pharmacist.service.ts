@@ -99,4 +99,8 @@ export class PharmacistService {
   async remove(id: number): Promise<void> {
     await this.pharmacistRepository.delete(id);
   }
+
+  async deleteByUserId(userId: number): Promise<void> {
+    await this.pharmacistRepository.delete({ user: { id: userId } });
+  }
 }

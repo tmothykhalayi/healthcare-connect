@@ -13,6 +13,7 @@ import { Patient } from '../../patients/entities/patient.entity';
 import { Pharmacy } from '../../pharmacy/entities/pharmacy.entity';
 import { Payment } from '../../payments/entities/payment.entity';
 
+
 @Entity('orders')
 export class Order {
   @ApiProperty({ description: 'Order unique identifier' })
@@ -61,7 +62,7 @@ export class Order {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // Relationships
   @OneToMany(() => Payment, (payment) => payment.order, { eager: true })
   payments: Payment[];
+
 }

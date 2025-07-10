@@ -276,4 +276,8 @@ export class AdminService {
 
     return { message: `Admin with ID ${id} deleted successfully` };
   }
+
+  async deleteByUserId(userId: number): Promise<void> {
+    await this.adminRepository.delete({ user: { id: userId } });
+  }
 }

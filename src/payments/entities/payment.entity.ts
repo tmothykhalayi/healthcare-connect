@@ -22,7 +22,7 @@ export class Payment {
   @Column({ nullable: true })
   pharmacyId: number;
 
-  @Column({ nullable: true })
+  @Column()
   orderId: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
@@ -32,7 +32,7 @@ export class Payment {
   paymentMethod: string;
 
   @Column()
-  status: string;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
 
   @Column({ nullable: true })
   transactionId: string;
@@ -49,6 +49,7 @@ export class Payment {
   @Column('json', { nullable: true })
   metadata: any;
 
+  // Relations
   @ManyToOne(() => Users, (user) => user.payments)
   @JoinColumn({ name: 'userId' })
   user: Users;
@@ -57,7 +58,7 @@ export class Payment {
   @JoinColumn({ name: 'pharmacyId' })
   pharmacy: Pharmacy;
 
-  @ManyToOne(() => Order, (order) => order.payments, { nullable: true })
+  @ManyToOne(() => Order, (order) => order.payments, { nullable: false })
   @JoinColumn({ name: 'orderId' })
   order: Order;
 

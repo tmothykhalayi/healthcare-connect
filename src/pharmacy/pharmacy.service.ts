@@ -59,7 +59,6 @@ export class PharmacyService {
   }
 
   async createFromUser(user: Users): Promise<Pharmacy> {
-    // Check if pharmacy record already exists
     const existingPharmacy = await this.pharmacyRepository.findOne({
       where: { userId: user.id },
     });
@@ -69,26 +68,25 @@ export class PharmacyService {
     }
 
     try {
-      // Create pharmacy with NO NULL values
-      const pharmacyData = {
-        userId: user.id,
-        name: `${user.firstName} ${user.lastName} Pharmacy`, // Required field
-        pharmacyName: `${user.firstName} ${user.lastName} Pharmacy`, // Also required
-        licenseNumber: `PTEMP_${user.id}_${Date.now().toString().slice(-6)}`,
-        address: 'Pending update',
-        phoneNumber: user.phoneNumber || '(Not set)',
-        email: user.email,
-        openingHours: '9:00 AM - 6:00 PM',
-        services: ['Prescription filling', 'Over-the-counter medication'],
-        status: 'pending_verification',
-        deliveryAvailable: false,
-        onlineOrderingAvailable: false,
-        insurancePlansAccepted: [],
-        notes: '',
-      };
 
-      const newPharmacy = this.pharmacyRepository.create(pharmacyData);
-      const savedPharmacy = await this.pharmacyRepository.save(newPharmacy);
+  const pharmacyData = {
+  userId: user.id,
+  pharmacyName: `${user.firstName} ${user.lastName} Pharmacy`, // Required
+  licenseNumber: `PTEMP_${user.id}_${Date.now().toString().slice(-6)}`,
+  address: 'Pending update',
+  phoneNumber: user.phoneNumber || '(Not set)',
+  email: user.email || '',
+  openingHours: '9:00 AM - 6:00 PM',
+  services: ['Prescription filling', 'Over-the-counter medication'],
+  status: 'pending_verification',
+  deliveryAvailable: false,
+  onlineOrderingAvailable: false,
+  insurancePlansAccepted: [],
+  notes: '',
+};
+
+    const newPharmacy = this.pharmacyRepository.create(pharmacyData);
+    const savedPharmacy = await this.pharmacyRepository.save(newPharmacy);
 
       return savedPharmacy;
     } catch (error) {
@@ -103,7 +101,7 @@ export class PharmacyService {
   async findAll() {
     return await this.pharmacyRepository.find();
   }
-
+  //get all pharmacies with user details
   async findOne(id: number) {
     const pharmacy = await this.pharmacyRepository.findOne({
       where: { id },
@@ -191,5 +189,9 @@ export class PharmacyService {
   async remove(id: number) {
     const pharmacy = await this.findOne(id);
     return this.pharmacyRepository.remove(pharmacy);
+  }
+
+  async deleteByUserId(userId: number): Promise<void> {
+    await this.pharmacyRepository.delete({ user: { id: userId } });
   }
 }
