@@ -44,8 +44,9 @@ export class MedicinesController {
   //@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get all medicines' })
   @ApiResponse({ status: 200, description: 'Medicines retrieved successfully' })
-  findAll() {
-    return this.medicinesService.findAll();
+  async findAll() {
+    const medicines = await this.medicinesService.findAll();
+    return { data: medicines };
   }
 
   @Get('stats')

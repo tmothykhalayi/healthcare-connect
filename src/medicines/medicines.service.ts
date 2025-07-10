@@ -293,43 +293,7 @@ export class MedicinesService {
   async getMedicineStats(): Promise<any> {
     try {
       const totalMedicines = await this.medicineRepository.count();
-      const activeMedicines = await this.medicineRepository.count({
-        where: { status: 'active' },
-      });
-      const prescriptionMedicines = await this.medicineRepository.count({
-        where: { prescriptionRequired: true },
-      });
-      const otcMedicines = await this.medicineRepository.count({
-        where: { prescriptionRequired: false },
-      });
-
-      const expiringSoon = await this.findExpiringSoon(30);
-      const lowStock = await this.findLowStock();
-
-      const categoriesStats = await this.medicineRepository
-        .createQueryBuilder('medicine')
-        .select('medicine.category', 'category')
-        .addSelect('COUNT(*)', 'count')
-        .groupBy('medicine.category')
-        .getRawMany();
-
-      const manufacturersStats = await this.medicineRepository
-        .createQueryBuilder('medicine')
-        .select('medicine.manufacturer', 'manufacturer')
-        .addSelect('COUNT(*)', 'count')
-        .groupBy('medicine.manufacturer')
-        .getRawMany();
-
-      return {
-        total: totalMedicines,
-        active: activeMedicines,
-        prescription: prescriptionMedicines,
-        otc: otcMedicines,
-        expiringSoon: expiringSoon.length,
-        lowStock: lowStock.length,
-        byCategory: categoriesStats,
-        byManufacturer: manufacturersStats,
-      };
+      return { data: { total: totalMedicines } };
     } catch (error) {
       console.error('Error fetching medicine statistics:', error);
       throw new InternalServerErrorException(
