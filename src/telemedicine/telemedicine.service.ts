@@ -34,54 +34,55 @@ export class TelemedicineService {
 
   // Create telemedicine appointment with checks
   async createAppointment(
-  dto: CreateTelemedicineDto,
-): Promise<TelemedicineAppointment> {
-  // Find patient and doctor by ID
-  const patient = await this.patientRepo.findOne({ where: { id: dto.patientId } });
-  if (!patient) throw new NotFoundException('Patient not found');
+    dto: CreateTelemedicineDto,
+  ): Promise<TelemedicineAppointment> {
+    // Find patient and doctor by ID
+    const patient = await this.patientRepo.findOne({ where: { id: dto.patientId } });
+    if (!patient) throw new NotFoundException('Patient not found');
 
-  const doctor = await this.doctorRepo.findOne({ where: { id: dto.doctorId } });
-  if (!doctor) throw new NotFoundException('Doctor not found');
+    const doctor = await this.doctorRepo.findOne({ where: { id: dto.doctorId } });
+    if (!doctor) throw new NotFoundException('Doctor not found');
 
-  // Parse scheduledAt date from dto (assumed to be ISO string or Date)
-  const scheduledAt = new Date(dto.scheduledAt);
-  if (isNaN(scheduledAt.getTime())) {
-    throw new BadRequestException('Invalid scheduledAt date');
+    // Construct scheduledAt from appointmentDate and appointmentTime
+    if (!dto.appointmentDate || !dto.appointmentTime) {
+      throw new BadRequestException('appointmentDate and appointmentTime are required');
+    }
+    const scheduledAt = new Date(`${dto.appointmentDate}T${dto.appointmentTime}:00Z`);
+    if (isNaN(scheduledAt.getTime())) {
+      throw new BadRequestException('Invalid appointmentDate or appointmentTime');
+    }
+
+    // Check if doctor is available at scheduledAt time
+    const existingAppt = await this.telemedicineRepo.findOne({
+      where: {
+        doctor: { id: dto.doctorId },
+        scheduledAt: scheduledAt,
+      },
+      relations: ['doctor'],
+    });
+
+    if (existingAppt) {
+      throw new BadRequestException(
+        `Doctor is not available at ${scheduledAt.toISOString()}`,
+      );
+    }
+
+    // Create new TelemedicineAppointment entity
+    const appointment = this.telemedicineRepo.create({
+      scheduledAt,
+      status: dto.status || 'scheduled',
+      appointmentTime: dto.appointmentTime,
+      duration: dto.duration,
+      notes: dto.notes,
+    });
+
+    // Set relations after creation if needed
+    appointment.patient = patient;
+    appointment.doctor = doctor;
+
+    // Save and return the appointment
+    return this.telemedicineRepo.save(appointment);
   }
-
-  // Check if doctor is available at scheduledAt time
-  const existingAppt = await this.telemedicineRepo.findOne({
-    where: {
-      doctor: { id: dto.doctorId },
-      scheduledAt: scheduledAt,
-    },
-    relations: ['doctor'],
-  });
-
-  if (existingAppt) {
-    throw new BadRequestException(
-      `Doctor is not available at ${scheduledAt.toISOString()}`,
-    );
-  }
-
-  // Create new TelemedicineAppointment entity
-  const appointment = this.telemedicineRepo.create({
-    scheduledAt,
-    status: dto.status || 'scheduled',
-    // add other properties as defined in TelemedicineAppointment entity
-  });
-
-  // Set relations after creation if needed
-  appointment.patient = patient;
-  appointment.doctor = doctor;
-  if ('notes' in appointment) {
-    // Only set notes if it exists in the entity
-    (appointment as any).notes = dto.notes;
-  }
-
-  // Save and return the appointment
-  return this.telemedicineRepo.save(appointment);
-}
 
   // Get all telemedicine appointments
   async findAllAppointments(): Promise<any[]> {

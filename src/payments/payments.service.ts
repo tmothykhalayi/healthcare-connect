@@ -20,7 +20,7 @@ export class PaymentsService {
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     try {
       const user = await this.usersRepository.findOne({
-        where: { id: parseInt(createPaymentDto.userId) },
+        where: { id: Number(createPaymentDto.userId) },
       });
 
       if (!user) {
@@ -32,7 +32,7 @@ export class PaymentsService {
       const payment = this.paymentRepository.create({
         ...createPaymentDto,
         userId: user.id,
-        relatedEntityId: parseInt(createPaymentDto.relatedEntityId),
+        relatedEntityId: createPaymentDto.relatedEntityId,
       });
       const savedPayment = await this.paymentRepository.save(payment);
 
@@ -90,7 +90,7 @@ export class PaymentsService {
 
     if (updatePaymentDto.relatedEntityId !== undefined) {
       paymentToUpdate.relatedEntityId = parseInt(
-        updatePaymentDto.relatedEntityId,
+        updatePaymentDto.relatedEntityId.toString(),
       );
     }
 
@@ -100,7 +100,10 @@ export class PaymentsService {
 
     // Handle userId separately to convert from string to number
     if (updatePaymentDto.userId !== undefined) {
-      const userId = parseInt(updatePaymentDto.userId);
+      const userId =
+        typeof updatePaymentDto.userId === 'string'
+          ? parseInt(updatePaymentDto.userId, 10)
+          : updatePaymentDto.userId;
       const user = await this.usersRepository.findOne({
         where: { id: userId },
       });

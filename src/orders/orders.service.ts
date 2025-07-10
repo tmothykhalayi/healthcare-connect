@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { Patient } from '../patients/entities/patient.entity';
+import { Pharmacy } from '../pharmacy/entities/pharmacy.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 
@@ -16,6 +17,7 @@ export class OrdersService {
   constructor(
     @InjectRepository(Order) private ordersRepository: Repository<Order>,
     @InjectRepository(Patient) private patientsRepository: Repository<Patient>,
+    @InjectRepository(Pharmacy) private pharmacyRepository: Repository<Pharmacy>,
   ) {}
 
   // Create a new order
@@ -28,6 +30,17 @@ export class OrdersService {
     if (!patient) {
       throw new NotFoundException(
         `Patient with ID ${createOrderDto.patientId} not found`,
+      );
+    }
+
+    // Check if pharmacy exists
+    const pharmacy = await this.pharmacyRepository.findOne({
+      where: { id: createOrderDto.pharmacyId },
+    });
+
+    if (!pharmacy) {
+      throw new NotFoundException(
+        `Pharmacy with ID ${createOrderDto.pharmacyId} not found`,
       );
     }
 
@@ -45,6 +58,7 @@ export class OrdersService {
     // Create the order entity
     const newOrder = this.ordersRepository.create({
       patientId: createOrderDto.patientId,
+      pharmacyId: createOrderDto.pharmacyId,
       orderDate: new Date(createOrderDto.orderDate),
       status: createOrderDto.status,
       totalAmount: createOrderDto.totalAmount,

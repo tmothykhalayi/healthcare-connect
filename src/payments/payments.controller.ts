@@ -14,10 +14,7 @@ import {
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
-//import { UserRole, Users } from '../users/entities/user.entity';
-//import { AtGuard, RolesGuard } from '../auth/guards';
-//import { Roles } from '../auth/decorators/roles.decorator';
-//import { Role } from '../auth/enums/role.enum';
+import { Payment } from './entities/payment.entity';
 import {
   ApiTags,
   ApiOperation,
@@ -25,6 +22,7 @@ import {
   ApiParam,
   ApiQuery,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 
 @ApiTags('payments')
@@ -38,7 +36,8 @@ export class PaymentsController {
   @Post()
   ///@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Create a new payment' })
-  @ApiResponse({ status: 201, description: 'Payment created successfully' })
+  @ApiBody({ type: CreatePaymentDto })
+  @ApiResponse({ status: 201, description: 'Payment created successfully', type: Payment })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async create(@Body() createPaymentDto: CreatePaymentDto) {
     try {
@@ -57,7 +56,7 @@ export class PaymentsController {
   @Get()
   ///@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all payments' })
-  @ApiResponse({ status: 200, description: 'Payments retrieved successfully' })
+  @ApiResponse({ status: 200, description: 'Payments retrieved successfully', type: [Payment] })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async findAll() {
     try {
@@ -76,7 +75,7 @@ export class PaymentsController {
   //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
-  @ApiResponse({ status: 200, description: 'Payment retrieved successfully' })
+  @ApiResponse({ status: 200, description: 'Payment retrieved successfully', type: Payment })
   @ApiResponse({ status: 404, description: 'Payment not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async findOne(@Param('id') id: string) {
@@ -100,7 +99,8 @@ export class PaymentsController {
   //@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Update a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
-  @ApiResponse({ status: 200, description: 'Payment updated successfully' })
+  @ApiBody({ type: UpdatePaymentDto })
+  @ApiResponse({ status: 200, description: 'Payment updated successfully', type: String })
   @ApiResponse({ status: 404, description: 'Payment not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async update(
@@ -130,7 +130,7 @@ export class PaymentsController {
   //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
-  @ApiResponse({ status: 200, description: 'Payment deleted successfully' })
+  @ApiResponse({ status: 200, description: 'Payment deleted successfully', type: String })
   @ApiResponse({ status: 404, description: 'Payment not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async remove(@Param('id') id: string) {

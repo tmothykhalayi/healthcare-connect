@@ -3,14 +3,9 @@ import {
   Post,
   Body,
   Get,
-  Param,
-  Patch,
-  Delete,
-  ParseIntPipe,
-  HttpStatus,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+  Param,Patch,Delete,
+  ParseIntPipe,HttpStatus,
+  UseGuards,Req,} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -22,11 +17,11 @@ import { TelemedicineService } from './telemedicine.service';
 import { CreateTelemedicineDto } from './dto/create-telemedicine.dto';
 import { UpdateTelemedicineDto } from './dto/update-telemedicine.dto';
 import { TelemedicineAppointment } from './entities/telemedicine.entity';
-import { AtGuard, RolesGuard } from '../auth/guards';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../auth/enums/role.enum';
+//import { AtGuard, RolesGuard } from '../auth/guards';
+//import { Roles } from '../auth/decorators/roles.decorator';
+//import { Role } from '../auth/enums/role.enum';
 
-@UseGuards(AtGuard, RolesGuard)
+//@UseGuards(AtGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('telemedicine')
 @Controller('telemedicine')
@@ -34,7 +29,7 @@ export class TelemedicineController {
   constructor(private readonly telemedicineService: TelemedicineService) {}
 
   @Post()
-  @Roles(Role.PATIENT, Role.DOCTOR, Role.ADMIN)
+ // @Roles(Role.PATIENT, Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Create a new telemedicine appointment' })
   @ApiResponse({
     status: 201,
@@ -67,7 +62,7 @@ export class TelemedicineController {
   }
 
   @Get()
-  @Roles(Role.DOCTOR, Role.ADMIN)
+ // @Roles(Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Get all telemedicine appointments' })
   @ApiResponse({
     status: 200,
@@ -91,7 +86,7 @@ export class TelemedicineController {
   }
 
   @Get(':id')
-  @Roles(Role.DOCTOR, Role.ADMIN)
+  //@Roles(Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Get telemedicine appointment by ID' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   @ApiResponse({ status: 200, description: 'Appointment found' })
@@ -113,7 +108,7 @@ export class TelemedicineController {
   }
 
   @Patch(':id')
-  @Roles(Role.DOCTOR, Role.ADMIN)
+  //@Roles(Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Update a telemedicine appointment' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   @ApiResponse({ status: 200, description: 'Appointment updated successfully' })
@@ -142,7 +137,7 @@ export class TelemedicineController {
   }
 
   @Delete(':id')
-  @Roles(Role.DOCTOR, Role.ADMIN)
+  //@Roles(Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Delete a telemedicine appointment' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   @ApiResponse({ status: 200, description: 'Appointment deleted successfully' })

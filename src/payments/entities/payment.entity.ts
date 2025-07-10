@@ -23,7 +23,7 @@ export class Payment {
   pharmacyId: number;
 
   @Column()
-  orderId: number;
+  orderId: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
@@ -59,7 +59,7 @@ export class Payment {
   pharmacy: Pharmacy;
 
   @ManyToOne(() => Order, (order) => order.payments, { nullable: false })
-  @JoinColumn({ name: 'orderId' })
+  @JoinColumn({ name: 'orderId', referencedColumnName: 'OrderId' })
   order: Order;
 
   @CreateDateColumn()

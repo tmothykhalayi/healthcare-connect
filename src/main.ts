@@ -42,22 +42,29 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message =
+    let message: any =
       exception instanceof HttpException
-        ? exception.message
+        ? exception.getResponse()
         : 'Internal server error';
+
+    // If message is an object with 'message' property (like validation errors), extract it
+    if (typeof message === 'object' && message !== null && 'message' in message) {
+      message = (message as any).message;
+    }
 
     const responseBody = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       message,
+      // Optionally include the full exception for debugging
+      error: exception,
     };
 
-    // Log exception
+    // Log exception (full object)
     this.logsService.error(
       `Error on ${request.method} ${request.url}`,
-      JSON.stringify({ status, message }),
+      JSON.stringify({ status, message, exception }),
     );
 
     this.httpAdapter.reply(response, responseBody, status);
