@@ -72,6 +72,7 @@ export class PharmacyService {
   const pharmacyData = {
   userId: user.id,
   pharmacyName: `${user.firstName} ${user.lastName} Pharmacy`, // Required
+  name: `${user.firstName} ${user.lastName} Pharmacy`, // Also required
   licenseNumber: `PTEMP_${user.id}_${Date.now().toString().slice(-6)}`,
   address: 'Pending update',
   phoneNumber: user.phoneNumber || '(Not set)',
