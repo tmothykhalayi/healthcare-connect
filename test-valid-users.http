@@ -134,4 +134,27 @@ Content-Type: application/json
   "isEmailVerified": true
 }
 
+### Create User with Your Email
+POST http://localhost:8000/users
+Content-Type: application/json
+
+{
+  "email": "timothykhalayi96@gmail.com",
+  "password": "Test1234!",
+  "firstName": "Timothy",
+  "lastName": "Khalayi",
+  "phoneNumber": "+254700000000",
+  "role": "admin",
+  "isEmailVerified": true
+}
+
+### Test Login with Your Email
+POST http://localhost:8000/auth/signin
+Content-Type: application/json
+
+{
+  "email": "timothykhalayi96@gmail.com",
+  "password": "Test1234!"
+}
+
 ### 

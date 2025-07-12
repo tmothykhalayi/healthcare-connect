@@ -1,15 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  UseGuards,
-  Delete,
-  Query,
-  HttpStatus,
-  ParseIntPipe,
+import {Controller,Get,
+  Post,Body,Patch,Param,UseGuards,Delete,Query,HttpStatus,ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -22,19 +12,19 @@ import {
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
-//import { Roles } from '../auth/decorators/roles.decorator';
-//import { Role } from '../auth/enums/role.enum';
-//import { AtGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
+import { AtGuard, RolesGuard } from '../auth/guards';
 
 @ApiTags('admin')
 @Controller('admin')
-//@UseGuards(AtGuard, RolesGuard)
+@UseGuards(AtGuard, RolesGuard)
 @ApiBearerAuth()
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post()
-  //@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new admin' })
   @ApiResponse({ status: 201, description: 'Admin created successfully' })
   @ApiResponse({ status: 409, description: 'Admin already exists' })
@@ -52,7 +42,7 @@ export class AdminController {
   }
 
   @Get()
-  //@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all admins' })
   @ApiResponse({ status: 200, description: 'Admins retrieved successfully' })
   async findAll() {
@@ -65,7 +55,7 @@ export class AdminController {
   }
 
   @Get('stats')
-  //@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get admin statistics' })
   async getStats() {
     const stats = await this.adminService.getAdminStats();
@@ -77,7 +67,7 @@ export class AdminController {
   }
 
   @Get('active')
-  //@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all active admins' })
   async getActiveAdmins() {
     const admins = await this.adminService.getActiveAdmins();
@@ -89,7 +79,7 @@ export class AdminController {
   }
 
   @Get('super-admins')
-  //@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all super admins' })
   async getSuperAdmins() {
     const admins = await this.adminService.getSuperAdmins();
@@ -101,7 +91,7 @@ export class AdminController {
   }
 
   @Get('search')
-  //@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Search admins by name, email, or department' })
   @ApiQuery({ name: 'q', description: 'Search query' })
   async search(@Query('q') query: string) {
@@ -114,7 +104,7 @@ export class AdminController {
   }
 
   @Get('level/:adminLevel')
-  //@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get admins by admin level' })
   @ApiParam({
     name: 'adminLevel',
@@ -130,7 +120,7 @@ export class AdminController {
   }
 
   @Get('status/:status')
-  //@Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get admins by status' })
   @ApiParam({
     name: 'status',
@@ -146,7 +136,7 @@ export class AdminController {
   }
 
   @Get('department/:department')
- // @Roles(Role.ADMIN)
+ @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get admins by department' })
   @ApiParam({ name: 'department', description: 'Department name' })
   async findByDepartment(@Param('department') department: string) {
