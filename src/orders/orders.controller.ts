@@ -108,6 +108,27 @@ export class OrdersController {
     };
   }
 
+  @Get('pharmacy/:pharmacyId')
+  @ApiOperation({ summary: 'Get orders by pharmacy ID' })
+  @ApiParam({ name: 'pharmacyId', description: 'Pharmacy ID' })
+  @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
+  async findByPharmacyId(
+    @Param('pharmacyId') pharmacyId: string,
+    orderBy: string = 'orderDate',
+    order: 'ASC' | 'DESC' = 'ASC',
+  ) {
+    const orders = await this.ordersService.findByPharmacyId(
+      pharmacyId,
+      orderBy,
+      order,
+    );
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Orders retrieved successfully',
+      data: orders,
+    };
+  }
+
   @Get(':id')
   //@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get order by ID' })

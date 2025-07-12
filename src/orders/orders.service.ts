@@ -150,6 +150,30 @@ export class OrdersService {
     }
   }
 
+  // Find orders by pharmacy ID with patient information
+  async findByPharmacyId(
+    pharmacyId: string,
+    orderBy: string = 'orderDate',
+    order: 'ASC' | 'DESC' = 'ASC',
+  ): Promise<Partial<Order>[]> {
+    try {
+      const orders = await this.ordersRepository.find({
+        where: { pharmacyId: parseInt(pharmacyId) },
+        relations: ['patient', 'patient.user'],
+        order: { [orderBy]: order },
+      });
+
+      // Strip out patient info from each order
+      return orders.map(
+        ({ patient, ...orderWithoutPatient }) => orderWithoutPatient,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to retrieve orders by pharmacy ID',
+      );
+    }
+  }
+
   // Update an order by ID
   async update(
     id: string,

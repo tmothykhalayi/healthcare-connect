@@ -50,6 +50,14 @@ export class PaymentsService {
     });
   }
 
+  // Get payments by pharmacy ID
+  async findByPharmacyId(pharmacyId: number): Promise<Payment[]> {
+    return this.paymentRepository.find({
+      where: { pharmacyId: pharmacyId },
+      relations: ['user'],
+    });
+  }
+
   // Get a payment by ID
   async findOne(id: number): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({

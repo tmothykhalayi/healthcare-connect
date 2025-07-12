@@ -154,6 +154,18 @@ export class MedicalController {
     };
   }
 
+  @Get('prescriptions/pharmacy/:pharmacyId')
+  @ApiOperation({ summary: 'Get prescription records by pharmacy ID' })
+  @ApiParam({ name: 'pharmacyId', description: 'Pharmacy ID' })
+  async findPrescriptionsByPharmacyId(@Param('pharmacyId', ParseIntPipe) pharmacyId: number) {
+    const records = await this.medicalService.findPrescriptionsByPharmacyId(pharmacyId);
+    return {
+      statusCode: HttpStatus.OK,
+      message: `Prescription records for pharmacy ${pharmacyId} retrieved successfully`,
+      data: records,
+    };
+  }
+
   @Get(':id')
   //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Get medical record by ID' })

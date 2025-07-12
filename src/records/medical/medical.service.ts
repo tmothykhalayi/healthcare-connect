@@ -108,6 +108,16 @@ export class MedicalService {
     });
   }
 
+  async findPrescriptionsByPharmacyId(pharmacyId: number): Promise<Medical[]> {
+    // For now, return prescription records (recordType = 'prescription')
+    // In a real implementation, you would filter by pharmacy association
+    return await this.medicalRepository.find({
+      where: { recordType: 'prescription' },
+      relations: ['patient', 'doctor', 'appointment'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async findByRecordType(recordType: string): Promise<Medical[]> {
     return await this.medicalRepository.find({
       where: { recordType },

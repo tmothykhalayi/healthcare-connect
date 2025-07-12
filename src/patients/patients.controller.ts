@@ -22,6 +22,7 @@ import { AtGuard, RolesGuard } from '../auth/guards';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('patients')
 @ApiBearerAuth()
@@ -134,6 +135,40 @@ export class PatientsController {
     }
 
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+  }
+
+  @Get('pharmacy/:pharmacyId')
+  @ApiOperation({ summary: 'Get patients by pharmacy ID' })
+  @ApiParam({ name: 'pharmacyId', description: 'Pharmacy ID' })
+  @ApiResponse({ status: 200, description: 'Patients retrieved successfully' })
+  async findByPharmacyId(@Param('pharmacyId') pharmacyId: string) {
+    try {
+      const patients = await this.patientsRepository
+        .createQueryBuilder('patient')
+        .leftJoinAndSelect('patient.user', 'user')
+        .leftJoin('patient.pharmacy', 'pharmacy')
+        .where('pharmacy.id = :pharmacyId', { pharmacyId: parseInt(pharmacyId) })
+        .select([
+          'patient.id',
+          'patient.phoneNumber',
+          'patient.address',
+          'patient.dateOfBirth',
+          'patient.medicalHistory',
+          'user.id',
+          'user.firstName',
+          'user.lastName',
+          'user.email',
+        ])
+        .getMany();
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Patients retrieved successfully',
+        data: patients,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get(':id')

@@ -70,6 +70,25 @@ export class PaymentsController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  // Get payments by pharmacy ID
+  @Get('pharmacy/:pharmacyId')
+  @ApiOperation({ summary: 'Get payments by pharmacy ID' })
+  @ApiParam({ name: 'pharmacyId', description: 'Pharmacy ID' })
+  @ApiResponse({ status: 200, description: 'Payments retrieved successfully', type: [Payment] })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async findByPharmacyId(@Param('pharmacyId') pharmacyId: string) {
+    try {
+      const payments = await this.paymentsService.findByPharmacyId(Number(pharmacyId));
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Payments retrieved successfully',
+        data: payments,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
   // Get a payment by ID
   @Get(':id')
   //@Roles(Role.ADMIN)
