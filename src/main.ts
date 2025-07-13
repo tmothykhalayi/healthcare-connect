@@ -94,6 +94,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT') || 8000;
+  app.setGlobalPrefix('api');
 
   // Swagger documentation setup
   const config = new DocumentBuilder()

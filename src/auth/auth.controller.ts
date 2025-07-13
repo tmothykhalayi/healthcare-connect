@@ -1,22 +1,13 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Req,
-  UnauthorizedException,
-  UseGuards,
-  Param,
-  ParseIntPipe,
-  Headers,
-  Logger,
-  Get,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import {Body,
+  Controller,Post,
+  Req,UnauthorizedException,UseGuards,
+  Param,ParseIntPipe,
+  Headers,Logger,
+  Get,HttpCode,HttpStatus,NotFoundException,} from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login.dto';
-import { SignUpDto } from './dto/signup.dto';
+import { CreateAuthDto } from './dto/create-auth.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Public } from './decorators/public.decorator';
@@ -41,27 +32,32 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
   ) {}
-  // ===== SIGN UP =====
+  // ===== REGISTER =====
   @Public()
-  @Post('signup')
-  @ApiOperation({ summary: 'Sign up user' })
+  @Post('register')
+  @ApiOperation({ summary: 'Register user' })
   async signUp(
-    @Body() signUpDto: SignUpDto,
+    @Body() createAuthDto: CreateAuthDto,
   ) {
     // Check if the user already exists
-    const existingUser = await this.usersService.findByEmail(signUpDto.email);
-    if (existingUser) {
-      throw new UnauthorizedException('User already exists');
+    try {
+      const existingUser = await this.usersService.findByEmail(createAuthDto.email);
+      if (existingUser) {
+        throw new UnauthorizedException('User already exists');
+      }
+    } catch (error) {
+      // If findByEmail throws NotFoundException, user doesn't exist (which is what we want)
+      if (error instanceof NotFoundException) {
+        // User doesn't exist, continue with registration
+      } else {
+        throw error;
+      }
     }
     //create a new user
-    this.logger.log(`Creating user with email: ${signUpDto.email}`);
-    // Validate the DTO
-    if (!signUpDto.email || !signUpDto.password) {
-      throw new UnauthorizedException('Email and password are required');
-    }
+    this.logger.log(`Creating user with email: ${createAuthDto.email}`);
 
     // Create the user
-    const result = await this.authService.signUp(signUpDto);
+    const result = await this.authService.signUp(createAuthDto);
 
     // Check if we have the required user data
     if (!result.user?.id || !result.user?.email) {
@@ -74,10 +70,10 @@ export class AuthController {
     return result;
   }
 
-  // ===== SIGN IN =====
+  // ===== LOGIN =====
   @Public()
-  @Post('signin')
-  @ApiOperation({ summary: 'Sign in user' })
+  @Post('login')
+  @ApiOperation({ summary: 'Login user' })
   async signIn(@Body() loginAuthDto: LoginAuthDto) {
     const result = await this.authService.signIn(loginAuthDto);
 

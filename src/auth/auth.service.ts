@@ -50,10 +50,11 @@ export class AuthService {
     // 3. Create user entity
     const user = this.userRepository.create({
       email: createAuthDto.email,
-      firstName: createAuthDto.firstName || 'User',
-      lastName: createAuthDto.lastName || 'Name',
+      firstName: createAuthDto.firstName,
+      lastName: createAuthDto.lastName,
+      phoneNumber: createAuthDto.phoneNumber,
       password: hashedPassword,
-      role: UserRole.PATIENT, // Default role, can be changed later
+      role: createAuthDto.role as unknown as UserRole, // Cast to UserRole enum
       isEmailVerified: false, // Default to false, can be updated later
     });
 
