@@ -25,8 +25,8 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('patients')
-//@ApiBearerAuth()
-//@UseGuards(AtGuard, RolesGuard)
+@ApiBearerAuth()
+@UseGuards(AtGuard, RolesGuard)
 export class PatientsController {
   constructor(
     @InjectRepository(Patient)

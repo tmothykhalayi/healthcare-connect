@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  InternalServerErrorException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,InternalServerErrorException,ConflictException,BadRequestException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Patient, Gender } from './entities/patient.entity';
