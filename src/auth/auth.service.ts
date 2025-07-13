@@ -1,17 +1,15 @@
 import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
+  Injectable,NotFoundException,UnauthorizedException,
   BadRequestException,
-  ConflictException,
-  Logger,
+  ConflictException,Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { CreateAuthDto } from './dto/login.dto';
+import { LoginAuthDto } from './dto/login.dto';
+import { CreateAuthDto } from './dto/create-auth.dto';
 import { Users, UserRole } from '../users/entities/user.entity';
 import { MailService } from '../mail/mail.service';
 import * as speakeasy from 'speakeasy';
@@ -28,61 +26,60 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  //   // ===== SIGN UP =====
-  // async signUp(createAuthDto: CreateAuthDto): Promise<{
-  //   accessToken: string;
-  //   refreshToken: string;
-  //   user: {
-  //     id: number;
-  //     email: string;
-  //     firstName: string;
-  //     lastName: string;
-  //     role: string;
-  //   };
-  // }> {
-  //   // 1. Check if user already exists
-  //   const existingUser = await this.userRepository.findOne({ where: { email: createAuthDto.email } });
-  //   if (existingUser) {
-  //     throw new ConflictException('User with this email already exists');
-  //   }
+  // ===== SIGN UP =====
+  async signUp(createAuthDto: CreateAuthDto): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: {
+      id: number;
+      email: string;
+      firstName: string;
+      lastName: string;
+      role: string;
+    };
+  }> {
+    // 1. Check if user already exists
+    const existingUser = await this.userRepository.findOne({ where: { email: createAuthDto.email } });
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
 
-  //   // 2. Hash password
-  //   const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
+    // 2. Hash password
+    const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
 
-  //   // 3. Create user entity
-  //   const user = this.userRepository.create({
-  //     email: createAuthDto.email,
-  //     firstName: createAuthDto.firstName,
-  //     lastName: createAuthDto.lastName,
-  //     password: hashedPassword,
-  //     role: UserRole.PATIENT, // Default role, can be changed later
-  //     isEmailVerified: false, // Default to false, can be updated later
+    // 3. Create user entity
+    const user = this.userRepository.create({
+      email: createAuthDto.email,
+      firstName: createAuthDto.firstName || 'User',
+      lastName: createAuthDto.lastName || 'Name',
+      password: hashedPassword,
+      role: UserRole.PATIENT, // Default role, can be changed later
+      isEmailVerified: false, // Default to false, can be updated later
+    });
 
-  //   });
+    // 4. Save user to DB
+    await this.userRepository.save(user);
 
-  //   // 4. Save user to DB
-  //   await this.userRepository.save(user);
+    // 5. Generate tokens
+    const { accessToken, refreshToken } = await this.getTokens(user.id, user.email, user.role);
+    await this.updateRefreshToken(user.id, refreshToken);
 
-  //   // 5. Generate tokens
-  //   const { accessToken, refreshToken } = await this.getTokens(user.id, user.email, user.role);
-  //   await this.updateRefreshToken(user.id, refreshToken);
-
-  //   // 6. Return tokens and user info
-  //   return {
-  //     accessToken,
-  //     refreshToken,
-  //     user: {
-  //       id: user.id,
-  //       email: user.email,
-  //       firstName: user.firstName,
-  //       lastName: user.lastName,
-  //       role: user.role,
-  //     },
-  //   };
-  // }
+    // 6. Return tokens and user info
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    };
+  }
 
   // ===== SIGN IN =====
-  async signIn(createAuthDto: CreateAuthDto): Promise<{
+  async signIn(loginAuthDto: LoginAuthDto): Promise<{
     accessToken: string;
     refreshToken: string;
     user: {
@@ -95,7 +92,7 @@ export class AuthService {
   }> {
     try {
       const user = await this.userRepository.findOne({
-        where: { email: createAuthDto.email },
+        where: { email: loginAuthDto.email },
 
         select: [
           'id',
@@ -110,19 +107,19 @@ export class AuthService {
 
       if (!user) {
         this.logger.warn(
-          `Login failed - user not found: ${createAuthDto.email}`,
+          `Login failed - user not found: ${loginAuthDto.email}`,
         );
         throw new UnauthorizedException('Invalid credentials');
       }
 
       // Compare against 'user.password' which contains the hashed password
       const isPasswordValid = await bcrypt.compare(
-        createAuthDto.password,
+        loginAuthDto.password,
         user.password,
       );
       if (!isPasswordValid) {
         this.logger.warn(
-          `Login failed - invalid password: ${createAuthDto.email}`,
+          `Login failed - invalid password: ${loginAuthDto.email}`,
         );
         throw new UnauthorizedException('Invalid credentials');
       }

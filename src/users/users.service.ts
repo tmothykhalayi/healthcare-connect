@@ -110,13 +110,18 @@ export class UsersService {
       const users = await this.usersRepository.find({
         order: { createdAt: 'DESC' },
       });
-      // Map to only return id, email, firstName, lastName, and role
+      // Return all necessary fields for the frontend
       return users.map(user => ({
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
         role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       }));
     } catch (error) {
       console.error('Error in findAll:', error);
@@ -146,7 +151,7 @@ export class UsersService {
   async findByEmail(email: string): Promise<Users> {
     const user = await this.usersRepository.findOne({
       where: { email },
-      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
+      relations: ['patient', 'doctor', 'admin', 'pharmacist'],
     });
 
     if (!user) {
@@ -159,7 +164,7 @@ export class UsersService {
   async findByRole(role: UserRole): Promise<Users[]> {
     return await this.usersRepository.find({
       where: { role },
-      relations: ['patient', 'doctor', 'admin', 'pharmacy'],
+      relations: ['patient', 'doctor', 'admin', 'pharmacist'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -303,7 +308,7 @@ export class UsersService {
       .leftJoinAndSelect('user.patient', 'patient')
       .leftJoinAndSelect('user.doctor', 'doctor')
       .leftJoinAndSelect('user.admin', 'admin')
-      .leftJoinAndSelect('user.pharmacy', 'pharmacy')
+      .leftJoinAndSelect('user.pharmacist', 'pharmacist')
       .where('user.firstName LIKE :query', { query: `%${query}%` })
       .orWhere('user.lastName LIKE :query', { query: `%${query}%` })
       .orWhere('user.email LIKE :query', { query: `%${query}%` })

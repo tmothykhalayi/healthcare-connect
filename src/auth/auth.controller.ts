@@ -15,8 +15,8 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import {} from './dto/login.dto';
+import { LoginAuthDto } from './dto/login.dto';
+import { SignUpDto } from './dto/signup.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Public } from './decorators/public.decorator';
@@ -42,44 +42,44 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
   // ===== SIGN UP =====
-  // @Public()
-  // @Post('signup')
-  // @ApiOperation({ summary: 'Sign up user' })
-  // async signUp(
-  //   @Body() createAuthDto: CreateAuthDto,
-  // ) {
-  //   // Check if the user already exists
-  //   const existingUser = await this.usersService.findByEmail(createAuthDto.email);
-  //   if (existingUser) {
-  //     throw new UnauthorizedException('User already exists');
-  //   }
-  // //create a new user
-  //   this.logger.log(`Creating user with email: ${createAuthDto.email}`);
-  //   // Validate the DTO
-  //   if (!createAuthDto.email || !createAuthDto.password) {
-  //     throw new UnauthorizedException('Email and password are required');
-  //   }
+  @Public()
+  @Post('signup')
+  @ApiOperation({ summary: 'Sign up user' })
+  async signUp(
+    @Body() signUpDto: SignUpDto,
+  ) {
+    // Check if the user already exists
+    const existingUser = await this.usersService.findByEmail(signUpDto.email);
+    if (existingUser) {
+      throw new UnauthorizedException('User already exists');
+    }
+    //create a new user
+    this.logger.log(`Creating user with email: ${signUpDto.email}`);
+    // Validate the DTO
+    if (!signUpDto.email || !signUpDto.password) {
+      throw new UnauthorizedException('Email and password are required');
+    }
 
-  //   // Create the user
-  //   const result = await this.authService.signUp(createAuthDto);
+    // Create the user
+    const result = await this.authService.signUp(signUpDto);
 
-  //   // Check if we have the required user data
-  //   if (!result.user?.id || !result.user?.email) {
-  //     throw new UnauthorizedException('Invalid user data returned from authentication');
-  //   }
+    // Check if we have the required user data
+    if (!result.user?.id || !result.user?.email) {
+      throw new UnauthorizedException('Invalid user data returned from authentication');
+    }
 
-  //   // Optionally, send a welcome email or any other post-signup logic
-  //   // await this.usersService.sendWelcomeEmail(result.user.email);
+    // Optionally, send a welcome email or any other post-signup logic
+    // await this.usersService.sendWelcomeEmail(result.user.email);
 
-  //   return result;
-  // }
+    return result;
+  }
 
   // ===== SIGN IN =====
   @Public()
   @Post('signin')
   @ApiOperation({ summary: 'Sign in user' })
-  async signIn(@Body() createAuthDto: CreateAuthDto) {
-    const result = await this.authService.signIn(createAuthDto);
+  async signIn(@Body() loginAuthDto: LoginAuthDto) {
+    const result = await this.authService.signIn(loginAuthDto);
 
     // Check if we have the required user data
     // if (!result.user?.id || !result.user?.email) {

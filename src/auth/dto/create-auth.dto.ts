@@ -21,6 +21,16 @@ export class CreateAuthDto {
   @IsString()
   password: string;
 
-  // firstName: string;
-  // lastName: string;
+  @ApiProperty({
+    example: 'Timothy',
+    description: 'The first name of the user',
+    required: false,
+  })
+  firstName?: string;
+  @ApiProperty({
+    example: 'Khalayi',
+    description: 'The last name of the user',
+    required: false,
+  })
+  lastName?: string;
 }

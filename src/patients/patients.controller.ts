@@ -25,8 +25,8 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('patients')
-@ApiBearerAuth()
-@UseGuards(AtGuard, RolesGuard)
+//@ApiBearerAuth()
+//@UseGuards(AtGuard, RolesGuard)
 export class PatientsController {
   constructor(
     @InjectRepository(Patient)
@@ -62,12 +62,9 @@ export class PatientsController {
   @Get()
   //@Roles(Role.ADMIN, Role.DOCTOR, Role.PATIENT)
   async findAll(@Req() req) {
-    const currentUser = req.user;
-
-    if (currentUser.role === Role.PATIENT) {
-      // Patient: only get own patient record
-      return await this.patientsRepository.find({
-        where: { userId: currentUser.id },
+    try {
+      // For now, return all patients without authentication
+      const patients = await this.patientsRepository.find({
         relations: ['user'],
         select: {
           id: true,
@@ -80,61 +77,25 @@ export class PatientsController {
             firstName: true,
             lastName: true,
             email: true,
+            phoneNumber: true,
+            isEmailVerified: true,
+            createdAt: true,
           },
         },
       });
+
+      return {
+        statusCode: 200,
+        message: 'Patients retrieved successfully',
+        data: patients,
+      };
+    } catch (error) {
+      console.error('Error in findAll patients:', error);
+      throw new HttpException(
+        'Failed to fetch patients',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    if (currentUser.role === Role.DOCTOR) {
-      // Doctor: get patients assigned to their pharmacy
-      const pharmacyId = currentUser.pharmacyId;
-      if (!pharmacyId) {
-        throw new HttpException(
-          'Pharmacy ID not found for doctor',
-          HttpStatus.FORBIDDEN,
-        );
-      }
-
-      return await this.patientsRepository
-        .createQueryBuilder('patient')
-        .leftJoinAndSelect('patient.user', 'user')
-        .leftJoin('patient.pharmacy', 'pharmacy')
-        .where('pharmacy.id = :pharmacyId', { pharmacyId })
-        .select([
-          'patient.id',
-          'patient.phoneNumber',
-          'patient.address',
-          'patient.dateOfBirth',
-          'patient.medicalHistory',
-          'user.id',
-          'user.firstName',
-          'user.lastName',
-          'user.email',
-        ])
-        .getMany();
-    }
-
-    if (currentUser.role === Role.ADMIN) {
-      // Admin: get all patients
-      return await this.patientsRepository.find({
-        relations: ['user'],
-        select: {
-          id: true,
-          phoneNumber: true,
-          address: true,
-          dateOfBirth: true,
-          medicalHistory: true,
-          user: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      });
-    }
-
-    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
   }
 
   @Get('pharmacy/:pharmacyId')
