@@ -193,30 +193,67 @@ export class AppointmentsService {
   async findByDoctorId(doctorId: number): Promise<any[]> {
     const appointments = await this.appointmentsRepository.find({
       where: { doctorId },
-      relations: ['doctor', 'patient'],
+      relations: ['doctor', 'doctor.user', 'patient', 'patient.user'],
       order: { appointmentDate: 'ASC' },
     });
 
-    // Return appointments with limited user details
-    return appointments.map((appointment) => ({
-      ...appointment,
-      doctor: appointment.doctor
-        ? {
-            id: appointment.doctor.id,
-            firstName: appointment.doctor.firstName,
-            lastName: appointment.doctor.lastName,
-            specialization: appointment.doctor.specialization,
-          }
-        : null,
-      patient: appointment.patient
-        ? {
-            id: appointment.patient.id,
-            firstName: appointment.patient.firstName,
-            lastName: appointment.patient.lastName,
-            dateOfBirth: appointment.patient.dateOfBirth,
-          }
-        : null,
-    }));
+    // Transform to match frontend expected structure
+    return appointments.map((appointment) => {
+      const startTime = new Date(appointment.appointmentDate);
+      const endTime = new Date(startTime.getTime() + appointment.duration * 60000);
+      
+      return {
+        id: appointment.id.toString(),
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        status: appointment.status,
+        reasonForVisit: appointment.reason,
+        patient: appointment.patient ? {
+          id: appointment.patient.id.toString(),
+          user: appointment.patient.user ? {
+            id: appointment.patient.user.id.toString(),
+            firstName: appointment.patient.user.firstName,
+            lastName: appointment.patient.user.lastName,
+            email: appointment.patient.user.email,
+            phoneNumber: appointment.patient.user.phoneNumber || '',
+          } : null,
+          dateOfBirth: appointment.patient.dateOfBirth,
+        } : null,
+        doctor: appointment.doctor ? {
+          id: appointment.doctor.id.toString(),
+          user: appointment.doctor.user ? {
+            id: appointment.doctor.user.id.toString(),
+            firstName: appointment.doctor.user.firstName,
+            lastName: appointment.doctor.user.lastName,
+            email: appointment.doctor.user.email,
+          } : null,
+          specialization: appointment.doctor.specialization,
+          qualification: appointment.doctor.education || '',
+          licenceNumber: appointment.doctor.licenseNumber,
+        } : null,
+        availabilitySlot: {
+          id: appointment.id.toString(),
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          type: appointment.priority === 'high' ? 'EMERGENCY' : 'REGULAR',
+        },
+      };
+    });
+  }
+
+  // Get appointments by user ID (for current doctor)
+  async findByCurrentDoctor(userId: number): Promise<any[]> {
+    // First find the doctor by userId
+    const doctor = await this.appointmentsRepository.manager.findOne('doctors', {
+      where: { userId },
+    });
+
+    if (!doctor) {
+      return []; // No doctor found for this user
+    }
+
+    // Then get appointments for this doctor
+    return this.findByDoctorId((doctor as any).id);
   }
 
   // Get appointments by patient id
@@ -368,33 +405,4 @@ export class AppointmentsService {
     return { message: `Appointment with ID ${id} deleted successfully` };
   }
 
-  // Get appointments for the current doctor
-  async findByCurrentDoctor(doctorId: number): Promise<any[]> {
-    const appointments = await this.appointmentsRepository.find({
-      where: { doctorId },
-      relations: ['doctor', 'patient'],
-      order: { appointmentDate: 'ASC' },
-    });
-
-    // Return appointments with limited user details
-    return appointments.map((appointment) => ({
-      ...appointment,
-      doctor: appointment.doctor
-        ? {
-            id: appointment.doctor.id,
-            firstName: appointment.doctor.firstName,
-            lastName: appointment.doctor.lastName,
-            specialization: appointment.doctor.specialization,
-          }
-        : undefined,
-      patient: appointment.patient
-        ? {
-            id: appointment.patient.id,
-            firstName: appointment.patient.firstName,
-            lastName: appointment.patient.lastName,
-            dateOfBirth: appointment.patient.dateOfBirth,
-          }
-        : undefined,
-    }));
-  }
 }

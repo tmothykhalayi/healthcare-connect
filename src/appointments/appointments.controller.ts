@@ -19,6 +19,7 @@ import { UserRole, Users } from '../users/entities/user.entity';
 import { AtGuard, RolesGuard } from '../auth/guards';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
+import { GetCurrentUserId } from '../auth/decorators/get-current-user-id.decorator';
 import {
   ApiTags,
   ApiOperation,
@@ -31,7 +32,7 @@ import { Request } from 'express';
 
 @ApiTags('appointments')
 @ApiBearerAuth()
-//@UseGuards(AtGuard, RolesGuard)
+@UseGuards(AtGuard, RolesGuard)
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
@@ -56,16 +57,8 @@ export class AppointmentsController {
   }
 
   @Get('doctor')
-  async findByCurrentDoctor(@Req() req: any) {
-    console.log('Request user:', req.user);
-
-    if (!req.user || !req.user.id) {
-      throw new Error('User not found in request');
-    }
-
-    const appointments = await this.appointmentsService.findByDoctorId(
-      req.user.id,
-    );
+  async findByCurrentDoctor(@GetCurrentUserId() userId: number) {
+    const appointments = await this.appointmentsService.findByCurrentDoctor(userId);
     return {
       statusCode: 200,
       message: 'Appointments for the current doctor retrieved successfully',
