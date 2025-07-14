@@ -23,5 +23,5 @@ export const GetCurrentUser = createParamDecorator(
     }
     
     return request.user; // Return entire user object
-  },
+},
 );

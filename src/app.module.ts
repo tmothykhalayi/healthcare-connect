@@ -32,8 +32,8 @@ import { AvailabilityModule } from './availability/availability.module';
       envFilePath: '.env',
     }),
     ThrottlerModule.forRoot({
-      ttl: 60, // time window in seconds
-      limit: 10, // max 10 requests per IP
+      ttl: 60, 
+      limit: 10,
     }),
     AuthModule,
     UsersModule,

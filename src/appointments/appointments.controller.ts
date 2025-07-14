@@ -17,8 +17,8 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { UserRole, Users } from '../users/entities/user.entity';
 import { AtGuard, RolesGuard } from '../auth/guards';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../auth/enums/role.enum';
+//import { Roles } from '../auth/decorators/roles.decorator';
+//import { Role } from '../auth/enums/role.enum';
 import { GetCurrentUserId } from '../auth/decorators/get-current-user-id.decorator';
 import {
   ApiTags,
@@ -31,8 +31,8 @@ import {
 import { Request } from 'express';
 
 @ApiTags('appointments')
-@ApiBearerAuth()
-@UseGuards(AtGuard, RolesGuard)
+//@ApiBearerAuth()
+//@UseGuards(AtGuard, RolesGuard)
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}

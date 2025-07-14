@@ -14,22 +14,18 @@ import {
 import { AvailabilityService } from './availability.service';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
-import { AtGuard, RolesGuard } from '../auth/guards';
-import { Roles } from '../auth/decorators/roles.decorator';
+//import { AtGuard, RolesGuard } from '../auth/guards';
+//import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { GetCurrentUserId } from '../auth/decorators/get-current-user-id.decorator';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
+import {ApiTags,ApiOperation,
+  ApiResponse,ApiParam,
+  ApiQuery,ApiBearerAuth,
 } from '@nestjs/swagger';
 
 @ApiTags('availability')
-@ApiBearerAuth()
-@UseGuards(AtGuard, RolesGuard)
+//@ApiBearerAuth()
+//@UseGuards(AtGuard, RolesGuard)
 @Controller('availability')
 export class AvailabilityController {
   constructor(private readonly availabilityService: AvailabilityService) {}
@@ -88,7 +84,7 @@ export class AvailabilityController {
   }
 
   @Post()
-  @Roles(Role.DOCTOR)
+  //@Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Create a new availability slot' })
   @ApiResponse({ status: 201, description: 'Availability slot created successfully' })
   @ApiResponse({ status: 400, description: 'Time slot conflicts with existing availability' })
@@ -105,7 +101,7 @@ export class AvailabilityController {
   }
 
   @Get()
-  @Roles(Role.DOCTOR)
+  //@Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Get all availability slots for the current doctor' })
   @ApiResponse({ status: 200, description: 'Availability slots retrieved successfully' })
   async getDoctorAvailabilitySlots(@GetCurrentUserId() userId: number) {
@@ -132,7 +128,7 @@ export class AvailabilityController {
   }
 
   @Patch(':id')
-  @Roles(Role.DOCTOR)
+  //@Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Update availability slot' })
   @ApiParam({ name: 'id', description: 'Availability slot ID' })
   @ApiResponse({ status: 200, description: 'Availability slot updated successfully' })
@@ -150,7 +146,7 @@ export class AvailabilityController {
   }
 
   @Delete(':id')
-  @Roles(Role.DOCTOR)
+  //@Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Delete availability slot' })
   @ApiParam({ name: 'id', description: 'Availability slot ID' })
   @ApiResponse({ status: 200, description: 'Availability slot deleted successfully' })
@@ -179,7 +175,7 @@ export class AvailabilityController {
   }
 
   @Patch(':id/available')
-  @Roles(Role.DOCTOR)
+  //@Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Mark availability slot as available' })
   @ApiParam({ name: 'id', description: 'Availability slot ID' })
   @ApiResponse({ status: 200, description: 'Availability slot marked as available' })

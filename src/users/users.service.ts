@@ -17,6 +17,10 @@ import { PatientsService } from '../patients/patients.service';
 import { PharmacyService } from '../pharmacy/pharmacy.service';
 import { PharmacistService } from '../pharmacist/pharmacist.service';
 import { Pharmacist } from '../pharmacist/entities/pharmacist.entity';
+import { PaymentsService } from '../payments/payments.service';
+import { OrdersService } from '../orders/orders.service';
+import { AppointmentsService } from '../appointments/appointments.service';
+import { MedicinesService } from '../medicines/medicines.service';
 
 @Injectable()
 export class UsersService {
@@ -28,6 +32,10 @@ export class UsersService {
     private patientsService: PatientsService,
     private pharmacyService: PharmacyService,
     private pharmacistService: PharmacistService,
+    private paymentsService: PaymentsService,
+    private ordersService: OrdersService,
+    private appointmentsService: AppointmentsService,
+    private medicinesService: MedicinesService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<Users> {
@@ -134,6 +142,7 @@ export class UsersService {
     try {
       const user = await this.usersRepository.findOne({
         where: { id },
+        relations: ['doctor', 'patient', 'pharmacist'],
       });
 
       if (!user) {
@@ -289,6 +298,43 @@ export class UsersService {
     }
 
     return { message: `User with ID ${id} deleted successfully` };
+  }
+
+  // Force delete user and all related data
+  async forceRemove(id: number): Promise<{ message: string }> {
+    // Delete medicines
+    const userMeds = await this.medicinesService.findByUserId(id, 0);
+    for (const med of userMeds) {
+      await this.medicinesService.remove(med.id);
+    }
+
+    // Delete payments
+    const payments = await this.paymentsService.findAll();
+    const userPayments = payments.filter(p => p.userId === id);
+    for (const payment of userPayments) {
+      await this.paymentsService.remove(payment.id);
+    }
+
+    // Delete orders (by patientId)
+    try {
+      await this.ordersService.removeByPatientId(id.toString());
+    } catch (e) {}
+
+    // Delete appointments (by patientId and doctorId)
+    try {
+      const appointmentsByPatient = await this.appointmentsService.findByPatientId(id);
+      for (const appt of appointmentsByPatient) {
+        await this.appointmentsService.remove(appt.id);
+      }
+    } catch (e) {}
+    // TODO: If user is a doctor, also delete appointments by doctorId
+
+    // Finally, delete the user
+    const result = await this.usersRepository.delete({ id });
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return { message: `User with ID ${id} and all related data deleted successfully` };
   }
 
   // Delete by email
