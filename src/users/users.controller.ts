@@ -27,6 +27,7 @@ import { UserRole, Users } from './entities/user.entity';
 import { AtGuard, RolesGuard } from '../auth/guards';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
+import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator';
 
 //@UseGuards(AtGuard, RolesGuard)
 //@ApiBearerAuth()
@@ -93,23 +94,24 @@ export class UsersController {
 
   // Get current user profile
   @Get('profile')
-  // @Roles(Role.PATIENT, Role.DOCTOR, Role.ADMIN, Role.PHARMACY)
+  @UseGuards(AtGuard, RolesGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({
     status: 200,
     description: 'User profile retrieved successfully',
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getCurrentUserProfile(
-    @Req() req: Request & { user: { id: number; role: Role } },
-  ) {
+  async getCurrentUserProfile(@GetCurrentUser() user: { id: number; role: Role }) {
     try {
-      const userId = req.user.id;
-      const user = await this.usersService.findOne(userId);
+      console.log('User object received:', user);
+      const userId = user.id;
+      console.log('User ID:', userId);
+      const userProfile = await this.usersService.findOne(userId);
       return {
         statusCode: HttpStatus.OK,
         message: 'User profile retrieved successfully',
-        data: user,
+        data: userProfile,
       };
     } catch (error) {
       console.error('Error in getCurrentUserProfile:', error);

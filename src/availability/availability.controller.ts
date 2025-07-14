@@ -28,8 +28,8 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('availability')
-//@ApiBearerAuth()
-//@UseGuards(AtGuard, RolesGuard)
+@ApiBearerAuth()
+@UseGuards(AtGuard, RolesGuard)
 @Controller('availability')
 export class AvailabilityController {
   constructor(private readonly availabilityService: AvailabilityService) {}

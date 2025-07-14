@@ -29,6 +29,7 @@ export class AtStrategy extends PassportStrategy(Strategy, 'jwt-at') {
       throw new UnauthorizedException('Invalid token payload');
     }
 
+    // console.log('JWT payload:', payload);
     return payload;
   }
 }
