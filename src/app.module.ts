@@ -23,6 +23,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { TelemedicineModule } from './telemedicine/telemedicine.module';
 import { MailModule } from './mail/mail.module';
 import { PharmacistModule } from './pharmacist/pharmacist.module';
+import { AvailabilityModule } from './availability/availability.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { PharmacistModule } from './pharmacist/pharmacist.module';
     TelemedicineModule,
     MailModule,
     PharmacistModule,
+    AvailabilityModule,
   ],
   controllers: [AppController],
   providers: [

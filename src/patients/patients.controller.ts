@@ -25,8 +25,8 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('patients')
-@ApiBearerAuth()
-@UseGuards(AtGuard, RolesGuard)
+//@ApiBearerAuth()
+//@UseGuards(AtGuard, RolesGuard)
 export class PatientsController {
   constructor(
     @InjectRepository(Patient)
@@ -36,7 +36,7 @@ export class PatientsController {
   ) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.DOCTOR)
+ // @Roles(Role.ADMIN, Role.DOCTOR)
   async create(@Body() createPatientDto: CreatePatientDto, @Req() req) {
     const currentUser = req.user;
     if (currentUser.role === Role.PATIENT) {
