@@ -1,31 +1,19 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Query,
-  HttpStatus,
-  ParseIntPipe,
-  Req,
+  Controller,Get,
+  Post,Body,Patch,
+  Param,Delete,UseGuards,Query, HttpStatus,ParseIntPipe, Req,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { UserRole, Users } from '../users/entities/user.entity';
-import { AtGuard, RolesGuard } from '../auth/guards';
+//import { AtGuard, RolesGuard } from '../auth/guards';
 //import { Roles } from '../auth/decorators/roles.decorator';
 //import { Role } from '../auth/enums/role.enum';
 import { GetCurrentUserId } from '../auth/decorators/get-current-user-id.decorator';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
+import {ApiTags,
+  ApiOperation,ApiResponse,
+  ApiParam,ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -57,6 +45,8 @@ export class AppointmentsController {
   }
 
   @Get('doctor')
+  //@Roles(Role.DOCTOR)
+  @ApiOperation({ summary: 'Get appointments for the current doctor' })
   async findByCurrentDoctor(@GetCurrentUserId() userId: number) {
     const appointments = await this.appointmentsService.findByCurrentDoctor(userId);
     return {

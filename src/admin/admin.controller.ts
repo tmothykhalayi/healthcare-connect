@@ -1,14 +1,8 @@
 import {Controller,Get,
   Post,Body,Patch,Param,UseGuards,Delete,Query,HttpStatus,ParseIntPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import {ApiTags,
+  ApiOperation,ApiResponse,ApiParam,ApiBearerAuth,ApiQuery,} from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';

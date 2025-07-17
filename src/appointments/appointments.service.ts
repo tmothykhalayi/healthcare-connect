@@ -1,26 +1,22 @@
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,ConflictException,InternalServerErrorException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, Between } from 'typeorm';
 import { Appointment } from './entities/appointment.entity';
-
+import axios from 'axios';
+import * as nodemailer from 'nodemailer';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AppointmentsService {
   constructor(
     @InjectRepository(Appointment)
     private appointmentsRepository: Repository<Appointment>,
+    private configService: ConfigService,
   ) {}
 
   // Create a new appointment
-  async create(
-    createAppointmentDto: CreateAppointmentDto,
-  ): Promise<Appointment> {
+  async create(createAppointmentDto: CreateAppointmentDto,): Promise<Appointment> {
     // Check for scheduling conflicts
     const appointmentDate = new Date(createAppointmentDto.appointmentDate);
     const duration = createAppointmentDto.duration;

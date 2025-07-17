@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -24,6 +23,11 @@ import { TelemedicineModule } from './telemedicine/telemedicine.module';
 import { MailModule } from './mail/mail.module';
 import { PharmacistModule } from './pharmacist/pharmacist.module';
 import { AvailabilityModule } from './availability/availability.module';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { createKeyv, Keyv } from '@keyv/redis';
+import { CacheableMemory } from 'cacheable';
+
+
 
 @Module({
   imports: [
