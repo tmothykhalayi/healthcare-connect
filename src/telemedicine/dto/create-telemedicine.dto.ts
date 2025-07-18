@@ -79,7 +79,10 @@ export class CreateTelemedicineDto {
   @IsString()
   notes?: string;
 
-  @ApiPropertyOptional({ description: 'Scheduled date and time (computed from appointmentDate and appointmentTime, not required from client)' })
+  @ApiPropertyOptional({
+    description:
+      'Scheduled date and time (computed from appointmentDate and appointmentTime, not required from client)',
+  })
   @IsOptional()
   @IsDateString()
   scheduledAt?: string;

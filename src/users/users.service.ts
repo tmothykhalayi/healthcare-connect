@@ -119,7 +119,7 @@ export class UsersService {
         order: { createdAt: 'DESC' },
       });
       // Return all necessary fields for the frontend
-      return users.map(user => ({
+      return users.map((user) => ({
         id: user.id,
         email: user.email,
         firstName: user.firstName,
@@ -129,7 +129,7 @@ export class UsersService {
         isEmailVerified: user.isEmailVerified,
         isActive: user.isActive,
         createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        updatedAt: user.updatedAt,
       }));
     } catch (error) {
       console.error('Error in findAll:', error);
@@ -310,7 +310,7 @@ export class UsersService {
 
     // Delete payments
     const payments = await this.paymentsService.findAll();
-    const userPayments = payments.filter(p => p.userId === id);
+    const userPayments = payments.filter((p) => p.userId === id);
     for (const payment of userPayments) {
       await this.paymentsService.remove(payment.id);
     }
@@ -322,7 +322,8 @@ export class UsersService {
 
     // Delete appointments (by patientId and doctorId)
     try {
-      const appointmentsByPatient = await this.appointmentsService.findByPatientId(id);
+      const appointmentsByPatient =
+        await this.appointmentsService.findByPatientId(id);
       for (const appt of appointmentsByPatient) {
         await this.appointmentsService.remove(appt.id);
       }
@@ -334,7 +335,9 @@ export class UsersService {
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    return { message: `User with ID ${id} and all related data deleted successfully` };
+    return {
+      message: `User with ID ${id} and all related data deleted successfully`,
+    };
   }
 
   // Delete by email
@@ -406,7 +409,9 @@ export class UsersService {
           break;
 
         case UserRole.PHARMACIST:
-          console.log(`Creating pharmacy and pharmacist profiles for user ${user.id}`);
+          console.log(
+            `Creating pharmacy and pharmacist profiles for user ${user.id}`,
+          );
           // First create the pharmacy
           const pharmacy = await this.pharmacyService.createFromUser(user);
           // Then create the pharmacist and link to the pharmacy

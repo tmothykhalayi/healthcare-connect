@@ -93,27 +93,16 @@ export class Pharmacy {
   @ManyToMany(() => Medicine, (medicine) => medicine.pharmacies)
   medicines: Medicine[];
 
-
-
   @OneToMany(() => Order, (order) => order.pharmacy)
   orders: Order[];
-
-  
-
 
   @OneToMany(() => Payment, (payment) => payment.pharmacy)
   payments: Payment[];
 
-  
   @Column()
   name: string;
 
   // One Pharmacy has many Pharmacists
   @OneToMany(() => Pharmacist, (pharmacist) => pharmacist.pharmacy)
   pharmacists: Pharmacist[];
-
- 
-
 }
-
-

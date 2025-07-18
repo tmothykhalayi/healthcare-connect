@@ -1,7 +1,10 @@
-
 import { CreatePharmacistDto } from './dto/create-pharmacist.dto';
 import { UpdatePharmacistDto } from './dto/update-pharmacist.dto';
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Pharmacist } from './entities/pharmacist.entity';
@@ -22,7 +25,11 @@ export class PharmacistService {
   ) {}
 
   // Create Pharmacist and link to user
-  async createPharmacist(userId: number, licenseNumber: string, pharmacyId: number): Promise<Pharmacist> {
+  async createPharmacist(
+    userId: number,
+    licenseNumber: string,
+    pharmacyId: number,
+  ): Promise<Pharmacist> {
     // Find user
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -60,7 +67,8 @@ export class PharmacistService {
       };
 
       const newPharmacist = this.pharmacistRepository.create(pharmacistData);
-      const savedPharmacist = await this.pharmacistRepository.save(newPharmacist);
+      const savedPharmacist =
+        await this.pharmacistRepository.save(newPharmacist);
 
       return savedPharmacist;
     } catch (error) {
@@ -89,7 +97,10 @@ export class PharmacistService {
   }
 
   // Update pharmacist (example: license number)
-  async update(id: number, updateData: Partial<Pharmacist>): Promise<Pharmacist> {
+  async update(
+    id: number,
+    updateData: Partial<Pharmacist>,
+  ): Promise<Pharmacist> {
     const pharmacist = await this.findOne(id);
     Object.assign(pharmacist, updateData);
     return this.pharmacistRepository.save(pharmacist);

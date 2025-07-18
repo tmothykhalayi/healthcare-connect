@@ -35,7 +35,7 @@ export class MedicalController {
   constructor(private readonly medicalService: MedicalService) {}
 
   @Post()
- // @Roles(Role.ADMIN, Role.DOCTOR)
+  // @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Create a new medical record' })
   @ApiResponse({
     status: 201,
@@ -157,8 +157,11 @@ export class MedicalController {
   @Get('prescriptions/pharmacy/:pharmacyId')
   @ApiOperation({ summary: 'Get prescription records by pharmacy ID' })
   @ApiParam({ name: 'pharmacyId', description: 'Pharmacy ID' })
-  async findPrescriptionsByPharmacyId(@Param('pharmacyId', ParseIntPipe) pharmacyId: number) {
-    const records = await this.medicalService.findPrescriptionsByPharmacyId(pharmacyId);
+  async findPrescriptionsByPharmacyId(
+    @Param('pharmacyId', ParseIntPipe) pharmacyId: number,
+  ) {
+    const records =
+      await this.medicalService.findPrescriptionsByPharmacyId(pharmacyId);
     return {
       statusCode: HttpStatus.OK,
       message: `Prescription records for pharmacy ${pharmacyId} retrieved successfully`,

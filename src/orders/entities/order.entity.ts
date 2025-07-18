@@ -13,7 +13,6 @@ import { Patient } from '../../patients/entities/patient.entity';
 import { Pharmacy } from '../../pharmacy/entities/pharmacy.entity';
 import { Payment } from '../../payments/entities/payment.entity';
 
-
 @Entity('orders')
 export class Order {
   @ApiProperty({ description: 'Order unique identifier' })
@@ -25,7 +24,9 @@ export class Order {
   patientId: number;
 
   @ApiProperty({ description: 'Patient associated with this order' })
-  @ManyToOne(() => Patient, (patient) => patient.orders, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Patient, (patient) => patient.orders, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
 
@@ -64,5 +65,4 @@ export class Order {
 
   @OneToMany(() => Payment, (payment) => payment.order, { eager: true })
   payments: Payment[];
-
 }

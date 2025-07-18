@@ -1,4 +1,10 @@
-import {Injectable,NotFoundException,InternalServerErrorException,ConflictException,BadRequestException,} from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Patient, Gender } from './entities/patient.entity';
@@ -145,7 +151,7 @@ export class PatientsService {
       const patientData = {
         userId: user.id,
         firstName: user.firstName, // Add required firstName
-        lastName: user.lastName,   // Add required lastName
+        lastName: user.lastName, // Add required lastName
         gender: Gender.OTHER, // Default gender enum value
         dateOfBirth: new Date('2000-01-01'), // Default date
         phoneNumber: user.phoneNumber || '(Not set)',

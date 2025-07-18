@@ -8,11 +8,11 @@ export const GetCurrentUser = createParamDecorator(
   (data: string | undefined, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
     //console.log('Request user object:', request.user);
-    
+
     if (data) {
       return request.user[data];
     }
-    
+
     // Map the JWT payload to the expected user structure
     if (request.user) {
       return {
@@ -21,7 +21,7 @@ export const GetCurrentUser = createParamDecorator(
         email: request.user.email,
       };
     }
-    
+
     return request.user; // Return entire user object
-},
+  },
 );

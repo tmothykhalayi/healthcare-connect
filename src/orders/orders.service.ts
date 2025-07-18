@@ -17,7 +17,8 @@ export class OrdersService {
   constructor(
     @InjectRepository(Order) private ordersRepository: Repository<Order>,
     @InjectRepository(Patient) private patientsRepository: Repository<Patient>,
-    @InjectRepository(Pharmacy) private pharmacyRepository: Repository<Pharmacy>,
+    @InjectRepository(Pharmacy)
+    private pharmacyRepository: Repository<Pharmacy>,
   ) {}
 
   // Create a new order

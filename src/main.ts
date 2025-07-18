@@ -48,8 +48,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : 'Internal server error';
 
     // If message is an object with 'message' property (like validation errors), extract it
-    if (typeof message === 'object' && message !== null && 'message' in message) {
-      message = (message as any).message;
+    if (
+      typeof message === 'object' &&
+      message !== null &&
+      'message' in message
+    ) {
+      message = message.message;
     }
 
     const responseBody = {

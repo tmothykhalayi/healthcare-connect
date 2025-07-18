@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum FrontendAvailabilityType {
@@ -18,10 +24,10 @@ export class CreateAvailabilityDto {
   @IsNotEmpty()
   endTime: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Type of availability slot',
     enum: FrontendAvailabilityType,
-    default: FrontendAvailabilityType.STANDARD
+    default: FrontendAvailabilityType.STANDARD,
   })
   @IsEnum(FrontendAvailabilityType)
   @IsOptional()
@@ -31,4 +37,4 @@ export class CreateAvailabilityDto {
   @IsString()
   @IsOptional()
   notes?: string;
-} 
+}

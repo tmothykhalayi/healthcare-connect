@@ -36,7 +36,7 @@ export class PatientsController {
   ) {}
 
   @Post()
- // @Roles(Role.ADMIN, Role.DOCTOR)
+  // @Roles(Role.ADMIN, Role.DOCTOR)
   async create(@Body() createPatientDto: CreatePatientDto, @Req() req) {
     const currentUser = req.user;
     if (currentUser.role === Role.PATIENT) {
@@ -108,7 +108,9 @@ export class PatientsController {
         .createQueryBuilder('patient')
         .leftJoinAndSelect('patient.user', 'user')
         .leftJoin('patient.pharmacy', 'pharmacy')
-        .where('pharmacy.id = :pharmacyId', { pharmacyId: parseInt(pharmacyId) })
+        .where('pharmacy.id = :pharmacyId', {
+          pharmacyId: parseInt(pharmacyId),
+        })
         .select([
           'patient.id',
           'patient.phoneNumber',

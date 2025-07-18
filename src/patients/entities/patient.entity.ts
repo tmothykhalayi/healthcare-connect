@@ -35,7 +35,7 @@ export class Patient {
   userId: number;
 
   @ApiProperty({ description: 'User associated with this patient' })
-  @OneToOne(() => Users, user => user.patient, { onDelete: 'CASCADE' })
+  @OneToOne(() => Users, (user) => user.patient, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: Users;
 
@@ -119,6 +119,9 @@ export class Patient {
   @OneToMany(() => Order, (order) => order.patient)
   orders: Order[];
 
-  @OneToMany(() => TelemedicineAppointment, (appointment) => appointment.patient)
+  @OneToMany(
+    () => TelemedicineAppointment,
+    (appointment) => appointment.patient,
+  )
   telemedicineAppointments: TelemedicineAppointment[];
 }

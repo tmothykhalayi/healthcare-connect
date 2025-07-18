@@ -37,7 +37,11 @@ export class PaymentsController {
   ///@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Create a new payment' })
   @ApiBody({ type: CreatePaymentDto })
-  @ApiResponse({ status: 201, description: 'Payment created successfully', type: Payment })
+  @ApiResponse({
+    status: 201,
+    description: 'Payment created successfully',
+    type: Payment,
+  })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async create(@Body() createPaymentDto: CreatePaymentDto) {
     try {
@@ -56,7 +60,11 @@ export class PaymentsController {
   @Get()
   ///@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all payments' })
-  @ApiResponse({ status: 200, description: 'Payments retrieved successfully', type: [Payment] })
+  @ApiResponse({
+    status: 200,
+    description: 'Payments retrieved successfully',
+    type: [Payment],
+  })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async findAll() {
     try {
@@ -75,11 +83,17 @@ export class PaymentsController {
   @Get('pharmacy/:pharmacyId')
   @ApiOperation({ summary: 'Get payments by pharmacy ID' })
   @ApiParam({ name: 'pharmacyId', description: 'Pharmacy ID' })
-  @ApiResponse({ status: 200, description: 'Payments retrieved successfully', type: [Payment] })
+  @ApiResponse({
+    status: 200,
+    description: 'Payments retrieved successfully',
+    type: [Payment],
+  })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async findByPharmacyId(@Param('pharmacyId') pharmacyId: string) {
     try {
-      const payments = await this.paymentsService.findByPharmacyId(Number(pharmacyId));
+      const payments = await this.paymentsService.findByPharmacyId(
+        Number(pharmacyId),
+      );
       return {
         statusCode: HttpStatus.OK,
         message: 'Payments retrieved successfully',
@@ -94,7 +108,11 @@ export class PaymentsController {
   //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
-  @ApiResponse({ status: 200, description: 'Payment retrieved successfully', type: Payment })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment retrieved successfully',
+    type: Payment,
+  })
   @ApiResponse({ status: 404, description: 'Payment not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async findOne(@Param('id') id: string) {
@@ -119,7 +137,11 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Update a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
   @ApiBody({ type: UpdatePaymentDto })
-  @ApiResponse({ status: 200, description: 'Payment updated successfully', type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment updated successfully',
+    type: String,
+  })
   @ApiResponse({ status: 404, description: 'Payment not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async update(
@@ -149,7 +171,11 @@ export class PaymentsController {
   //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
-  @ApiResponse({ status: 200, description: 'Payment deleted successfully', type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment deleted successfully',
+    type: String,
+  })
   @ApiResponse({ status: 404, description: 'Payment not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async remove(@Param('id') id: string) {

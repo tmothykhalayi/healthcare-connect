@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {IsInt,IsString,
+import {
+  IsInt,
+  IsString,
   IsDateString,
   IsOptional,
   IsPositive,
@@ -37,7 +39,7 @@ export class CreateAppointmentDto {
   @ApiProperty({ example: 'timothy', description: 'Patient email address' })
   @IsString()
   patientEmail: string;
- 
+
   @ApiProperty({ example: 30, description: 'Duration in minutes' })
   @Type(() => Number)
   @IsInt()

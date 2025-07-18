@@ -1,6 +1,24 @@
-import {Controller,Get,Post,Body,Patch,Param,UseGuards,Delete,Query,HttpStatus,ParseIntPipe,} from '@nestjs/common';
-import {ApiTags,
-  ApiOperation,ApiResponse,ApiParam,ApiBearerAuth,ApiQuery,} from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Delete,
+  Query,
+  HttpStatus,
+  ParseIntPipe,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
@@ -128,7 +146,7 @@ export class AdminController {
   }
 
   @Get('department/:department')
- @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get admins by department' })
   @ApiParam({ name: 'department', description: 'Department name' })
   async findByDepartment(@Param('department') department: string) {

@@ -1,4 +1,7 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateAvailabilityDto, FrontendAvailabilityType } from './create-availability.dto';
+import {
+  CreateAvailabilityDto,
+  FrontendAvailabilityType,
+} from './create-availability.dto';
 
-export class UpdateAvailabilityDto extends PartialType(CreateAvailabilityDto) {} 
+export class UpdateAvailabilityDto extends PartialType(CreateAvailabilityDto) {}

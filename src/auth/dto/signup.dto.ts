@@ -36,4 +36,4 @@ export class SignUpDto {
   @IsOptional()
   @IsString()
   lastName?: string;
-} 
+}

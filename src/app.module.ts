@@ -27,8 +27,6 @@ import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { createKeyv, Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 
-
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -36,7 +34,7 @@ import { CacheableMemory } from 'cacheable';
       envFilePath: '.env',
     }),
     ThrottlerModule.forRoot({
-      ttl: 60, 
+      ttl: 60,
       limit: 10,
     }),
     AuthModule,

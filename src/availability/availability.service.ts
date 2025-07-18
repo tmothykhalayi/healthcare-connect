@@ -1,8 +1,25 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThanOrEqual, LessThanOrEqual, Not } from 'typeorm';
-import { Availability, AvailabilityStatus, AvailabilityType } from './entities/availability.entity';
-import { CreateAvailabilityDto, FrontendAvailabilityType } from './dto/create-availability.dto';
+import {
+  Repository,
+  Between,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+  Not,
+} from 'typeorm';
+import {
+  Availability,
+  AvailabilityStatus,
+  AvailabilityType,
+} from './entities/availability.entity';
+import {
+  CreateAvailabilityDto,
+  FrontendAvailabilityType,
+} from './dto/create-availability.dto';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 
 @Injectable()
@@ -12,9 +29,12 @@ export class AvailabilityService {
     private availabilityRepository: Repository<Availability>,
   ) {}
 
-  async create(createAvailabilityDto: CreateAvailabilityDto, doctorId: number): Promise<Availability> {
+  async create(
+    createAvailabilityDto: CreateAvailabilityDto,
+    doctorId: number,
+  ): Promise<Availability> {
     const { startTime, endTime, type } = createAvailabilityDto;
-    
+
     // Check for time conflicts
     const conflictingSlots = await this.availabilityRepository.find({
       where: {
@@ -25,7 +45,9 @@ export class AvailabilityService {
     });
 
     if (conflictingSlots.length > 0) {
-      throw new BadRequestException('Time slot conflicts with existing availability');
+      throw new BadRequestException(
+        'Time slot conflicts with existing availability',
+      );
     }
 
     // Map frontend type to backend type
@@ -72,7 +94,10 @@ export class AvailabilityService {
     });
   }
 
-  async findByDateRange(startDate: string, endDate: string): Promise<Availability[]> {
+  async findByDateRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<Availability[]> {
     return this.availabilityRepository.find({
       where: {
         startTime: Between(new Date(startDate), new Date(endDate)),
@@ -95,14 +120,21 @@ export class AvailabilityService {
     return availability;
   }
 
-  async update(id: number, updateAvailabilityDto: UpdateAvailabilityDto): Promise<Availability> {
+  async update(
+    id: number,
+    updateAvailabilityDto: UpdateAvailabilityDto,
+  ): Promise<Availability> {
     const availability = await this.findOne(id);
-    
+
     // Check for time conflicts if time is being updated
     if (updateAvailabilityDto.startTime || updateAvailabilityDto.endTime) {
-      const startTime = updateAvailabilityDto.startTime ? new Date(updateAvailabilityDto.startTime) : availability.startTime;
-      const endTime = updateAvailabilityDto.endTime ? new Date(updateAvailabilityDto.endTime) : availability.endTime;
-      
+      const startTime = updateAvailabilityDto.startTime
+        ? new Date(updateAvailabilityDto.startTime)
+        : availability.startTime;
+      const endTime = updateAvailabilityDto.endTime
+        ? new Date(updateAvailabilityDto.endTime)
+        : availability.endTime;
+
       const conflictingSlots = await this.availabilityRepository.find({
         where: {
           doctorId: availability.doctorId,
@@ -113,7 +145,9 @@ export class AvailabilityService {
       });
 
       if (conflictingSlots.length > 0) {
-        throw new BadRequestException('Time slot conflicts with existing availability');
+        throw new BadRequestException(
+          'Time slot conflicts with existing availability',
+        );
       }
     }
 
@@ -157,7 +191,10 @@ export class AvailabilityService {
     return this.availabilityRepository.save(availability);
   }
 
-  async getAvailableSlotsByDateRange(startDate: string, endDate: string): Promise<Availability[]> {
+  async getAvailableSlotsByDateRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<Availability[]> {
     return this.availabilityRepository.find({
       where: {
         startTime: Between(new Date(startDate), new Date(endDate)),
@@ -167,4 +204,4 @@ export class AvailabilityService {
       order: { startTime: 'ASC' },
     });
   }
-} 
+}

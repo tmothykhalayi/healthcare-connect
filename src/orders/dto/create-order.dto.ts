@@ -39,11 +39,10 @@ export class CreateOrderDto {
     example: 150.0,
     description: 'Total amount for the order',
   })
- 
   @Type(() => Number)
-@IsNumber()
-@IsNotEmpty()
-totalAmount: number;
+  @IsNumber()
+  @IsNotEmpty()
+  totalAmount: number;
 
   @ApiProperty({
     example: '234',
@@ -53,9 +52,7 @@ totalAmount: number;
   @IsNotEmpty()
   OrderId: string;
 
-
-
-@ApiProperty({
+  @ApiProperty({
     example: 1,
     description: 'Pharmacy ID associated with the order',
   })

@@ -1,10 +1,15 @@
 import {
-  Entity,Column, PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn, ManyToOne,JoinColumn,} from 'typeorm';
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
-
-
 
 @Entity('appointments')
 export class Appointment {
@@ -60,8 +65,6 @@ export class Appointment {
   @Column({ nullable: true })
   cancellationReason: string;
 
-  
-
   @ApiProperty({ description: 'Reschedule reason' })
   @Column({ nullable: true })
   rescheduleReason: string;
@@ -78,12 +81,11 @@ export class Appointment {
   @Column({ type: 'json', nullable: true })
   vitals: any;
   @ApiProperty({ description: 'Patient email' })
+  @Column({ nullable: true })
+  patientEmail: string;
 
-@Column({ nullable: true }) 
-patientEmail: string;
-
-//   @Column({ nullable: true }) 
-// doctorName: string;
+  //   @Column({ nullable: true })
+  // doctorName: string;
 
   @ApiProperty({ description: 'Appointment creation date' })
   @CreateDateColumn()

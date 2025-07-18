@@ -10,4 +10,4 @@ import { Availability } from './entities/availability.entity';
   providers: [AvailabilityService],
   exports: [AvailabilityService],
 })
-export class AvailabilityModule {} 
+export class AvailabilityModule {}

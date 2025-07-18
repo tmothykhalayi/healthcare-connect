@@ -21,17 +21,18 @@ export class TelemedicineAppointment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  
-appointmentTime: string; 
+  appointmentTime: string;
   notes?: string;
 
-duration?: number; 
+  duration?: number;
   @ApiProperty({ description: 'Doctor for the telemedicine appointment' })
   @ManyToOne(() => Doctor, (doctor) => doctor.appointments, { nullable: false })
   doctor: Doctor;
 
   @ApiProperty({ description: 'Patient for the telemedicine appointment' })
-  @ManyToOne(() => Patient, (patient) => patient.telemedicineAppointments, { nullable: false })
+  @ManyToOne(() => Patient, (patient) => patient.telemedicineAppointments, {
+    nullable: false,
+  })
   patient: Patient;
 
   @ApiProperty({ description: 'Scheduled date and time' })
@@ -51,7 +52,6 @@ duration?: number;
   updatedAt: Date;
 
   order: {
-  scheduledAt: 'ASC'
-}
-
+    scheduledAt: 'ASC';
+  };
 }

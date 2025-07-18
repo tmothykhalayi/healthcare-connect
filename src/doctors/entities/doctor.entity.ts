@@ -6,14 +6,13 @@ import {
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
-  OneToMany,} from 'typeorm';
+  OneToMany,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 
 import { Appointment } from '../../appointments/entities/appointment.entity';
-
-
 
 @Entity('doctors')
 export class Doctor {
@@ -21,15 +20,11 @@ export class Doctor {
   @PrimaryGeneratedColumn()
   id: number;
 
-
   @Column()
   firstName: string;
 
   @Column()
   lastName: string;
-
-
-
 
   @ApiProperty({ description: 'User ID (from users table)' })
   @Column({ unique: true })
@@ -90,9 +85,7 @@ export class Doctor {
 
   @OneToMany(() => Patient, (patient) => patient.assignedDoctor)
   patients: Patient[];
-  
 
   @OneToMany(() => Appointment, (appointment) => appointment.doctor)
   appointments: Appointment[];
-
 }

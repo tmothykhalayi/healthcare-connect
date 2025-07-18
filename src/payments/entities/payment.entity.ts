@@ -54,7 +54,10 @@ export class Payment {
   @JoinColumn({ name: 'userId' })
   user: Users;
 
-  @ManyToOne(() => Pharmacy, (pharmacy) => pharmacy.payments, { eager: true, nullable: true })
+  @ManyToOne(() => Pharmacy, (pharmacy) => pharmacy.payments, {
+    eager: true,
+    nullable: true,
+  })
   @JoinColumn({ name: 'pharmacyId' })
   pharmacy: Pharmacy;
 

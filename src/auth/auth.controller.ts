@@ -1,9 +1,19 @@
-import {Body,
-  Controller,Post,
-  Req,UnauthorizedException,UseGuards,
-  Param,ParseIntPipe,
-  Headers,Logger,
-  Get,HttpCode,HttpStatus,NotFoundException,} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+  Param,
+  ParseIntPipe,
+  Headers,
+  Logger,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login.dto';
@@ -36,12 +46,12 @@ export class AuthController {
   @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register user' })
-  async signUp(
-    @Body() createAuthDto: CreateAuthDto,
-  ) {
+  async signUp(@Body() createAuthDto: CreateAuthDto) {
     // Check if the user already exists
     try {
-      const existingUser = await this.usersService.findByEmail(createAuthDto.email);
+      const existingUser = await this.usersService.findByEmail(
+        createAuthDto.email,
+      );
       if (existingUser) {
         throw new UnauthorizedException('User already exists');
       }
@@ -61,7 +71,9 @@ export class AuthController {
 
     // Check if we have the required user data
     if (!result.user?.id || !result.user?.email) {
-      throw new UnauthorizedException('Invalid user data returned from authentication');
+      throw new UnauthorizedException(
+        'Invalid user data returned from authentication',
+      );
     }
 
     // Optionally, send a welcome email or any other post-signup logic

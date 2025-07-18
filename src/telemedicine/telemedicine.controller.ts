@@ -3,9 +3,14 @@ import {
   Post,
   Body,
   Get,
-  Param,Patch,Delete,
-  ParseIntPipe,HttpStatus,
-  UseGuards,Req,} from '@nestjs/common';
+  Param,
+  Patch,
+  Delete,
+  ParseIntPipe,
+  HttpStatus,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -29,7 +34,7 @@ export class TelemedicineController {
   constructor(private readonly telemedicineService: TelemedicineService) {}
 
   @Post()
- // @Roles(Role.PATIENT, Role.DOCTOR, Role.ADMIN)
+  // @Roles(Role.PATIENT, Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Create a new telemedicine appointment' })
   @ApiResponse({
     status: 201,
@@ -62,7 +67,7 @@ export class TelemedicineController {
   }
 
   @Get()
- // @Roles(Role.DOCTOR, Role.ADMIN)
+  // @Roles(Role.DOCTOR, Role.ADMIN)
   @ApiOperation({ summary: 'Get all telemedicine appointments' })
   @ApiResponse({
     status: 200,

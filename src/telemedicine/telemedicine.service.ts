@@ -37,19 +37,29 @@ export class TelemedicineService {
     dto: CreateTelemedicineDto,
   ): Promise<TelemedicineAppointment> {
     // Find patient and doctor by ID
-    const patient = await this.patientRepo.findOne({ where: { id: dto.patientId } });
+    const patient = await this.patientRepo.findOne({
+      where: { id: dto.patientId },
+    });
     if (!patient) throw new NotFoundException('Patient not found');
 
-    const doctor = await this.doctorRepo.findOne({ where: { id: dto.doctorId } });
+    const doctor = await this.doctorRepo.findOne({
+      where: { id: dto.doctorId },
+    });
     if (!doctor) throw new NotFoundException('Doctor not found');
 
     // Construct scheduledAt from appointmentDate and appointmentTime
     if (!dto.appointmentDate || !dto.appointmentTime) {
-      throw new BadRequestException('appointmentDate and appointmentTime are required');
+      throw new BadRequestException(
+        'appointmentDate and appointmentTime are required',
+      );
     }
-    const scheduledAt = new Date(`${dto.appointmentDate}T${dto.appointmentTime}:00Z`);
+    const scheduledAt = new Date(
+      `${dto.appointmentDate}T${dto.appointmentTime}:00Z`,
+    );
     if (isNaN(scheduledAt.getTime())) {
-      throw new BadRequestException('Invalid appointmentDate or appointmentTime');
+      throw new BadRequestException(
+        'Invalid appointmentDate or appointmentTime',
+      );
     }
 
     // Check if doctor is available at scheduledAt time
@@ -174,7 +184,9 @@ export class TelemedicineService {
         : appointment['scheduledAt'];
       const existingAppt = await this.telemedicineRepo.findOne({
         where: {
-          doctor: { id: dto.doctorId || (appointment.doctor && appointment.doctor.id) },
+          doctor: {
+            id: dto.doctorId || (appointment.doctor && appointment.doctor.id),
+          },
           scheduledAt: scheduledAt,
         },
       });

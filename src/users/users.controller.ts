@@ -97,9 +97,14 @@ export class UsersController {
   @UseGuards(AtGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getCurrentUserProfile(@GetCurrentUser() user: { id: number; role: Role }) {
+  async getCurrentUserProfile(
+    @GetCurrentUser() user: { id: number; role: Role },
+  ) {
     try {
       const userId = user.id;
       // Fetch user with all possible role relations
@@ -107,9 +112,12 @@ export class UsersController {
 
       // Attach the correct profile based on role
       let profile: any = null;
-      if (userProfile.role === 'patient' && userProfile.patient) profile = { ...userProfile.patient, id: userProfile.patient.id };
-      if (userProfile.role === 'doctor' && userProfile.doctor) profile = { ...userProfile.doctor, id: userProfile.doctor.id };
-      if (userProfile.role === 'pharmacist' && userProfile.pharmacist) profile = { ...userProfile.pharmacist, id: userProfile.pharmacist.id };
+      if (userProfile.role === 'patient' && userProfile.patient)
+        profile = { ...userProfile.patient, id: userProfile.patient.id };
+      if (userProfile.role === 'doctor' && userProfile.doctor)
+        profile = { ...userProfile.doctor, id: userProfile.doctor.id };
+      if (userProfile.role === 'pharmacist' && userProfile.pharmacist)
+        profile = { ...userProfile.pharmacist, id: userProfile.pharmacist.id };
 
       // Remove the patient/doctor/pharmacist properties to avoid duplication
       const { patient, doctor, pharmacist, ...userData } = userProfile;
@@ -145,7 +153,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  // @Roles(Role.ADMIN) 
+  // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({ status: 200, description: 'User found' })
@@ -160,7 +168,7 @@ export class UsersController {
   }
 
   @Patch('email/:email')
-  // @Roles(Role.ADMIN) 
+  // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update user by email' })
   @ApiParam({ name: 'email', description: 'User email address' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
@@ -177,7 +185,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  // @Roles(Role.ADMIN) 
+  // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
@@ -210,7 +218,10 @@ export class UsersController {
   @Delete(':id/force')
   @ApiOperation({ summary: 'Force delete user and all related data' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'User and related data deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'User and related data deleted successfully',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   async forceRemove(@Param('id', ParseIntPipe) id: number) {
     const result = await this.usersService.forceRemove(id);

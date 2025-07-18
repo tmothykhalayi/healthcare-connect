@@ -1,7 +1,10 @@
 import {
-  Injectable,NotFoundException,UnauthorizedException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
   BadRequestException,
-  ConflictException,Logger,
+  ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -39,7 +42,9 @@ export class AuthService {
     };
   }> {
     // 1. Check if user already exists
-    const existingUser = await this.userRepository.findOne({ where: { email: createAuthDto.email } });
+    const existingUser = await this.userRepository.findOne({
+      where: { email: createAuthDto.email },
+    });
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
@@ -62,7 +67,11 @@ export class AuthService {
     await this.userRepository.save(user);
 
     // 5. Generate tokens
-    const { accessToken, refreshToken } = await this.getTokens(user.id, user.email, user.role);
+    const { accessToken, refreshToken } = await this.getTokens(
+      user.id,
+      user.email,
+      user.role,
+    );
     await this.updateRefreshToken(user.id, refreshToken);
 
     // 6. Return tokens and user info

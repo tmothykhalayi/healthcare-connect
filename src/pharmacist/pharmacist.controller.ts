@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  NotFoundException,
+} from '@nestjs/common';
 import { PharmacistService } from './pharmacist.service';
 import { CreatePharmacistDto } from './dto/create-pharmacist.dto';
 import { UpdatePharmacistDto } from './dto/update-pharmacist.dto';
@@ -35,7 +44,10 @@ export class PharmacistController {
 
   // Update pharmacist by ID
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updatePharmacistDto: UpdatePharmacistDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updatePharmacistDto: UpdatePharmacistDto,
+  ) {
     return this.pharmacistService.update(+id, updatePharmacistDto);
   }
 

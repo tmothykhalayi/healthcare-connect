@@ -1,6 +1,11 @@
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import {Injectable,NotFoundException,ConflictException,InternalServerErrorException,} from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, Between } from 'typeorm';
 import { Appointment } from './entities/appointment.entity';
@@ -16,7 +21,9 @@ export class AppointmentsService {
   ) {}
 
   // Create a new appointment
-  async create(createAppointmentDto: CreateAppointmentDto,): Promise<Appointment> {
+  async create(
+    createAppointmentDto: CreateAppointmentDto,
+  ): Promise<Appointment> {
     // Check for scheduling conflicts
     const appointmentDate = new Date(createAppointmentDto.appointmentDate);
     const duration = createAppointmentDto.duration;
@@ -31,7 +38,7 @@ export class AppointmentsService {
           new Date(appointmentDate.getTime() - duration * 60000),
           appointmentEnd,
         ),
-        status: Not('cancelled'), 
+        status: Not('cancelled'),
       },
     });
 
@@ -196,37 +203,47 @@ export class AppointmentsService {
     // Transform to match frontend expected structure
     return appointments.map((appointment) => {
       const startTime = new Date(appointment.appointmentDate);
-      const endTime = new Date(startTime.getTime() + appointment.duration * 60000);
-      
+      const endTime = new Date(
+        startTime.getTime() + appointment.duration * 60000,
+      );
+
       return {
         id: appointment.id.toString(),
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
         status: appointment.status,
         reasonForVisit: appointment.reason,
-        patient: appointment.patient ? {
-          id: appointment.patient.id.toString(),
-          user: appointment.patient.user ? {
-            id: appointment.patient.user.id.toString(),
-            firstName: appointment.patient.user.firstName,
-            lastName: appointment.patient.user.lastName,
-            email: appointment.patient.user.email,
-            phoneNumber: appointment.patient.user.phoneNumber || '',
-          } : null,
-          dateOfBirth: appointment.patient.dateOfBirth,
-        } : null,
-        doctor: appointment.doctor ? {
-          id: appointment.doctor.id.toString(),
-          user: appointment.doctor.user ? {
-            id: appointment.doctor.user.id.toString(),
-            firstName: appointment.doctor.user.firstName,
-            lastName: appointment.doctor.user.lastName,
-            email: appointment.doctor.user.email,
-          } : null,
-          specialization: appointment.doctor.specialization,
-          qualification: appointment.doctor.education || '',
-          licenceNumber: appointment.doctor.licenseNumber,
-        } : null,
+        patient: appointment.patient
+          ? {
+              id: appointment.patient.id.toString(),
+              user: appointment.patient.user
+                ? {
+                    id: appointment.patient.user.id.toString(),
+                    firstName: appointment.patient.user.firstName,
+                    lastName: appointment.patient.user.lastName,
+                    email: appointment.patient.user.email,
+                    phoneNumber: appointment.patient.user.phoneNumber || '',
+                  }
+                : null,
+              dateOfBirth: appointment.patient.dateOfBirth,
+            }
+          : null,
+        doctor: appointment.doctor
+          ? {
+              id: appointment.doctor.id.toString(),
+              user: appointment.doctor.user
+                ? {
+                    id: appointment.doctor.user.id.toString(),
+                    firstName: appointment.doctor.user.firstName,
+                    lastName: appointment.doctor.user.lastName,
+                    email: appointment.doctor.user.email,
+                  }
+                : null,
+              specialization: appointment.doctor.specialization,
+              qualification: appointment.doctor.education || '',
+              licenceNumber: appointment.doctor.licenseNumber,
+            }
+          : null,
         availabilitySlot: {
           id: appointment.id.toString(),
           startTime: startTime.toISOString(),
@@ -240,9 +257,12 @@ export class AppointmentsService {
   // Get appointments by user ID (for current doctor)
   async findByCurrentDoctor(userId: number): Promise<any[]> {
     // First find the doctor by userId
-    const doctor = await this.appointmentsRepository.manager.findOne('doctors', {
-      where: { userId },
-    });
+    const doctor = await this.appointmentsRepository.manager.findOne(
+      'doctors',
+      {
+        where: { userId },
+      },
+    );
 
     if (!doctor) {
       return []; // No doctor found for this user
@@ -400,5 +420,4 @@ export class AppointmentsService {
     }
     return { message: `Appointment with ID ${id} deleted successfully` };
   }
-
 }

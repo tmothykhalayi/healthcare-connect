@@ -68,26 +68,25 @@ export class PharmacyService {
     }
 
     try {
+      const pharmacyData = {
+        userId: user.id,
+        pharmacyName: `${user.firstName} ${user.lastName} Pharmacy`, // Required
+        name: `${user.firstName} ${user.lastName} Pharmacy`, // Also required
+        licenseNumber: `PTEMP_${user.id}_${Date.now().toString().slice(-6)}`,
+        address: 'Pending update',
+        phoneNumber: user.phoneNumber || '(Not set)',
+        email: user.email || '',
+        openingHours: '9:00 AM - 6:00 PM',
+        services: ['Prescription filling', 'Over-the-counter medication'],
+        status: 'pending_verification',
+        deliveryAvailable: false,
+        onlineOrderingAvailable: false,
+        insurancePlansAccepted: [],
+        notes: '',
+      };
 
-  const pharmacyData = {
-  userId: user.id,
-  pharmacyName: `${user.firstName} ${user.lastName} Pharmacy`, // Required
-  name: `${user.firstName} ${user.lastName} Pharmacy`, // Also required
-  licenseNumber: `PTEMP_${user.id}_${Date.now().toString().slice(-6)}`,
-  address: 'Pending update',
-  phoneNumber: user.phoneNumber || '(Not set)',
-  email: user.email || '',
-  openingHours: '9:00 AM - 6:00 PM',
-  services: ['Prescription filling', 'Over-the-counter medication'],
-  status: 'pending_verification',
-  deliveryAvailable: false,
-  onlineOrderingAvailable: false,
-  insurancePlansAccepted: [],
-  notes: '',
-};
-
-    const newPharmacy = this.pharmacyRepository.create(pharmacyData);
-    const savedPharmacy = await this.pharmacyRepository.save(newPharmacy);
+      const newPharmacy = this.pharmacyRepository.create(pharmacyData);
+      const savedPharmacy = await this.pharmacyRepository.save(newPharmacy);
 
       return savedPharmacy;
     } catch (error) {

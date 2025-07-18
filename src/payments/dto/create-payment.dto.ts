@@ -14,7 +14,10 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   userId: number;
 
-  @ApiProperty({ example: 'ORD-001', description: 'OrderId (string) related to this payment' })
+  @ApiProperty({
+    example: 'ORD-001',
+    description: 'OrderId (string) related to this payment',
+  })
   @IsString()
   @IsNotEmpty()
   orderId: string;
@@ -29,17 +32,27 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   paymentMethod: string;
 
-  @ApiProperty({ enum: PaymentStatus, enumName: 'PaymentStatus', description: 'Payment status' })
+  @ApiProperty({
+    enum: PaymentStatus,
+    enumName: 'PaymentStatus',
+    description: 'Payment status',
+  })
   @IsEnum(PaymentStatus)
   @IsNotEmpty()
   status: PaymentStatus;
 
-  @ApiProperty({ example: 'Order', description: 'Related entity type (e.g., Order, Appointment)' })
+  @ApiProperty({
+    example: 'Order',
+    description: 'Related entity type (e.g., Order, Appointment)',
+  })
   @IsString()
   @IsNotEmpty()
   relatedEntityType: string;
 
-  @ApiProperty({ example: 1, description: 'Related entity ID (Order ID, Appointment ID, etc.)' })
+  @ApiProperty({
+    example: 1,
+    description: 'Related entity ID (Order ID, Appointment ID, etc.)',
+  })
   @IsNumber()
   @IsNotEmpty()
   relatedEntityId: number;
