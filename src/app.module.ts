@@ -26,6 +26,7 @@ import { AvailabilityModule } from './availability/availability.module';
 import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { createKeyv, Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
+import { ZoomService } from './zoom/zoom.service';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { CacheableMemory } from 'cacheable';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    ZoomService,
   ],
 })
 export class AppModule implements NestModule {

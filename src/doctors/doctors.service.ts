@@ -176,4 +176,23 @@ export class DoctorsService {
   async deleteByUserId(userId: number): Promise<void> {
     await this.doctorsRepository.delete({ user: { id: userId } });
   }
+
+  // Stub for booking a time slot (implement actual logic as needed)
+  async bookTimeSlot(
+    doctorId: number,
+    date: string,
+    time: string,
+    appointmentId: number,
+  ): Promise<void> {
+    // TODO: Implement actual time slot booking logic
+    // For now, just resolve (simulate success)
+    return;
+  }
+
+  // Stub for releasing a time slot (implement actual logic as needed)
+  async releaseTimeSlot(appointmentId: number): Promise<void> {
+    // TODO: Implement actual time slot release logic
+    // For now, just resolve (simulate success)
+    return;
+  }
 }

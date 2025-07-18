@@ -1,12 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsString,
-  IsDateString,
-  IsOptional,
-  IsPositive,
-  IsIn,
-} from 'class-validator';
+import {IsInt,IsString,IsDateString,IsOptional,IsPositive,IsIn, IsNotEmpty} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateAppointmentDto {
@@ -144,4 +137,54 @@ export class CreateAppointmentDto {
   })
   @IsOptional()
   vitals?: any;
+
+  @ApiProperty({
+    description: 'Date of the appointment',
+    example: '2023-10-01',
+  })
+  @IsString()
+  @IsNotEmpty()
+  date: string;
+
+  @ApiProperty({
+    description: 'Time of the appointment',
+    example: '10:00 AM',
+  })
+  @IsString()
+  @IsNotEmpty()
+  time: string;
+
+  
+  @ApiProperty({
+    description: 'Duration of the appointment in minutes',
+    example: 30,
+  })
+ 
+
+  @ApiProperty({
+    description: 'Title of the appointment',
+    example: 'Dental Checkup',
+  })
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+
+  @ApiProperty({
+    description: 'Zoom meeting ID associated with the appointment',
+    example: '123456789',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  user_url?: string;
+
+  @ApiProperty({
+    description: 'Zoom meeting URL for the appointment for the admin',
+    example: 'https://zoom.us/s/123456789',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  admin_url?: string;
 }

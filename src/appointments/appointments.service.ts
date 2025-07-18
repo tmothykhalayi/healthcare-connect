@@ -1,7 +1,6 @@
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import {
-  Injectable,
+import {Injectable,
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
@@ -12,412 +11,183 @@ import { Appointment } from './entities/appointment.entity';
 import axios from 'axios';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import { ZoomService } from 'src/zoom/zoom.service';
+import { DoctorsService } from 'src/doctors/doctors.service';
+import { PatientsService } from 'src/patients/patients.service';
 @Injectable()
 export class AppointmentsService {
   constructor(
     @InjectRepository(Appointment)
     private appointmentsRepository: Repository<Appointment>,
     private configService: ConfigService,
+    private zoomService: ZoomService,
+    private doctorsService: DoctorsService,
+    private patientsService: PatientsService,
   ) {}
 
   // Create a new appointment
   async create(
     createAppointmentDto: CreateAppointmentDto,
-  ): Promise<Appointment> {
-    // Check for scheduling conflicts
-    const appointmentDate = new Date(createAppointmentDto.appointmentDate);
-    const duration = createAppointmentDto.duration;
-    const appointmentEnd = new Date(
-      appointmentDate.getTime() + duration * 60000,
-    );
-
-    const existingAppointment = await this.appointmentsRepository.findOne({
-      where: {
-        doctorId: createAppointmentDto.doctorId,
-        appointmentDate: Between(
-          new Date(appointmentDate.getTime() - duration * 60000),
-          appointmentEnd,
-        ),
-        status: Not('cancelled'),
-      },
-    });
-
-    if (existingAppointment) {
-      throw new ConflictException(
-        `Doctor is not available at ${createAppointmentDto.appointmentDate}. Conflicting appointment exists.`,
-      );
+  ) {
+    const patient = await this.patientsService.findOne(String(createAppointmentDto.patientId));
+    const doctor = await this.doctorsService.findOne(createAppointmentDto.doctorId);
+    if (!patient) {
+      throw new NotFoundException(`Patient with ID ${createAppointmentDto.patientId} not found`);
     }
-
-    const newAppointment = this.appointmentsRepository.create({
-      patientId: createAppointmentDto.patientId,
-      doctorId: createAppointmentDto.doctorId,
-      appointmentDate: appointmentDate,
-      appointmentTime: createAppointmentDto.appointmentTime,
-      duration: createAppointmentDto.duration,
-      reason: createAppointmentDto.reason,
-      status: createAppointmentDto.status || 'scheduled',
-      priority: createAppointmentDto.priority || 'normal',
-      parentAppointmentId: createAppointmentDto.parentAppointmentId,
-      notes: createAppointmentDto.notes,
-    });
-
-    try {
-      return await this.appointmentsRepository.save(newAppointment);
-    } catch (error) {
-      console.error('Database error:', error);
-      throw new InternalServerErrorException('Failed to create appointment');
-    }
-  }
-
-  // Find all appointments
-  async findAll(): Promise<any[]> {
-    try {
-      const appointments = await this.appointmentsRepository.find({
-        relations: ['doctor', 'patient'],
-        order: { appointmentDate: 'ASC' },
-      });
-
-      // Return appointments with limited user details
-      return appointments.map((appointment) => ({
-        ...appointment,
-        doctor: appointment.doctor
-          ? {
-              id: appointment.doctor.id,
-              firstName: appointment.doctor.firstName,
-              lastName: appointment.doctor.lastName,
-              specialization: appointment.doctor.specialization,
-            }
-          : undefined,
-        patient: appointment.patient
-          ? {
-              id: appointment.patient.id,
-              firstName: appointment.patient.firstName,
-              lastName: appointment.patient.lastName,
-              dateOfBirth: appointment.patient.dateOfBirth,
-            }
-          : undefined,
-      }));
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to retrieve appointments');
-    }
-  }
-
-  // Find one appointment by ID
-  async findOne(id: number): Promise<any> {
-    const appointment = await this.appointmentsRepository.findOne({
-      where: { id },
-      relations: ['doctor', 'patient'],
-    });
-    if (!appointment) {
-      throw new NotFoundException(`Appointment with ID ${id} not found`);
-    }
-
-    // Return appointment with limited user details
-    return {
-      ...appointment,
-      doctor: appointment.doctor
-        ? {
-            id: appointment.doctor.id,
-            firstName: appointment.doctor.firstName,
-            lastName: appointment.doctor.lastName,
-            specialization: appointment.doctor.specialization,
-          }
-        : undefined,
-      patient: appointment.patient
-        ? {
-            id: appointment.patient.id,
-            firstName: appointment.patient.firstName,
-            lastName: appointment.patient.lastName,
-            dateOfBirth: appointment.patient.dateOfBirth,
-          }
-        : undefined,
-    };
-  }
-
-  // Update appointment
-  async update(
-    id: number,
-    updateAppointmentDto: UpdateAppointmentDto,
-  ): Promise<{ message: string }> {
-    const appointment = await this.appointmentsRepository.findOne({
-      where: { id },
-    });
-    if (!appointment) {
-      throw new NotFoundException(`Appointment with ID ${id} not found`);
-    }
-
-    // Check for conflicting appointment if date/time is being updated
-    if (updateAppointmentDto.appointmentDate) {
-      const appointmentDate = new Date(updateAppointmentDto.appointmentDate);
-      const duration = updateAppointmentDto.duration || appointment.duration;
-      const appointmentEnd = new Date(
-        appointmentDate.getTime() + duration * 60000,
-      );
-      const doctorId = updateAppointmentDto.doctorId || appointment.doctorId;
-
-      const conflictingAppointment = await this.appointmentsRepository.findOne({
-        where: {
-          doctorId: doctorId,
-          appointmentDate: Between(
-            new Date(appointmentDate.getTime() - duration * 60000),
-            appointmentEnd,
-          ),
-          status: Not('cancelled'),
-          id: Not(id), // Exclude current appointment
-        },
-      });
-
-      if (conflictingAppointment) {
-        throw new ConflictException(
-          `Doctor is not available at ${updateAppointmentDto.appointmentDate}. Conflicting appointment exists.`,
-        );
-      }
-    }
-
-    // Update appointment fields
-    const updateData = {
-      ...updateAppointmentDto,
-      ...(updateAppointmentDto.appointmentDate && {
-        appointmentDate: new Date(updateAppointmentDto.appointmentDate),
-      }),
-    };
-
-    Object.assign(appointment, updateData);
-
-    try {
-      await this.appointmentsRepository.save(appointment);
-      return { message: `Appointment with ID ${id} updated successfully` };
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to update appointment');
-    }
-  }
-
-  // Get appointments by doctor id
-  async findByDoctorId(doctorId: number): Promise<any[]> {
-    const appointments = await this.appointmentsRepository.find({
-      where: { doctorId },
-      relations: ['doctor', 'doctor.user', 'patient', 'patient.user'],
-      order: { appointmentDate: 'ASC' },
-    });
-
-    // Transform to match frontend expected structure
-    return appointments.map((appointment) => {
-      const startTime = new Date(appointment.appointmentDate);
-      const endTime = new Date(
-        startTime.getTime() + appointment.duration * 60000,
-      );
-
-      return {
-        id: appointment.id.toString(),
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        status: appointment.status,
-        reasonForVisit: appointment.reason,
-        patient: appointment.patient
-          ? {
-              id: appointment.patient.id.toString(),
-              user: appointment.patient.user
-                ? {
-                    id: appointment.patient.user.id.toString(),
-                    firstName: appointment.patient.user.firstName,
-                    lastName: appointment.patient.user.lastName,
-                    email: appointment.patient.user.email,
-                    phoneNumber: appointment.patient.user.phoneNumber || '',
-                  }
-                : null,
-              dateOfBirth: appointment.patient.dateOfBirth,
-            }
-          : null,
-        doctor: appointment.doctor
-          ? {
-              id: appointment.doctor.id.toString(),
-              user: appointment.doctor.user
-                ? {
-                    id: appointment.doctor.user.id.toString(),
-                    firstName: appointment.doctor.user.firstName,
-                    lastName: appointment.doctor.user.lastName,
-                    email: appointment.doctor.user.email,
-                  }
-                : null,
-              specialization: appointment.doctor.specialization,
-              qualification: appointment.doctor.education || '',
-              licenceNumber: appointment.doctor.licenseNumber,
-            }
-          : null,
-        availabilitySlot: {
-          id: appointment.id.toString(),
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          type: appointment.priority === 'high' ? 'EMERGENCY' : 'REGULAR',
-        },
-      };
-    });
-  }
-
-  // Get appointments by user ID (for current doctor)
-  async findByCurrentDoctor(userId: number): Promise<any[]> {
-    // First find the doctor by userId
-    const doctor = await this.appointmentsRepository.manager.findOne(
-      'doctors',
-      {
-        where: { userId },
-      },
-    );
-
     if (!doctor) {
-      return []; // No doctor found for this user
+      throw new NotFoundException(`Doctor with ID ${createAppointmentDto.doctorId} not found`);
     }
 
-    // Then get appointments for this doctor
-    return this.findByDoctorId((doctor as any).id);
-  }
+    // Combine date and time into ISO string for Zoom and entity
+    // Prefer appointmentDate if present, else combine date and time
+    let appointmentDateTime: string;
+    if (createAppointmentDto.appointmentDate) {
+      appointmentDateTime = createAppointmentDto.appointmentDate;
+    } else if (createAppointmentDto.date && createAppointmentDto.time) {
+      appointmentDateTime = `${createAppointmentDto.date}T${createAppointmentDto.time}`;
+    } else {
+      throw new ConflictException('Appointment date and time are required');
+    }
 
-  // Get appointments by patient id
-  async findByPatientId(patientId: number): Promise<any[]> {
-    const appointments = await this.appointmentsRepository.find({
-      where: { patientId },
-      relations: ['doctor', 'patient'],
-      order: { appointmentDate: 'ASC' },
+    const { start_url, join_url, meeting_id } =
+      await this.zoomService.createMeeting(
+        createAppointmentDto.title,
+        appointmentDateTime,
+        createAppointmentDto.duration,
+      );
+
+    console.log('Zoom meeting created at appointment service:', {
+      start_url,
+      join_url,
+      meeting_id,
     });
 
-    // Return appointments with limited user details
-    return appointments.map((appointment) => ({
-      ...appointment,
-      doctor: appointment.doctor
-        ? {
-            id: appointment.doctor.id,
-            firstName: appointment.doctor.firstName,
-            lastName: appointment.doctor.lastName,
-            specialization: appointment.doctor.specialization,
-          }
-        : null,
-      patient: appointment.patient
-        ? {
-            id: appointment.patient.id,
-            firstName: appointment.patient.firstName,
-            lastName: appointment.patient.lastName,
-            dateOfBirth: appointment.patient.dateOfBirth,
-          }
-        : null,
-    }));
-  }
-
-  // Get appointments by status
-  async findByStatus(status: string): Promise<any[]> {
-    const appointments = await this.appointmentsRepository.find({
-      where: { status },
-      relations: ['doctor', 'patient'],
-      order: { appointmentDate: 'ASC' },
+    const appointment = this.appointmentsRepository.create({
+      ...createAppointmentDto,
+      appointmentDate: new Date(appointmentDateTime),
+      patient: patient,
+      doctor: doctor,
+      user_url: join_url,
+      admin_url: start_url,
+      zoomMeetingId: meeting_id,
     });
 
-    // Return appointments with limited user details
-    return appointments.map((appointment) => ({
-      ...appointment,
-      doctor: appointment.doctor
-        ? {
-            id: appointment.doctor.id,
-            firstName: appointment.doctor.firstName,
-            lastName: appointment.doctor.lastName,
-            specialization: appointment.doctor.specialization,
-          }
-        : null,
-      patient: appointment.patient
-        ? {
-            id: appointment.patient.id,
-            firstName: appointment.patient.firstName,
-            lastName: appointment.patient.lastName,
-            dateOfBirth: appointment.patient.dateOfBirth,
-          }
-        : null,
-    }));
+    const savedAppointment =
+      await this.appointmentsRepository.save(appointment);
+
+    // Book the time slot
+    try {
+      await this.doctorsService.bookTimeSlot(
+        createAppointmentDto.doctorId,
+        createAppointmentDto.date || createAppointmentDto.appointmentDate?.split('T')[0],
+        createAppointmentDto.time || createAppointmentDto.appointmentDate?.split('T')[1]?.substring(0,5),
+        savedAppointment.id,
+      );
+      // console.log('Time slot booked successfully');
+    } catch (error) {
+      await this.appointmentsRepository.delete(savedAppointment.id);
+      throw new NotFoundException('Time slot not available');
+    }
+
+    return savedAppointment;
   }
 
-  // Get today's appointments
-  async findToday(): Promise<any[]> {
+  findAll() {
+    return this.appointmentsRepository.find({
+      relations: ['patient', 'doctor'],
+    });
+  }
+
+  findOne(id: number) {
+    return this.appointmentsRepository.findOne({
+      where: { id },
+      relations: ['patient', 'doctor'],
+    });
+  }
+
+  async update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
+    const appointment = await this.appointmentsRepository.findOne({
+      where: { id },
+      relations: ['patient', 'doctor'],
+    });
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    return this.appointmentsRepository.update(id, updateAppointmentDto);
+  }
+
+  async remove(id: number) {
+    // Release the time slot when appointment is cancelled
+    await this.doctorsService.releaseTimeSlot(id);
+    return this.appointmentsRepository.delete(id);
+  }
+
+  // Method to get appointments for today
+  async getAppointmentsForToday() {
     const today = new Date();
-    const startOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-    );
-    const endOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() + 1,
-    );
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-    const appointments = await this.appointmentsRepository.find({
+    return this.appointmentsRepository.find({
       where: {
         appointmentDate: Between(startOfDay, endOfDay),
       },
-      relations: ['doctor', 'patient'],
-      order: { appointmentDate: 'ASC' },
+      relations: ['patient', 'doctor'],
     });
-
-    // Return appointments with limited user details
-    return appointments.map((appointment) => ({
-      ...appointment,
-      doctor: appointment.doctor
-        ? {
-            id: appointment.doctor.id,
-            firstName: appointment.doctor.firstName,
-            lastName: appointment.doctor.lastName,
-            specialization: appointment.doctor.specialization,
-          }
-        : null,
-      patient: appointment.patient
-        ? {
-            id: appointment.patient.id,
-            firstName: appointment.patient.firstName,
-            lastName: appointment.patient.lastName,
-            dateOfBirth: appointment.patient.dateOfBirth,
-          }
-        : null,
-    }));
   }
 
-  // Get upcoming appointments (next 7 days)
-  async findUpcoming(): Promise<any[]> {
+  async findByCurrentDoctor(userId: number) {
+    // Assuming doctorId is the same as userId for doctors
+    return this.appointmentsRepository.find({
+      where: { doctorId: userId },
+      relations: ['patient', 'doctor'],
+    });
+  }
+
+  async findByDoctorId(doctorId: number) {
+    return this.appointmentsRepository.find({
+      where: { doctorId },
+      relations: ['patient', 'doctor'],
+    });
+  }
+
+  async findToday() {
     const today = new Date();
-    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-    const appointments = await this.appointmentsRepository.find({
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    return this.appointmentsRepository.find({
       where: {
-        appointmentDate: Between(today, nextWeek),
-        status: Not('cancelled'),
+        appointmentDate: Between(startOfDay, endOfDay),
       },
-      relations: ['doctor', 'patient'],
-      order: { appointmentDate: 'ASC' },
+      relations: ['patient', 'doctor'],
     });
-
-    // Return appointments with limited user details
-    return appointments.map((appointment) => ({
-      ...appointment,
-      doctor: appointment.doctor
-        ? {
-            id: appointment.doctor.id,
-            firstName: appointment.doctor.firstName,
-            lastName: appointment.doctor.lastName,
-            specialization: appointment.doctor.specialization,
-          }
-        : null,
-      patient: appointment.patient
-        ? {
-            id: appointment.patient.id,
-            firstName: appointment.patient.firstName,
-            lastName: appointment.patient.lastName,
-            dateOfBirth: appointment.patient.dateOfBirth,
-          }
-        : null,
-    }));
   }
 
-  // Delete appointment
-  async remove(id: number): Promise<{ message: string }> {
-    const result = await this.appointmentsRepository.delete({ id });
-    if (result.affected === 0) {
-      throw new NotFoundException(`Appointment with ID ${id} not found`);
-    }
-    return { message: `Appointment with ID ${id} deleted successfully` };
+  async findUpcoming() {
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const sevenDaysLater = new Date(startOfDay);
+    sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+    return this.appointmentsRepository.find({
+      where: {
+        appointmentDate: Between(startOfDay, sevenDaysLater),
+      },
+      relations: ['patient', 'doctor'],
+    });
+  }
+
+  async findByStatus(status: string) {
+    return this.appointmentsRepository.find({
+      where: { status },
+      relations: ['patient', 'doctor'],
+    });
+  }
+
+  async findByPatientId(patientId: number) {
+    return this.appointmentsRepository.find({
+      where: { patientId },
+      relations: ['patient', 'doctor'],
+    });
   }
 }
