@@ -15,6 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { ZoomService } from 'src/zoom/zoom.service';
 import { DoctorsService } from 'src/doctors/doctors.service';
 import { PatientsService } from 'src/patients/patients.service';
+import { MailService } from 'src/mail/mail.service';
 @Injectable()
 export class AppointmentsService {
   constructor(
@@ -24,6 +25,7 @@ export class AppointmentsService {
     private zoomService: ZoomService,
     private doctorsService: DoctorsService,
     private patientsService: PatientsService,
+    private mailService: MailService, // Inject MailService
   ) {}
 
   // Create a new appointment
@@ -92,10 +94,48 @@ export class AppointmentsService {
           createAppointmentDto.appointmentDate?.split('T')[1]?.substring(0, 5),
         savedAppointment.id,
       );
-      // console.log('Time slot booked successfully');
     } catch (error) {
       await this.appointmentsRepository.delete(savedAppointment.id);
       throw new NotFoundException('Time slot not available');
+    }
+
+    // Send emails to patient and doctor, but do not fail booking if email fails
+    try {
+      // Send email to patient
+      await this.mailService.sendCustomMail({
+        to: patient.user.email,
+        subject: 'Your Appointment is Booked',
+        template: 'appointment-notification',
+        context: {
+          firstName: patient.firstName,
+          lastName: patient.lastName,
+          doctorName: `${doctor.firstName} ${doctor.lastName}`,
+          appointmentDate: appointmentDateTime,
+          meetingUrl: join_url,
+          isDoctor: false,
+        },
+      });
+      // Send email to doctor
+      await this.mailService.sendCustomMail({
+        to: doctor.user.email,
+        subject: 'New Appointment Booked',
+        template: 'appointment-notification',
+        context: {
+          firstName: doctor.firstName,
+          lastName: doctor.lastName,
+          patientName: `${patient.firstName} ${patient.lastName}`,
+          appointmentDate: appointmentDateTime,
+          meetingUrl: start_url,
+          isDoctor: true,
+        },
+      });
+    } catch (emailError) {
+      // Log the error but do not delete the appointment
+      if (this['logger']) {
+        this['logger'].error('Failed to send appointment email:', emailError);
+      } else {
+        console.error('Failed to send appointment email:', emailError);
+      }
     }
 
     return savedAppointment;

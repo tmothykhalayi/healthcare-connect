@@ -44,6 +44,9 @@ export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   OrderId: string;
+  
+  status: string;
+
 
   @ApiProperty({
     example: 1,

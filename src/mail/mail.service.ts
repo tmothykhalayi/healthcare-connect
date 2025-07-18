@@ -148,4 +148,22 @@ export class MailService {
       );
     }
   }
+
+  /**
+   * Send a custom email (for appointment notifications, etc)
+   */
+  async sendCustomMail(options: {
+    to: string;
+    subject: string;
+    template: string;
+    context: any;
+  }): Promise<void> {
+    try {
+      await this.mailerService.sendMail(options);
+      this.logger.log(`Custom mail sent to ${options.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send custom mail to ${options.to}: ${error.message}`);
+      throw error;
+    }
+  }
 }

@@ -27,6 +27,7 @@ import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { createKeyv, Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { ZoomService } from './zoom/zoom.service';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { ZoomService } from './zoom/zoom.service';
     MailModule,
     PharmacistModule,
     AvailabilityModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [
