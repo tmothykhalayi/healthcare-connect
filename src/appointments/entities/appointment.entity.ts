@@ -1,4 +1,12 @@
-import { Entity,Column, PrimaryGeneratedColumn, CreateDateColumn,UpdateDateColumn,ManyToOne,JoinColumn,} from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
@@ -102,7 +110,7 @@ export class Appointment {
   @Column({ nullable: true })
   zoomMeetingId?: string;
 
-   @ApiProperty({
+  @ApiProperty({
     description: 'Zoom meeting URL for the appointment for the user(patient',
     example: 'https://zoom.us/j/123456789',
     required: false,

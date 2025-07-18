@@ -11,9 +11,10 @@ import { ZoomService } from 'src/zoom/zoom.service';
   imports: [
     PatientsModule,
     DoctorsModule,
-    TypeOrmModule.forFeature([Appointment])],
+    TypeOrmModule.forFeature([Appointment]),
+  ],
   controllers: [AppointmentsController],
-  providers: [AppointmentsService ,ZoomService],
+  providers: [AppointmentsService, ZoomService],
   exports: [AppointmentsService],
 })
 export class AppointmentsModule {}

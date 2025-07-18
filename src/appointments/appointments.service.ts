@@ -1,6 +1,7 @@
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import {Injectable,
+import {
+  Injectable,
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
@@ -26,16 +27,22 @@ export class AppointmentsService {
   ) {}
 
   // Create a new appointment
-  async create(
-    createAppointmentDto: CreateAppointmentDto,
-  ) {
-    const patient = await this.patientsService.findOne(String(createAppointmentDto.patientId));
-    const doctor = await this.doctorsService.findOne(createAppointmentDto.doctorId);
+  async create(createAppointmentDto: CreateAppointmentDto) {
+    const patient = await this.patientsService.findOne(
+      String(createAppointmentDto.patientId),
+    );
+    const doctor = await this.doctorsService.findOne(
+      createAppointmentDto.doctorId,
+    );
     if (!patient) {
-      throw new NotFoundException(`Patient with ID ${createAppointmentDto.patientId} not found`);
+      throw new NotFoundException(
+        `Patient with ID ${createAppointmentDto.patientId} not found`,
+      );
     }
     if (!doctor) {
-      throw new NotFoundException(`Doctor with ID ${createAppointmentDto.doctorId} not found`);
+      throw new NotFoundException(
+        `Doctor with ID ${createAppointmentDto.doctorId} not found`,
+      );
     }
 
     // Combine date and time into ISO string for Zoom and entity
@@ -79,8 +86,10 @@ export class AppointmentsService {
     try {
       await this.doctorsService.bookTimeSlot(
         createAppointmentDto.doctorId,
-        createAppointmentDto.date || createAppointmentDto.appointmentDate?.split('T')[0],
-        createAppointmentDto.time || createAppointmentDto.appointmentDate?.split('T')[1]?.substring(0,5),
+        createAppointmentDto.date ||
+          createAppointmentDto.appointmentDate?.split('T')[0],
+        createAppointmentDto.time ||
+          createAppointmentDto.appointmentDate?.split('T')[1]?.substring(0, 5),
         savedAppointment.id,
       );
       // console.log('Time slot booked successfully');

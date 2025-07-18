@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {IsInt,IsString,IsDateString,IsOptional,IsPositive,IsIn, IsNotEmpty} from 'class-validator';
+import {
+  IsInt,
+  IsString,
+  IsDateString,
+  IsOptional,
+  IsPositive,
+  IsIn,
+  IsNotEmpty,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateAppointmentDto {
@@ -154,13 +162,10 @@ export class CreateAppointmentDto {
   @IsNotEmpty()
   time: string;
 
-  
   @ApiProperty({
     description: 'Duration of the appointment in minutes',
     example: 30,
   })
- 
-
   @ApiProperty({
     description: 'Title of the appointment',
     example: 'Dental Checkup',
@@ -168,7 +173,6 @@ export class CreateAppointmentDto {
   @IsString()
   @IsNotEmpty()
   title: string;
-
 
   @ApiProperty({
     description: 'Zoom meeting ID associated with the appointment',
