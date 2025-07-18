@@ -1,6 +1,4 @@
-import {Controller,Get,
-  Post,Body,Patch,Param,UseGuards,Delete,Query,HttpStatus,ParseIntPipe,
-} from '@nestjs/common';
+import {Controller,Get,Post,Body,Patch,Param,UseGuards,Delete,Query,HttpStatus,ParseIntPipe,} from '@nestjs/common';
 import {ApiTags,
   ApiOperation,ApiResponse,ApiParam,ApiBearerAuth,ApiQuery,} from '@nestjs/swagger';
 import { AdminService } from './admin.service';
