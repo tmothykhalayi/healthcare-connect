@@ -1,0 +1,28 @@
+### Test Registration Endpoint
+@baseUrl = http://localhost:8000/api
+
+### Test Registration
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "firstName": "Test",
+  "lastName": "User",
+  "phoneNumber": "+1234567890",
+  "role": "patient"
+}
+
+###
+
+### Test Login with registered user
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 
