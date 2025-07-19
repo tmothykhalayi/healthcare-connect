@@ -49,7 +49,11 @@ export class PatientsController {
       const patient = await this.patientsRepository.save(
         createPatientDto as any,
       );
-      return `Patient with ID ${patient.id} has been created`;
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: `Patient with ID ${patient.id} has been created`,
+        data: patient,
+      };
     } catch (error) {
       console.error('Error creating patient:', error);
       throw new HttpException(
@@ -134,6 +138,59 @@ export class PatientsController {
     }
   }
 
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get patient by user ID' })
+  @ApiParam({ name: 'userId', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'Patient found' })
+  @ApiResponse({ status: 404, description: 'Patient not found' })
+  async findByUserId(@Param('userId') userId: string) {
+    try {
+      const patient = await this.patientsRepository.findOne({
+        where: { userId: parseInt(userId, 10) },
+        relations: ['user'],
+        select: {
+          id: true,
+          userId: true,
+          phoneNumber: true,
+          address: true,
+          dateOfBirth: true,
+          medicalHistory: true,
+          emergencyContact: true,
+          allergies: true,
+          bloodType: true,
+          weight: true,
+          height: true,
+          status: true,
+          user: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      });
+
+      if (!patient) {
+        throw new HttpException(
+          `No patient found for user ID ${userId}`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Patient found',
+        data: patient,
+      };
+    } catch (error) {
+      console.error('Error finding patient by user ID:', error);
+      throw new HttpException(
+        `Failed to find patient for user ID ${userId}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -182,7 +239,10 @@ export class PatientsController {
         { id: parseInt(id, 10) },
         updatePatientDto,
       );
-      return `Patient with ID ${id} has been updated`;
+      return {
+        statusCode: HttpStatus.OK,
+        message: `Patient with ID ${id} has been updated`,
+      };
     } catch (error) {
       console.error('Error updating patient:', error);
       throw new HttpException(
@@ -204,7 +264,10 @@ export class PatientsController {
           HttpStatus.NOT_FOUND,
         );
       }
-      return `Patient with ID ${id} has been deleted`;
+      return {
+        statusCode: HttpStatus.OK,
+        message: `Patient with ID ${id} has been deleted`,
+      };
     } catch (error) {
       console.error('Error deleting patient:', error);
       throw new HttpException(

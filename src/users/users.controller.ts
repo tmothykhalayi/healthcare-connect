@@ -21,6 +21,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { PatientsService } from '../patients/patients.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole, Users } from './entities/user.entity';
@@ -34,7 +35,10 @@ import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly patientsService: PatientsService,
+  ) {}
 
   @Post()
   // @Roles(Role.ADMIN ,Role.PATIENT, Role.DOCTOR, Role.PHARMACY)
@@ -112,8 +116,16 @@ export class UsersController {
 
       // Attach the correct profile based on role
       let profile: any = null;
-      if (userProfile.role === 'patient' && userProfile.patient)
-        profile = { ...userProfile.patient, id: userProfile.patient.id };
+      if (userProfile.role === 'patient') {
+        if (userProfile.patient) {
+          profile = { ...userProfile.patient, id: userProfile.patient.id };
+        } else {
+          // Create patient profile if it doesn't exist
+          console.log(`Creating patient profile for user ${userId}`);
+          const patient = await this.patientsService.createFromUser(userProfile);
+          profile = { ...patient, id: patient.id };
+        }
+      }
       if (userProfile.role === 'doctor' && userProfile.doctor)
         profile = { ...userProfile.doctor, id: userProfile.doctor.id };
       if (userProfile.role === 'pharmacist' && userProfile.pharmacist)

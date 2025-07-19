@@ -16,6 +16,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { Users, UserRole } from '../users/entities/user.entity';
 import { MailService } from '../mail/mail.service';
 import * as speakeasy from 'speakeasy';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
+    private readonly usersService: UsersService,
   ) {}
 
   // ===== SIGN UP =====
@@ -49,24 +51,18 @@ export class AuthService {
       throw new ConflictException('User with this email already exists');
     }
 
-    // 2. Hash password
-    const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
-
-    // 3. Create user entity
-    const user = this.userRepository.create({
+    // 2. Create user with role-specific profile using UsersService
+    const user = await this.usersService.createUserWithRole({
       email: createAuthDto.email,
       firstName: createAuthDto.firstName,
       lastName: createAuthDto.lastName,
       phoneNumber: createAuthDto.phoneNumber,
-      password: hashedPassword,
-      role: createAuthDto.role as unknown as UserRole, // Cast to UserRole enum
-      isEmailVerified: false, // Default to false, can be updated later
+      password: createAuthDto.password,
+      role: createAuthDto.role as unknown as UserRole,
+      isEmailVerified: false,
     });
 
-    // 4. Save user to DB
-    await this.userRepository.save(user);
-
-    // 5. Generate tokens
+    // 3. Generate tokens
     const { accessToken, refreshToken } = await this.getTokens(
       user.id,
       user.email,
@@ -74,7 +70,7 @@ export class AuthService {
     );
     await this.updateRefreshToken(user.id, refreshToken);
 
-    // 6. Return tokens and user info
+    // 4. Return tokens and user info
     return {
       accessToken,
       refreshToken,
