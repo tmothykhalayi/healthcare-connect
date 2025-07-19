@@ -17,6 +17,8 @@ import { Doctor } from '../../doctors/entities/doctor.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
 import { Medicine } from '../../medicines/entities/medicine.entity';
 import { Order } from '../../orders/entities/order.entity';
+import { Prescription } from '../../prescription/entities/prescription.entity';
+//import{patient} from '../../patients/entities/patient.entity';
 
 export enum Gender {
   MALE = 'male',
@@ -124,4 +126,8 @@ export class Patient {
     (appointment) => appointment.patient,
   )
   telemedicineAppointments: TelemedicineAppointment[];
+
+  @OneToMany(() => Prescription, prescription => prescription.patient)
+  prescriptions: Prescription[];
+
 }

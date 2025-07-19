@@ -8,12 +8,14 @@ import {
   OneToOne,
   JoinColumn,
   OneToMany,
+  ManyToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity'; // if you want appointments relationship
 import { Doctor } from '../../doctors/entities/doctor.entity';
 import { Patient } from '../../patients/entities/patient.entity';
+import { Prescription } from '../../prescription/entities/prescription.entity'; // Assuming you have a Prescription entity
 
 @Entity('telemedicine_appointments')
 export class TelemedicineAppointment {
@@ -54,4 +56,8 @@ export class TelemedicineAppointment {
   order: {
     scheduledAt: 'ASC';
   };
+
+  @ManyToMany(() => Prescription, prescription => prescription.medicines)
+  prescriptions: Prescription[];
+
 }
