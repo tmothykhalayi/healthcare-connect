@@ -1,0 +1,93 @@
+### Create Sample Appointments for Testing
+
+# Base URL
+@baseUrl = http://localhost:8000
+
+### 1. Create Sample Appointment for Patient 1
+POST {{baseUrl}}/appointments
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorId": 2,
+  "appointmentDate": "2024-12-20T10:00:00Z",
+  "appointmentTime": "10:00",
+  "patientEmail": "patient1@example.com",
+  "duration": 30,
+  "reason": "Regular checkup",
+  "status": "confirmed",
+  "priority": "normal",
+  "notes": "Patient requested morning appointment",
+  "date": "2024-12-20",
+  "time": "10:00 AM",
+  "title": "Regular Checkup"
+}
+
+### 2. Create Another Appointment for Patient 1
+POST {{baseUrl}}/appointments
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorId": 3,
+  "appointmentDate": "2024-12-22T14:30:00Z",
+  "appointmentTime": "14:30",
+  "patientEmail": "patient1@example.com",
+  "duration": 45,
+  "reason": "Follow-up consultation",
+  "status": "scheduled",
+  "priority": "normal",
+  "notes": "Follow-up after previous treatment",
+  "date": "2024-12-22",
+  "time": "2:30 PM",
+  "title": "Follow-up Consultation"
+}
+
+### 3. Create Appointment for Patient 2
+POST {{baseUrl}}/appointments
+Content-Type: application/json
+
+{
+  "patientId": 2,
+  "doctorId": 1,
+  "appointmentDate": "2024-12-21T09:00:00Z",
+  "appointmentTime": "09:00",
+  "patientEmail": "patient2@example.com",
+  "duration": 60,
+  "reason": "Specialist consultation",
+  "status": "confirmed",
+  "priority": "urgent",
+  "notes": "Patient has specific symptoms",
+  "date": "2024-12-21",
+  "time": "9:00 AM",
+  "title": "Specialist Consultation"
+}
+
+### 4. Create Completed Appointment for Patient 1
+POST {{baseUrl}}/appointments
+Content-Type: application/json
+
+{
+  "patientId": 1,
+  "doctorId": 2,
+  "appointmentDate": "2024-12-15T11:00:00Z",
+  "appointmentTime": "11:00",
+  "patientEmail": "patient1@example.com",
+  "duration": 30,
+  "reason": "Blood test results review",
+  "status": "completed",
+  "priority": "normal",
+  "notes": "Appointment completed successfully",
+  "date": "2024-12-15",
+  "time": "11:00 AM",
+  "title": "Blood Test Review"
+}
+
+### 5. Test Get All Appointments
+GET {{baseUrl}}/appointments
+
+### 6. Test Get Appointments for Patient 1
+GET {{baseUrl}}/appointments/patient/1
+
+### 7. Test Get Appointments for Patient 2
+GET {{baseUrl}}/appointments/patient/2 

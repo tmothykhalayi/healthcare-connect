@@ -189,4 +189,22 @@ export class AppointmentsController {
       ...result,
     };
   }
+
+//get by patient id
+  @Get('patient')
+  //@Roles(Role.PATIENT)
+  @ApiOperation({ summary: 'Get appointments by patient ID' })
+  @ApiQuery({ name: 'patientId', required: true, type: Number })
+  async findByPatient(
+    @Query('patientId', ParseIntPipe) patientId: number,
+    @Req() request: Request,
+  ) {
+    const appointments =
+      await this.appointmentsService.findByPatientId(patientId);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Patient appointments retrieved successfully',
+      data: appointments,
+    };
+  } 
 }

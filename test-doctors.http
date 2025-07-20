@@ -1,0 +1,11 @@
+### Test Doctors Endpoint
+
+# Base URL
+@baseUrl = http://localhost:8000
+
+### 1. Test Get All Doctors
+GET {{baseUrl}}/doctors
+
+### 2. Test Get Doctors with Auth (if needed)
+GET {{baseUrl}}/doctors
+Authorization: Bearer your-token-here 

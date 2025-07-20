@@ -239,4 +239,8 @@ export class AppointmentsService {
       relations: ['patient', 'doctor'],
     });
   }
+
+
+  //fetch user b patientid
+  
 }

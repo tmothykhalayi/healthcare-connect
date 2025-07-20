@@ -1,0 +1,106 @@
+### Create Test Users and Doctors
+
+# Base URL
+@baseUrl = http://localhost:8000
+
+### 1. Create Test User 1 (Doctor)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "doctor1@example.com",
+  "password": "Test1234!",
+  "firstName": "Dr. John",
+  "lastName": "Smith",
+  "phoneNumber": "+254700000001",
+  "role": "doctor",
+  "isEmailVerified": true
+}
+
+### 2. Create Test User 2 (Doctor)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "doctor2@example.com",
+  "password": "Test1234!",
+  "firstName": "Dr. Sarah",
+  "lastName": "Johnson",
+  "phoneNumber": "+254700000002",
+  "role": "doctor",
+  "isEmailVerified": true
+}
+
+### 3. Create Test User 3 (Doctor)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "doctor3@example.com",
+  "password": "Test1234!",
+  "firstName": "Dr. Michael",
+  "lastName": "Brown",
+  "phoneNumber": "+254700000003",
+  "role": "doctor",
+  "isEmailVerified": true
+}
+
+### 4. Create Doctor Profile for User 1
+POST {{baseUrl}}/doctors
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "specialization": "Cardiology",
+  "licenseNumber": "DOC001",
+  "yearsOfExperience": 10,
+  "education": "MBBS, MD Cardiology",
+  "phoneNumber": "+254700000001",
+  "officeAddress": "123 Medical Center, Nairobi",
+  "consultationFee": 150.00,
+  "availableDays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+  "availableHours": "9:00 AM - 5:00 PM",
+  "bio": "Experienced cardiologist with 10 years of practice"
+}
+
+### 5. Create Doctor Profile for User 2
+POST {{baseUrl}}/doctors
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "specialization": "Dermatology",
+  "licenseNumber": "DOC002",
+  "yearsOfExperience": 8,
+  "education": "MBBS, MD Dermatology",
+  "phoneNumber": "+254700000002",
+  "officeAddress": "456 Health Plaza, Nairobi",
+  "consultationFee": 120.00,
+  "availableDays": ["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+  "availableHours": "10:00 AM - 6:00 PM",
+  "bio": "Specialized in skin conditions and cosmetic dermatology"
+}
+
+### 6. Create Doctor Profile for User 3
+POST {{baseUrl}}/doctors
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "specialization": "Pediatrics",
+  "licenseNumber": "DOC003",
+  "yearsOfExperience": 12,
+  "education": "MBBS, MD Pediatrics",
+  "phoneNumber": "+254700000003",
+  "officeAddress": "789 Children's Hospital, Nairobi",
+  "consultationFee": 100.00,
+  "availableDays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+  "availableHours": "8:00 AM - 4:00 PM",
+  "bio": "Dedicated pediatrician with expertise in child healthcare"
+}
+
+### 7. Test Get All Doctors
+GET {{baseUrl}}/doctors
+
+### 8. Test Get All Users (to see what users exist)
+GET {{baseUrl}}/users 
