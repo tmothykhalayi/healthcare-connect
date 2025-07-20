@@ -1,4 +1,4 @@
-import { Injectable, UseGuards } from '@nestjs/common';
+import { Injectable, UseGuards, Query } from '@nestjs/common';
 import {
   Controller,
   Get,
@@ -52,17 +52,21 @@ export class DoctorsController {
     }
   }
 
-  //find all doctors
+  //find all doctors with pagination and search
   @Get()
   //@Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get all doctors' })
+  @ApiOperation({ summary: 'Get all doctors (paginated)' })
   @ApiResponse({ status: 200, description: 'Doctors retrieved successfully' })
-  async findAll() {
-    const doctors = await this.doctorsService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string = ''
+  ) {
+    const result = await this.doctorsService.findAllPaginated(page, limit, search);
     return {
       statusCode: HttpStatus.OK,
       message: 'Doctors retrieved successfully',
-      data: doctors,
+      ...result, // should include data and total
     };
   }
 

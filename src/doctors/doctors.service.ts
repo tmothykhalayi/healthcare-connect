@@ -195,4 +195,21 @@ export class DoctorsService {
     // For now, just resolve (simulate success)
     return;
   }
+
+  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Doctor[]; total: number }> {
+    const query = this.doctorsRepository.createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.user', 'user')
+      .leftJoinAndSelect('doctor.patients', 'patients');
+
+    if (search) {
+      query.where('doctor.name LIKE :search OR doctor.email LIKE :search OR doctor.specialization LIKE :search', { search: `%${search}%` });
+    }
+
+    const [data, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data, total };
+  }
 }

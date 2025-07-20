@@ -8,6 +8,8 @@ import {
   IsDateString,
   Matches,
   IsPositive,
+  IsArray,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -45,6 +47,50 @@ export class UpdatePatientDto extends PartialType(CreatePatientDto) {
   @IsOptional()
   @IsString()
   medicalHistory?: string;
+
+  @ApiPropertyOptional({
+    example: 'Jane Doe - 15559876543',
+    description: 'Emergency contact information',
+  })
+  @IsOptional()
+  @IsString()
+  emergencyContact?: string;
+
+  @ApiPropertyOptional({
+    example: ['Penicillin', 'Peanuts'],
+    description: 'List of patient allergies',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  allergies?: string[];
+
+  @ApiPropertyOptional({ example: 'A+', description: 'Blood type' })
+  @IsOptional()
+  @IsString()
+  bloodType?: string;
+
+  @ApiPropertyOptional({ example: 70.5, description: 'Weight in kg' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  weight?: number;
+
+  @ApiPropertyOptional({ example: 175.5, description: 'Height in cm' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  height?: number;
+
+  @ApiPropertyOptional({
+    example: 'active',
+    description: 'Patient status',
+    default: 'active',
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
 
   @ApiPropertyOptional({
     example: '2025-07-01T10:00:00Z',
