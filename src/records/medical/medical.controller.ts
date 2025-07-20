@@ -56,17 +56,47 @@ export class MedicalController {
 
   @Get()
   //@Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get all medical records' })
-  @ApiResponse({
-    status: 200,
-    description: 'Medical records retrieved successfully',
-  })
-  async findAll() {
-    const records = await this.medicalService.findAll();
+  @ApiOperation({ summary: 'Get all medical records (paginated & searchable)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiResponse({ status: 200, description: 'Medical records retrieved successfully' })
+  async findAllPaginated(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search: string = '',
+  ) {
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
+    const skip = (pageNum - 1) * limitNum;
+
+    let data: any[] = [];
+    let total = 0;
+    if (search) {
+      const result = await this.medicalService.searchPaginated(search, skip, limitNum);
+      data = result[0];
+      total = result[1];
+    } else {
+      const result = await this.medicalService.findAllPaginated(skip, limitNum);
+      data = result[0];
+      total = result[1];
+    }
+    // Ensure patientId and doctorId are present in each record
+    const mappedData = data.map(record => ({
+      ...record,
+      patientId: record.patientId ?? (record.patient?.id ?? null),
+      doctorId: record.doctorId ?? (record.doctor?.id ?? null),
+      createdAt: record.createdAt ? new Date(record.createdAt).toISOString() : null,
+      updatedAt: record.updatedAt ? new Date(record.updatedAt).toISOString() : null,
+      nextAppointmentDate: record.nextAppointmentDate ? new Date(record.nextAppointmentDate).toISOString() : null,
+    }));
     return {
       statusCode: HttpStatus.OK,
       message: 'Medical records retrieved successfully',
-      data: records,
+      data: mappedData,
+      total,
+      page: pageNum,
+      limit: limitNum,
     };
   }
 

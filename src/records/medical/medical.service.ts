@@ -12,6 +12,47 @@ import { UpdateMedicalDto } from './dto/update-medical.dto';
 
 @Injectable()
 export class MedicalService {
+  // Paginated fetch
+  async findAllPaginated(skip: number, take: number): Promise<[Medical[], number]> {
+    try {
+      const [data, total] = await this.medicalRepository.findAndCount({
+        relations: ['patient', 'doctor', 'appointment'],
+        order: { createdAt: 'DESC' },
+        skip,
+        take,
+      });
+      return [data, total];
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to retrieve medical records');
+    }
+  }
+
+  // Paginated search
+  async searchPaginated(query: string, skip: number, take: number): Promise<[Medical[], number]> {
+    try {
+      const qb = this.medicalRepository
+        .createQueryBuilder('medical')
+        .leftJoinAndSelect('medical.patient', 'patient')
+        .leftJoinAndSelect('medical.doctor', 'doctor')
+        .leftJoinAndSelect('medical.appointment', 'appointment')
+        .leftJoinAndSelect('patient.user', 'patientUser')
+        .leftJoinAndSelect('doctor.user', 'doctorUser')
+        .where('medical.title LIKE :query', { query: `%${query}%` })
+        .orWhere('medical.description LIKE :query', { query: `%${query}%` })
+        .orWhere('medical.diagnosis LIKE :query', { query: `%${query}%` })
+        .orWhere('patientUser.firstName LIKE :query', { query: `%${query}%` })
+        .orWhere('patientUser.lastName LIKE :query', { query: `%${query}%` })
+        .orWhere('doctorUser.firstName LIKE :query', { query: `%${query}%` })
+        .orWhere('doctorUser.lastName LIKE :query', { query: `%${query}%` })
+        .orderBy('medical.createdAt', 'DESC')
+        .skip(skip)
+        .take(take);
+      const [data, total] = await qb.getManyAndCount();
+      return [data, total];
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to search medical records');
+    }
+  }
   constructor(
     @InjectRepository(Medical)
     private medicalRepository: Repository<Medical>,
