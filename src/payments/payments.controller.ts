@@ -10,6 +10,7 @@ Put,
   HttpException,
   UseGuards,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -59,20 +60,24 @@ export class PaymentsController {
   // Get all payments
   @Get()
   ///@Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get all payments' })
+  @ApiOperation({ summary: 'Get all payments (paginated)' })
   @ApiResponse({
     status: 200,
     description: 'Payments retrieved successfully',
     type: [Payment],
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async findAll() {
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string = ''
+  ) {
     try {
-      const payments = await this.paymentsService.findAll();
+      const result = await this.paymentsService.findAllPaginated(page, limit, search);
       return {
         statusCode: HttpStatus.OK,
         message: 'Payments retrieved successfully',
-        data: payments,
+        ...result, // should include data and total
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

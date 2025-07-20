@@ -147,6 +147,25 @@ export class AppointmentsService {
     });
   }
 
+  // Get all appointments with pagination and search
+  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Appointment[]; total: number }> {
+    const query = this.appointmentsRepository.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.patient', 'patient')
+      .leftJoinAndSelect('appointment.doctor', 'doctor');
+
+    if (search) {
+      query.where('appointment.status LIKE :search OR appointment.reason LIKE :search OR appointment.title LIKE :search', { search: `%${search}%` });
+    }
+
+    const [data, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('appointment.appointmentDate', 'DESC')
+      .getManyAndCount();
+
+    return { data, total };
+  }
+
   findOne(id: number) {
     return this.appointmentsRepository.findOne({
       where: { id },

@@ -7,6 +7,10 @@ import {
   IsOptional,
   Matches,
   IsPositive,
+  IsNumber,
+  IsArray,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -30,7 +34,7 @@ export class UpdateDoctorDto extends PartialType(CreateDoctorDto) {
 
   @ApiPropertyOptional({ example: '+15559876543' })
   @IsOptional()
-  @Matches(/^\+?[1-9]\d{1,14}$/, {
+  @Matches(/^[+]?\d{10,15}$/, {
     message: 'phoneNumber must be a valid international phone number',
   })
   phoneNumber?: string;
@@ -39,4 +43,32 @@ export class UpdateDoctorDto extends PartialType(CreateDoctorDto) {
   @IsOptional()
   @IsString()
   officeAddress?: string;
+
+  @ApiPropertyOptional({ example: 'MBBS' })
+  @IsOptional()
+  @IsString()
+  education?: string;
+
+  @ApiPropertyOptional({ example: 200.0 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  consultationFee?: number;
+
+  @ApiPropertyOptional({ example: ['Monday', 'Tuesday'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  availableDays?: string[];
+
+  @ApiPropertyOptional({ example: '9:00 AM - 5:00 PM' })
+  @IsOptional()
+  @IsString()
+  availableHours?: string;
+
+  @ApiPropertyOptional({ example: 'active' })
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

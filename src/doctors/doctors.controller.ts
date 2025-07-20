@@ -1,4 +1,4 @@
-import { Injectable, UseGuards, Query } from '@nestjs/common';
+import { Injectable, UseGuards, Query, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import {
   Controller,
   Get,
@@ -9,6 +9,7 @@ import {
   Req,
   Delete,
   HttpStatus,
+  
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -97,15 +98,39 @@ export class DoctorsController {
     @Body() updateDoctorDto: UpdateDoctorDto,
     @Req() req: Request,
   ) {
-    const currentUser = req.user as any;
-    if (currentUser.role === Role.DOCTOR && currentUser.id !== +id) {
-      throw new Error('You can only update your own details');
+    try {
+      const currentUser = req.user as any;
+      if (currentUser.role === Role.DOCTOR && currentUser.id !== +id) {
+        return {
+          statusCode: HttpStatus.FORBIDDEN,
+          message: 'You can only update your own details',
+        };
+      }
+      const result = await this.doctorsService.update(+id, updateDoctorDto);
+      return {
+        statusCode: HttpStatus.OK,
+        ...result,
+      };
+    } catch (error) {
+      let status = HttpStatus.INTERNAL_SERVER_ERROR;
+      let message = 'Internal server error';
+      if (error instanceof NotFoundException) {
+        status = HttpStatus.NOT_FOUND;
+        message = error.message;
+      } else if (error instanceof ConflictException) {
+        status = HttpStatus.CONFLICT;
+        message = error.message;
+      } else if (error instanceof BadRequestException) {
+        status = HttpStatus.BAD_REQUEST;
+        message = error.message;
+      } else if (error.message) {
+        message = error.message;
+      }
+      return {
+        statusCode: status,
+        message,
+      };
     }
-    const result = await this.doctorsService.update(+id, updateDoctorDto);
-    return {
-      statusCode: HttpStatus.OK,
-      ...result,
-    };
   }
 
   //delete a doctor

@@ -82,17 +82,21 @@ export class AppointmentsController {
 
   @Get()
   ///@Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get all appointments' })
+  @ApiOperation({ summary: 'Get all appointments (paginated)' })
   @ApiResponse({
     status: 200,
     description: 'Appointments retrieved successfully',
   })
-  async findAll() {
-    const appointments = await this.appointmentsService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string = ''
+  ) {
+    const result = await this.appointmentsService.findAllPaginated(page, limit, search);
     return {
       statusCode: HttpStatus.OK,
       message: 'Appointments retrieved successfully',
-      data: appointments,
+      ...result, // should include data and total
     };
   }
 

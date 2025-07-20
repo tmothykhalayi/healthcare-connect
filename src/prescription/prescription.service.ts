@@ -53,6 +53,27 @@ export class PrescriptionService {
     });
   }
 
+  // Get all prescriptions with pagination and search
+  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Prescription[]; total: number }> {
+    const query = this.prescriptionRepo.createQueryBuilder('prescription')
+      .leftJoinAndSelect('prescription.doctor', 'doctor')
+      .leftJoinAndSelect('prescription.patient', 'patient')
+      .leftJoinAndSelect('prescription.pharmacist', 'pharmacist')
+      .leftJoinAndSelect('prescription.medicines', 'medicines');
+
+    if (search) {
+      query.where('prescription.notes LIKE :search OR prescription.status LIKE :search', { search: `%${search}%` });
+    }
+
+    const [data, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('prescription.issueDate', 'DESC')
+      .getManyAndCount();
+
+    return { data, total };
+  }
+
   async findOne(id: number): Promise<Prescription> {
     const prescription = await this.prescriptionRepo.findOne({
       where: { id },

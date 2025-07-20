@@ -50,6 +50,23 @@ export class PaymentsService {
     });
   }
 
+  // Get all payments with pagination and search
+  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Payment[]; total: number }> {
+    const query = this.paymentRepository.createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.user', 'user');
+
+    if (search) {
+      query.where('payment.paymentMethod LIKE :search OR payment.status LIKE :search OR payment.transactionId LIKE :search', { search: `%${search}%` });
+    }
+
+    const [data, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data, total };
+  }
+
   // Get payments by pharmacy ID
   async findByPharmacyId(pharmacyId: number): Promise<Payment[]> {
     return this.paymentRepository.find({

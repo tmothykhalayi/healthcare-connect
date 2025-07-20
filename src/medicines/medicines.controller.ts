@@ -42,11 +42,19 @@ export class MedicinesController {
 
   @Get()
   //@Roles(Role.ADMIN, Role.PHARMACIST)
-  @ApiOperation({ summary: 'Get all medicines' })
+  @ApiOperation({ summary: 'Get all medicines (paginated)' })
   @ApiResponse({ status: 200, description: 'Medicines retrieved successfully' })
-  async findAll() {
-    const medicines = await this.medicinesService.findAll();
-    return { data: medicines };
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string = ''
+  ) {
+    const result = await this.medicinesService.findAllPaginated(page, limit, search);
+    return {
+      statusCode: 200,
+      message: 'Medicines retrieved successfully',
+      ...result, // should include data and total
+    };
   }
 
   @Get('stats')

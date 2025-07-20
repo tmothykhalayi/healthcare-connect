@@ -7,6 +7,8 @@ import {
   Patch,
   Delete,
   NotFoundException,
+  Query,
+  HttpStatus,
 } from '@nestjs/common';
 import { PrescriptionService } from './prescription.service';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
@@ -22,8 +24,17 @@ export class PrescriptionController {
   }
 
   @Get()
-  async findAll() {
-    return this.prescriptionService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string = ''
+  ) {
+    const result = await this.prescriptionService.findAllPaginated(page, limit, search);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Prescriptions retrieved successfully',
+      ...result, // should include data and total
+    };
   }
 
   @Get(':id')

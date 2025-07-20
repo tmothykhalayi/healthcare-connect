@@ -96,6 +96,24 @@ export class MedicinesService {
     }
   }
 
+  // Get all medicines with pagination and search
+  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Medicine[]; total: number }> {
+    const query = this.medicineRepository.createQueryBuilder('medicine')
+      .leftJoinAndSelect('medicine.user', 'user');
+
+    if (search) {
+      query.where('medicine.name LIKE :search OR medicine.description LIKE :search OR medicine.manufacturer LIKE :search', { search: `%${search}%` });
+    }
+
+    const [data, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('medicine.createdAt', 'DESC')
+      .getManyAndCount();
+
+    return { data, total };
+  }
+
   async findOne(id: number): Promise<Medicine> {
     try {
       const medicine = await this.medicineRepository.findOne({

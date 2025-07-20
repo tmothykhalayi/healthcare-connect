@@ -112,12 +112,15 @@ export class DoctorsService {
       }
     }
 
+    console.log('Incoming updateDoctorDto:', updateDoctorDto);
     Object.assign(doctor, updateDoctorDto);
+    console.log('Doctor entity before save:', doctor);
 
     try {
       await this.doctorsRepository.save(doctor);
       return { message: `Doctor with ID ${id} updated successfully` };
     } catch (error) {
+      console.error('Update doctor error:', error);
       throw new InternalServerErrorException('Failed to update doctor');
     }
   }
