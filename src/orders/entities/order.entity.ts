@@ -12,6 +12,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Pharmacy } from '../../pharmacy/entities/pharmacy.entity';
 import { Payment } from '../../payments/entities/payment.entity';
+import { Medicine } from '../../medicines/entities/medicine.entity';
 
 @Entity('orders')
 export class Order {
@@ -38,6 +39,19 @@ export class Order {
   @ManyToOne(() => Pharmacy, (pharmacy) => pharmacy.orders)
   @JoinColumn({ name: 'pharmacyId' })
   pharmacy: Pharmacy;
+
+  @ApiProperty({ description: 'Medicine ID associated with the order' })
+  @Column({ nullable: true })
+  medicineId: number;
+
+  @ApiProperty({ description: 'Medicine associated with this order' })
+  @ManyToOne(() => Medicine, { nullable: true })
+  @JoinColumn({ name: 'medicineId' })
+  medicine: Medicine;
+
+  @ApiProperty({ description: 'Quantity of medicine ordered' })
+  @Column({ default: 1 })
+  quantity: number;
 
   @ApiProperty({ description: 'Date when the order was placed' })
   @Column({ type: 'timestamp' })

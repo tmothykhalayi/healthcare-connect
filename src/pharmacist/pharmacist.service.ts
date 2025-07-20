@@ -96,6 +96,24 @@ export class PharmacistService {
     return this.pharmacistRepository.find({ relations: ['user', 'pharmacy'] });
   }
 
+  // Find all pharmacists with pagination and search
+  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Pharmacist[]; total: number }> {
+    const query = this.pharmacistRepository.createQueryBuilder('pharmacist')
+      .leftJoinAndSelect('pharmacist.user', 'user')
+      .leftJoinAndSelect('pharmacist.pharmacy', 'pharmacy');
+
+    if (search) {
+      query.where('user.firstName LIKE :search OR user.lastName LIKE :search OR user.email LIKE :search OR pharmacist.licenseNumber LIKE :search', { search: `%${search}%` });
+    }
+
+    const [data, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data, total };
+  }
+
   // Update pharmacist (example: license number)
   async update(
     id: number,

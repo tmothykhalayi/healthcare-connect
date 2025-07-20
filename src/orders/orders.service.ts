@@ -3,12 +3,14 @@ import {
   NotFoundException,
   InternalServerErrorException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { Pharmacy } from '../pharmacy/entities/pharmacy.entity';
+import { PharmacyMedicine } from '../pharmacy/entities/pharmacy-medicine.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 
@@ -19,6 +21,8 @@ export class OrdersService {
     @InjectRepository(Patient) private patientsRepository: Repository<Patient>,
     @InjectRepository(Pharmacy)
     private pharmacyRepository: Repository<Pharmacy>,
+    @InjectRepository(PharmacyMedicine)
+    private pharmacyMedicineRepository: Repository<PharmacyMedicine>,
   ) {}
 
   // Create a new order
@@ -56,10 +60,21 @@ export class OrdersService {
       );
     }
 
+    // If medicine is specified, check stock availability
+    if (createOrderDto.medicineId && createOrderDto.quantity) {
+      await this.validateMedicineStock(
+        createOrderDto.pharmacyId,
+        createOrderDto.medicineId,
+        createOrderDto.quantity,
+      );
+    }
+
     // Create the order entity
     const newOrder = this.ordersRepository.create({
       patientId: createOrderDto.patientId,
       pharmacyId: createOrderDto.pharmacyId,
+      medicineId: createOrderDto.medicineId,
+      quantity: createOrderDto.quantity || 1,
       orderDate: new Date(createOrderDto.orderDate),
       status: createOrderDto.status,
       totalAmount: createOrderDto.totalAmount,
@@ -88,6 +103,50 @@ export class OrdersService {
       // Remove patient info before returning
       return orders.map(({ patient, ...order }) => order);
     } catch (error) {
+      throw new InternalServerErrorException('Failed to retrieve orders');
+    }
+  }
+
+  // Find all orders with pagination and search
+  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Order[]; total: number }> {
+    console.log(`[OrdersService] Fetching orders - page: ${page}, limit: ${limit}, search: "${search}"`);
+    
+    try {
+      const query = this.ordersRepository.createQueryBuilder('order')
+        .leftJoinAndSelect('order.patient', 'patient')
+        .leftJoinAndSelect('order.pharmacy', 'pharmacy')
+        .leftJoinAndSelect('patient.user', 'patientUser')
+        .leftJoinAndSelect('pharmacy.user', 'pharmacyUser');
+
+      if (search) {
+        query.where('order.status LIKE :search OR order.OrderId LIKE :search OR patientUser.firstName LIKE :search OR patientUser.lastName LIKE :search OR pharmacyUser.firstName LIKE :search OR pharmacyUser.lastName LIKE :search', { search: `%${search}%` });
+      }
+
+      const [data, total] = await query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .orderBy('order.orderDate', 'DESC')
+        .getManyAndCount();
+
+      console.log(`[OrdersService] Found ${data.length} orders out of ${total} total`);
+      
+      if (data.length > 0) {
+        console.log('[OrdersService] Sample order data:', {
+          id: data[0].id,
+          patientId: data[0].patientId,
+          pharmacyId: data[0].pharmacyId,
+          status: data[0].status,
+          OrderId: data[0].OrderId,
+          patientName: data[0].patient ? `${data[0].patient.user?.firstName || ''} ${data[0].patient.user?.lastName || ''}`.trim() : '',
+          pharmacyName: data[0].pharmacy ? `${data[0].pharmacy.user?.firstName || ''} ${data[0].pharmacy.user?.lastName || ''}`.trim() : '',
+        });
+      } else {
+        console.log('[OrdersService] No orders found in database');
+      }
+
+      return { data, total };
+    } catch (error) {
+      console.error('[OrdersService] Error fetching orders:', error);
       throw new InternalServerErrorException('Failed to retrieve orders');
     }
   }
@@ -216,22 +275,121 @@ export class OrdersService {
     }
   }
 
-  // Update order status by ID
+  // Update order status and reduce stock if completed
   async updateStatus(id: string, status: string): Promise<{ message: string }> {
-    const order = await this.ordersRepository.findOne({
-      where: { id: parseInt(id) },
-    });
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
-    }
-
-    order.status = status;
-
     try {
+      const order = await this.ordersRepository.findOne({
+        where: { id: parseInt(id) },
+        relations: ['medicine'],
+      });
+
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+
+      const previousStatus = order.status;
+      order.status = status;
+
+      // If status is being updated to 'completed' and it wasn't completed before
+      if (status === 'completed' && previousStatus !== 'completed') {
+        // Reduce stock if medicine is specified
+        if (order.medicineId && order.quantity) {
+          await this.reduceMedicineStock(order.pharmacyId, order.medicineId, order.quantity);
+        }
+      }
+
       await this.ordersRepository.save(order);
-      return { message: `Order status with ID ${id} updated successfully` };
+
+      return {
+        message: `Order status updated to ${status} successfully`,
+      };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error updating order status:', error);
       throw new InternalServerErrorException('Failed to update order status');
+    }
+  }
+
+  // Reduce medicine stock in pharmacy
+  private async reduceMedicineStock(
+    pharmacyId: number,
+    medicineId: number,
+    quantity: number,
+  ): Promise<void> {
+    try {
+      // Find the pharmacy medicine record
+      const pharmacyMedicine = await this.pharmacyMedicineRepository.findOne({
+        where: { pharmacyId, medicineId },
+      });
+
+      if (!pharmacyMedicine) {
+        throw new BadRequestException(
+          `Medicine ${medicineId} is not available in pharmacy ${pharmacyId}`,
+        );
+      }
+
+      // Check if enough stock is available
+      if (pharmacyMedicine.stockQuantity < quantity) {
+        throw new BadRequestException(
+          `Insufficient stock. Available: ${pharmacyMedicine.stockQuantity}, Requested: ${quantity}`,
+        );
+      }
+
+      // Reduce the stock
+      pharmacyMedicine.stockQuantity -= quantity;
+
+      // If stock goes below minimum level, mark as unavailable
+      if (pharmacyMedicine.stockQuantity <= pharmacyMedicine.minimumStockLevel) {
+        pharmacyMedicine.isAvailable = false;
+      }
+
+      await this.pharmacyMedicineRepository.save(pharmacyMedicine);
+
+      console.log(
+        `Stock reduced for medicine ${medicineId} in pharmacy ${pharmacyId}. New stock: ${pharmacyMedicine.stockQuantity}`,
+      );
+    } catch (error) {
+      console.error('Error reducing medicine stock:', error);
+      throw error;
+    }
+  }
+
+  // Validate medicine stock availability
+  private async validateMedicineStock(
+    pharmacyId: number,
+    medicineId: number,
+    quantity: number,
+  ): Promise<void> {
+    try {
+      const pharmacyMedicine = await this.pharmacyMedicineRepository.findOne({
+        where: { pharmacyId, medicineId },
+      });
+
+      if (!pharmacyMedicine) {
+        throw new BadRequestException(
+          `Medicine ${medicineId} is not available in pharmacy ${pharmacyId}`,
+        );
+      }
+
+      if (!pharmacyMedicine.isAvailable) {
+        throw new BadRequestException(
+          `Medicine ${medicineId} is currently unavailable in pharmacy ${pharmacyId}`,
+        );
+      }
+
+      if (pharmacyMedicine.stockQuantity < quantity) {
+        throw new BadRequestException(
+          `Insufficient stock. Available: ${pharmacyMedicine.stockQuantity}, Requested: ${quantity}`,
+        );
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error('Error validating medicine stock:', error);
+      throw new InternalServerErrorException('Failed to validate medicine stock');
     }
   }
 

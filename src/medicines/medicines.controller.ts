@@ -191,16 +191,25 @@ export class MedicinesController {
   }
 
   @Patch(':id')
-  @Roles(Role.PHARMACIST)
+  //@Roles(Role.ADMIN, Role.PHARMACIST)
   @ApiOperation({ summary: 'Update medicine by ID' })
   @ApiParam({ name: 'id', description: 'Medicine ID' })
   @ApiResponse({ status: 200, description: 'Medicine updated successfully' })
   @ApiResponse({ status: 404, description: 'Medicine not found' })
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateMedicineDto: UpdateMedicineDto,
   ) {
-    return this.medicinesService.update(+id, updateMedicineDto);
+    try {
+      const medicine = await this.medicinesService.update(+id, updateMedicineDto);
+      return {
+        statusCode: 200,
+        message: 'Medicine updated successfully',
+        data: medicine,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Patch(':id/stock')

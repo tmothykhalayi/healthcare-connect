@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { PharmacistService } from './pharmacist.service';
 import { CreatePharmacistDto } from './dto/create-pharmacist.dto';
@@ -26,10 +27,19 @@ export class PharmacistController {
     );
   }
 
-  // Get all pharmacists
+  // Get all pharmacists with pagination and search
   @Get()
-  async findAll() {
-    return this.pharmacistService.findAll();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string = ''
+  ) {
+    const result = await this.pharmacistService.findAllPaginated(page, limit, search);
+    return {
+      statusCode: 200,
+      message: 'Pharmacists retrieved successfully',
+      ...result,
+    };
   }
 
   // Get pharmacist by ID

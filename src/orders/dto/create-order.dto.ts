@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {IsInt,IsDateString,IsString,IsNumber,IsNotEmpty,  IsPositive,} from 'class-validator';
+import {IsInt,IsDateString,IsString,IsNumber,IsNotEmpty,  IsPositive, IsOptional,} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
@@ -47,7 +47,6 @@ export class CreateOrderDto {
   
   status: string;
 
-
   @ApiProperty({
     example: 1,
     description: 'Pharmacy ID associated with the order',
@@ -56,4 +55,26 @@ export class CreateOrderDto {
   @IsNumber()
   @IsNotEmpty()
   pharmacyId: number;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Medicine ID associated with the order',
+    required: false,
+  })
+  @Type(() => Number)
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  medicineId?: number;
+
+  @ApiProperty({
+    example: 2,
+    description: 'Quantity of medicine ordered',
+    required: false,
+  })
+  @Type(() => Number)
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  quantity?: number;
 }

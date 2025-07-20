@@ -1,0 +1,44 @@
+### Payment Management Endpoints
+
+### Get all payments (paginated)
+GET {{baseUrl}}/payments?page=1&limit=10&search=
+Authorization: Bearer {{accessToken}}
+
+### Get payment by ID
+GET {{baseUrl}}/payments/1
+Authorization: Bearer {{accessToken}}
+
+### Create new payment
+POST {{baseUrl}}/payments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "orderId": "ORD-001",
+  "amount": 150.00,
+  "paymentMethod": "credit_card",
+  "status": "pending",
+  "relatedEntityType": "Order",
+  "relatedEntityId": 1,
+  "transactionId": "TXN123456"
+}
+
+### Update payment
+PUT {{baseUrl}}/payments/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "completed",
+  "amount": 150.00,
+  "paymentMethod": "credit_card"
+}
+
+### Delete payment
+DELETE {{baseUrl}}/payments/1
+Authorization: Bearer {{accessToken}}
+
+### Get payments by pharmacy ID
+GET {{baseUrl}}/payments/pharmacy/1
+Authorization: Bearer {{accessToken}} 

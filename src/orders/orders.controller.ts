@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
   ParseIntPipe,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -55,14 +56,18 @@ export class OrdersController {
 
   @Get()
   //@Roles(Role.ADMIN, Role.PHARMACIST)
-  @ApiOperation({ summary: 'Get all orders' })
+  @ApiOperation({ summary: 'Get all orders (paginated)' })
   @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
-  async findAll(orderBy: string = 'orderDate', order: 'ASC' | 'DESC' = 'ASC') {
-    const orders = await this.ordersService.findAll(orderBy, order);
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('search') search: string = ''
+  ) {
+    const result = await this.ordersService.findAllPaginated(page, limit, search);
     return {
       statusCode: HttpStatus.OK,
       message: 'Orders retrieved successfully',
-      data: orders,
+      ...result, // should include data and total
     };
   }
   //@Roles(Role.ADMIN, Role.PHARMACIST)

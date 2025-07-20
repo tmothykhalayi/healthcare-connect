@@ -149,12 +149,16 @@ export class AppointmentsService {
 
   // Get all appointments with pagination and search
   async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Appointment[]; total: number }> {
+    console.log(`[AppointmentsService] Fetching appointments - page: ${page}, limit: ${limit}, search: "${search}"`);
+    
     const query = this.appointmentsRepository.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.patient', 'patient')
-      .leftJoinAndSelect('appointment.doctor', 'doctor');
+      .leftJoinAndSelect('appointment.doctor', 'doctor')
+      .leftJoinAndSelect('patient.user', 'patientUser')
+      .leftJoinAndSelect('doctor.user', 'doctorUser');
 
     if (search) {
-      query.where('appointment.status LIKE :search OR appointment.reason LIKE :search OR appointment.title LIKE :search', { search: `%${search}%` });
+      query.where('appointment.status LIKE :search OR appointment.reason LIKE :search OR appointment.title LIKE :search OR patientUser.firstName LIKE :search OR patientUser.lastName LIKE :search OR doctorUser.firstName LIKE :search OR doctorUser.lastName LIKE :search', { search: `%${search}%` });
     }
 
     const [data, total] = await query
@@ -162,6 +166,18 @@ export class AppointmentsService {
       .take(limit)
       .orderBy('appointment.appointmentDate', 'DESC')
       .getManyAndCount();
+
+    console.log(`[AppointmentsService] Found ${data.length} appointments out of ${total} total`);
+    console.log('[AppointmentsService] Sample appointment data:', data.length > 0 ? {
+      id: data[0].id,
+      patientId: data[0].patientId,
+      doctorId: data[0].doctorId,
+      appointmentDate: data[0].appointmentDate,
+      status: data[0].status,
+      reason: data[0].reason,
+      patientName: data[0].patient ? `${data[0].patient.user?.firstName || ''} ${data[0].patient.user?.lastName || ''}`.trim() : '',
+      doctorName: data[0].doctor ? `${data[0].doctor.user?.firstName || ''} ${data[0].doctor.user?.lastName || ''}`.trim() : '',
+    } : 'No appointments found');
 
     return { data, total };
   }
@@ -174,6 +190,8 @@ export class AppointmentsService {
   }
 
   async update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
+    console.log(`[AppointmentsService] Updating appointment ${id} with data:`, updateAppointmentDto);
+    
     const appointment = await this.appointmentsRepository.findOne({
       where: { id },
       relations: ['patient', 'doctor'],
@@ -182,7 +200,19 @@ export class AppointmentsService {
       throw new NotFoundException('Appointment not found');
     }
 
-    return this.appointmentsRepository.update(id, updateAppointmentDto);
+    console.log(`[AppointmentsService] Found existing appointment:`, {
+      id: appointment.id,
+      patientId: appointment.patientId,
+      doctorId: appointment.doctorId,
+      appointmentDate: appointment.appointmentDate,
+      status: appointment.status,
+      reason: appointment.reason,
+    });
+
+    const result = await this.appointmentsRepository.update(id, updateAppointmentDto);
+    console.log(`[AppointmentsService] Update result:`, result);
+    
+    return result;
   }
 
   async remove(id: number) {

@@ -15,6 +15,7 @@ import { Medicine } from '../../medicines/entities/medicine.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { Payment } from '../../payments/entities/payment.entity';
 import { Pharmacist } from '../../pharmacist/entities/pharmacist.entity';
+import { PharmacyMedicine } from './pharmacy-medicine.entity';
 
 @Entity('pharmacies')
 export class Pharmacy {
@@ -92,6 +93,10 @@ export class Pharmacy {
   // Many-to-many relation with Medicine entity
   @ManyToMany(() => Medicine, (medicine) => medicine.pharmacies)
   medicines: Medicine[];
+
+  // One-to-many relation with PharmacyMedicine entity
+  @OneToMany(() => PharmacyMedicine, (pharmacyMedicine) => pharmacyMedicine.pharmacy)
+  pharmacyMedicines: PharmacyMedicine[];
 
   @OneToMany(() => Order, (order) => order.pharmacy)
   orders: Order[];

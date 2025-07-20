@@ -92,10 +92,20 @@ export class DoctorsService {
     id: number,
     updateDoctorDto: UpdateDoctorDto,
   ): Promise<{ message: string }> {
+    console.log(`[DoctorsService] Updating doctor ${id} with data:`, updateDoctorDto);
+    
     const doctor = await this.doctorsRepository.findOne({ where: { id } });
     if (!doctor) {
       throw new NotFoundException(`Doctor with ID ${id} not found`);
     }
+
+    console.log(`[DoctorsService] Found existing doctor:`, {
+      id: doctor.id,
+      specialization: doctor.specialization,
+      licenseNumber: doctor.licenseNumber,
+      consultationFee: doctor.consultationFee,
+      availableDays: doctor.availableDays,
+    });
 
     // Check if license number is being updated and if it already exists
     if (
@@ -117,7 +127,14 @@ export class DoctorsService {
     console.log('Doctor entity before save:', doctor);
 
     try {
-      await this.doctorsRepository.save(doctor);
+      const savedDoctor = await this.doctorsRepository.save(doctor);
+      console.log('Doctor entity after save:', {
+        id: savedDoctor.id,
+        specialization: savedDoctor.specialization,
+        licenseNumber: savedDoctor.licenseNumber,
+        consultationFee: savedDoctor.consultationFee,
+        availableDays: savedDoctor.availableDays,
+      });
       return { message: `Doctor with ID ${id} updated successfully` };
     } catch (error) {
       console.error('Update doctor error:', error);
@@ -200,18 +217,29 @@ export class DoctorsService {
   }
 
   async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Doctor[]; total: number }> {
+    console.log(`[DoctorsService] Fetching doctors - page: ${page}, limit: ${limit}, search: "${search}"`);
+    
     const query = this.doctorsRepository.createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.user', 'user')
       .leftJoinAndSelect('doctor.patients', 'patients');
 
     if (search) {
-      query.where('doctor.name LIKE :search OR doctor.email LIKE :search OR doctor.specialization LIKE :search', { search: `%${search}%` });
+      query.where('doctor.specialization LIKE :search OR user.firstName LIKE :search OR user.lastName LIKE :search OR user.email LIKE :search', { search: `%${search}%` });
     }
 
     const [data, total] = await query
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
+
+    console.log(`[DoctorsService] Found ${data.length} doctors out of ${total} total`);
+    console.log('[DoctorsService] Sample doctor data:', data.length > 0 ? {
+      id: data[0].id,
+      specialization: data[0].specialization,
+      licenseNumber: data[0].licenseNumber,
+      consultationFee: data[0].consultationFee,
+      availableDays: data[0].availableDays,
+    } : 'No doctors found');
 
     return { data, total };
   }

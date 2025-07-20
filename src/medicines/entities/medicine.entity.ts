@@ -8,10 +8,12 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
 import { Pharmacy } from '../../pharmacy/entities/pharmacy.entity';
+import { PharmacyMedicine } from '../../pharmacy/entities/pharmacy-medicine.entity';
 
 @Entity('medicines')
 export class Medicine {
@@ -89,9 +91,13 @@ export class Medicine {
   // Many-to-many relationship: Medicine available in multiple pharmacies
   @ManyToMany(() => Pharmacy, (pharmacy) => pharmacy.medicines)
   @JoinTable({
-    name: 'pharmacy_medicines', // join table name
+    name: 'medicine_pharmacy_availability', // Changed table name to avoid conflict
     joinColumn: { name: 'medicineId', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'pharmacyId', referencedColumnName: 'id' },
   })
   pharmacies: Pharmacy[];
+
+  // One-to-many relationship: Medicine has multiple pharmacy medicine records
+  @OneToMany(() => PharmacyMedicine, (pharmacyMedicine) => pharmacyMedicine.medicine)
+  pharmacyMedicines: PharmacyMedicine[];
 }
