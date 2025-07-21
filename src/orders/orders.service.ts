@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  InternalServerErrorException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,InternalServerErrorException,ConflictException, BadRequestException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
@@ -76,7 +70,7 @@ export class OrdersService {
       medicineId: createOrderDto.medicineId,
       quantity: createOrderDto.quantity || 1,
       orderDate: new Date(createOrderDto.orderDate),
-      status: createOrderDto.status,
+     status: createOrderDto.orderStatus,  
       totalAmount: createOrderDto.totalAmount,
       OrderId: createOrderDto.OrderId,
     });

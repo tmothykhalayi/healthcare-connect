@@ -157,4 +157,18 @@ export class DoctorsController {
       ...result,
     };
   }
+
+  // //get patient by doctor ID
+  @Get(':id/patients')
+   @ApiOperation({ summary: 'Get patients by doctor ID' })
+   @ApiParam({ name: 'id', description: 'Doctor ID' })
+   @ApiResponse({ status: 200, description: 'Patients retrieved successfully' })
+   async getPatientsByDoctorId(@Param('id') id: string) {
+    const patients = await this.doctorsService.findPatientsByDoctorId(+id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Patients retrieved successfully',
+      data: patients,
+    };
+   }
 }

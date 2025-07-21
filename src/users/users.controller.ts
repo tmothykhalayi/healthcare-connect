@@ -30,8 +30,8 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator';
 
-//@UseGuards(AtGuard, RolesGuard)
-//@ApiBearerAuth()
+@UseGuards(AtGuard, RolesGuard)
+@ApiBearerAuth()
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
@@ -41,7 +41,7 @@ export class UsersController {
   ) {}
 
   @Post()
-  // @Roles(Role.ADMIN ,Role.PATIENT, Role.DOCTOR, Role.PHARMACY)
+   @Roles(Role.ADMIN ,Role.PATIENT, Role.DOCTOR, Role.PHARMACIST)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 409, description: 'User already exists' })
@@ -61,7 +61,7 @@ export class UsersController {
 
   // Get all users
   @Get()
-  // @Roles(Role.ADMIN) // <--- Commented out to remove admin-only restriction
+   @Roles(Role.ADMIN) // <--- Commented out to remove admin-only restriction
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   async findAll() {
@@ -150,7 +150,7 @@ export class UsersController {
 
   // Get user statistics
   @Get('stats')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get user statistics' })
   @ApiResponse({
     status: 200,

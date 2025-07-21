@@ -180,4 +180,21 @@ export class PatientsService {
   async deleteByUserId(userId: number): Promise<void> {
     await this.patientsRepository.delete({ user: { id: userId } });
   }
+
+  //find patient by doctor ID
+  async findByDoctorId(doctorId: number): Promise<Patient[]> {
+    const doctor = await this.doctorsRepository.findOne({
+      where: { id: doctorId },
+      relations: ['patients'],
+    });
+
+    if (!doctor) {
+      throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
+    }
+
+    return doctor.patients;
+  } 
+
+
+  //
 }

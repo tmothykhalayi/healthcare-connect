@@ -263,4 +263,18 @@ export class DoctorsService {
 
     return { data, total };
   }
+
+  //get patient by doctor ID
+  async findPatientsByDoctorId(doctorId: number): Promise<Users[]> {
+    const doctor = await this.doctorsRepository.findOne({
+      where: { id: doctorId },
+      relations: ['patients'],
+    });
+
+    if (!doctor) {
+      throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
+    }
+
+    return doctor.patients.map((patient) => patient.user);
+  }
 }
