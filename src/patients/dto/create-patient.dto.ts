@@ -1,7 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {IsNumber,IsString,IsArray,
+import {
+  IsNumber,
+  IsString,
+  IsArray,
   IsOptional,
-  IsDateString,IsEnum,
+  IsDateString,
+  IsEnum,
 } from 'class-validator';
 
 export enum Gender {

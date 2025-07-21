@@ -13,7 +13,10 @@ import { UpdateMedicalDto } from './dto/update-medical.dto';
 @Injectable()
 export class MedicalService {
   // Paginated fetch
-  async findAllPaginated(skip: number, take: number): Promise<[Medical[], number]> {
+  async findAllPaginated(
+    skip: number,
+    take: number,
+  ): Promise<[Medical[], number]> {
     try {
       const [data, total] = await this.medicalRepository.findAndCount({
         relations: ['patient', 'doctor', 'appointment'],
@@ -23,12 +26,18 @@ export class MedicalService {
       });
       return [data, total];
     } catch (error) {
-      throw new InternalServerErrorException('Failed to retrieve medical records');
+      throw new InternalServerErrorException(
+        'Failed to retrieve medical records',
+      );
     }
   }
 
   // Paginated search
-  async searchPaginated(query: string, skip: number, take: number): Promise<[Medical[], number]> {
+  async searchPaginated(
+    query: string,
+    skip: number,
+    take: number,
+  ): Promise<[Medical[], number]> {
     try {
       const qb = this.medicalRepository
         .createQueryBuilder('medical')
@@ -50,7 +59,9 @@ export class MedicalService {
       const [data, total] = await qb.getManyAndCount();
       return [data, total];
     } catch (error) {
-      throw new InternalServerErrorException('Failed to search medical records');
+      throw new InternalServerErrorException(
+        'Failed to search medical records',
+      );
     }
   }
   constructor(

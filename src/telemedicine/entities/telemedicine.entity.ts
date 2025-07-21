@@ -57,7 +57,6 @@ export class TelemedicineAppointment {
     scheduledAt: 'ASC';
   };
 
-  @ManyToMany(() => Prescription, prescription => prescription.medicines)
+  @ManyToMany(() => Prescription, (prescription) => prescription.medicines)
   prescriptions: Prescription[];
-
 }

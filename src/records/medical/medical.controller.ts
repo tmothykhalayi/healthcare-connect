@@ -60,7 +60,10 @@ export class MedicalController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiResponse({ status: 200, description: 'Medical records retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Medical records retrieved successfully',
+  })
   async findAllPaginated(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
@@ -73,7 +76,11 @@ export class MedicalController {
     let data: any[] = [];
     let total = 0;
     if (search) {
-      const result = await this.medicalService.searchPaginated(search, skip, limitNum);
+      const result = await this.medicalService.searchPaginated(
+        search,
+        skip,
+        limitNum,
+      );
       data = result[0];
       total = result[1];
     } else {
@@ -82,13 +89,19 @@ export class MedicalController {
       total = result[1];
     }
     // Ensure patientId and doctorId are present in each record
-    const mappedData = data.map(record => ({
+    const mappedData = data.map((record) => ({
       ...record,
-      patientId: record.patientId ?? (record.patient?.id ?? null),
-      doctorId: record.doctorId ?? (record.doctor?.id ?? null),
-      createdAt: record.createdAt ? new Date(record.createdAt).toISOString() : null,
-      updatedAt: record.updatedAt ? new Date(record.updatedAt).toISOString() : null,
-      nextAppointmentDate: record.nextAppointmentDate ? new Date(record.nextAppointmentDate).toISOString() : null,
+      patientId: record.patientId ?? record.patient?.id ?? null,
+      doctorId: record.doctorId ?? record.doctor?.id ?? null,
+      createdAt: record.createdAt
+        ? new Date(record.createdAt).toISOString()
+        : null,
+      updatedAt: record.updatedAt
+        ? new Date(record.updatedAt).toISOString()
+        : null,
+      nextAppointmentDate: record.nextAppointmentDate
+        ? new Date(record.nextAppointmentDate).toISOString()
+        : null,
     }));
     return {
       statusCode: HttpStatus.OK,

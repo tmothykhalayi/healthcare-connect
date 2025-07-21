@@ -122,7 +122,8 @@ export class UsersController {
         } else {
           // Create patient profile if it doesn't exist
           console.log(`Creating patient profile for user ${userId}`);
-          const patient = await this.patientsService.createFromUser(userProfile);
+          const patient =
+            await this.patientsService.createFromUser(userProfile);
           profile = { ...patient, id: patient.id };
         }
       }

@@ -95,7 +95,10 @@ export class Pharmacy {
   medicines: Medicine[];
 
   // One-to-many relation with PharmacyMedicine entity
-  @OneToMany(() => PharmacyMedicine, (pharmacyMedicine) => pharmacyMedicine.pharmacy)
+  @OneToMany(
+    () => PharmacyMedicine,
+    (pharmacyMedicine) => pharmacyMedicine.pharmacy,
+  )
   pharmacyMedicines: PharmacyMedicine[];
 
   @OneToMany(() => Order, (order) => order.pharmacy)

@@ -25,11 +25,15 @@ export class PharmacyMedicine {
   @Column()
   medicineId: number;
 
-  @ApiProperty({ description: 'Stock quantity for this medicine in this pharmacy' })
+  @ApiProperty({
+    description: 'Stock quantity for this medicine in this pharmacy',
+  })
   @Column({ default: 0 })
   stockQuantity: number;
 
-  @ApiProperty({ description: 'Minimum stock level for this medicine in this pharmacy' })
+  @ApiProperty({
+    description: 'Minimum stock level for this medicine in this pharmacy',
+  })
   @Column({ default: 10 })
   minimumStockLevel: number;
 
@@ -37,7 +41,9 @@ export class PharmacyMedicine {
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
-  @ApiProperty({ description: 'Whether this medicine is available in this pharmacy' })
+  @ApiProperty({
+    description: 'Whether this medicine is available in this pharmacy',
+  })
   @Column({ default: true })
   isAvailable: boolean;
 
@@ -57,4 +63,4 @@ export class PharmacyMedicine {
   @ManyToOne(() => Medicine, (medicine) => medicine.pharmacyMedicines)
   @JoinColumn({ name: 'medicineId' })
   medicine: Medicine;
-} 
+}

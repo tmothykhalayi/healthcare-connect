@@ -90,7 +90,6 @@ export class Doctor {
   @OneToMany(() => Appointment, (appointment) => appointment.doctor)
   appointments: Appointment[];
 
-
-   @OneToMany(() => Prescription, prescription => prescription.doctor)
+  @OneToMany(() => Prescription, (prescription) => prescription.doctor)
   prescriptions: Prescription[];
 }

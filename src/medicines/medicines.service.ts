@@ -97,12 +97,20 @@ export class MedicinesService {
   }
 
   // Get all medicines with pagination and search
-  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Medicine[]; total: number }> {
-    const query = this.medicineRepository.createQueryBuilder('medicine')
+  async findAllPaginated(
+    page = 1,
+    limit = 10,
+    search = '',
+  ): Promise<{ data: Medicine[]; total: number }> {
+    const query = this.medicineRepository
+      .createQueryBuilder('medicine')
       .leftJoinAndSelect('medicine.user', 'user');
 
     if (search) {
-      query.where('medicine.name LIKE :search OR medicine.description LIKE :search OR medicine.manufacturer LIKE :search', { search: `%${search}%` });
+      query.where(
+        'medicine.name LIKE :search OR medicine.description LIKE :search OR medicine.manufacturer LIKE :search',
+        { search: `%${search}%` },
+      );
     }
 
     const [data, total] = await query

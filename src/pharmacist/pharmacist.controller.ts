@@ -32,9 +32,13 @@ export class PharmacistController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
   ) {
-    const result = await this.pharmacistService.findAllPaginated(page, limit, search);
+    const result = await this.pharmacistService.findAllPaginated(
+      page,
+      limit,
+      search,
+    );
     return {
       statusCode: 200,
       message: 'Pharmacists retrieved successfully',

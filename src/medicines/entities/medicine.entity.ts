@@ -98,6 +98,9 @@ export class Medicine {
   pharmacies: Pharmacy[];
 
   // One-to-many relationship: Medicine has multiple pharmacy medicine records
-  @OneToMany(() => PharmacyMedicine, (pharmacyMedicine) => pharmacyMedicine.medicine)
+  @OneToMany(
+    () => PharmacyMedicine,
+    (pharmacyMedicine) => pharmacyMedicine.medicine,
+  )
   pharmacyMedicines: PharmacyMedicine[];
 }

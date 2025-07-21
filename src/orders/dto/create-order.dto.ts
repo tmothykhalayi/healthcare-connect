@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {IsInt,IsDateString,IsString,IsNumber,IsNotEmpty,  IsPositive, IsOptional,} from 'class-validator';
+import {
+  IsInt,
+  IsDateString,
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  IsPositive,
+  IsOptional,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
@@ -44,7 +52,7 @@ export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   OrderId: string;
-  
+
   status: string;
 
   @ApiProperty({

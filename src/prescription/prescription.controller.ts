@@ -27,9 +27,13 @@ export class PrescriptionController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
   ) {
-    const result = await this.prescriptionService.findAllPaginated(page, limit, search);
+    const result = await this.prescriptionService.findAllPaginated(
+      page,
+      limit,
+      search,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Prescriptions retrieved successfully',

@@ -92,8 +92,11 @@ export class DoctorsService {
     id: number,
     updateDoctorDto: UpdateDoctorDto,
   ): Promise<{ message: string }> {
-    console.log(`[DoctorsService] Updating doctor ${id} with data:`, updateDoctorDto);
-    
+    console.log(
+      `[DoctorsService] Updating doctor ${id} with data:`,
+      updateDoctorDto,
+    );
+
     const doctor = await this.doctorsRepository.findOne({ where: { id } });
     if (!doctor) {
       throw new NotFoundException(`Doctor with ID ${id} not found`);
@@ -216,15 +219,25 @@ export class DoctorsService {
     return;
   }
 
-  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Doctor[]; total: number }> {
-    console.log(`[DoctorsService] Fetching doctors - page: ${page}, limit: ${limit}, search: "${search}"`);
-    
-    const query = this.doctorsRepository.createQueryBuilder('doctor')
+  async findAllPaginated(
+    page = 1,
+    limit = 10,
+    search = '',
+  ): Promise<{ data: Doctor[]; total: number }> {
+    console.log(
+      `[DoctorsService] Fetching doctors - page: ${page}, limit: ${limit}, search: "${search}"`,
+    );
+
+    const query = this.doctorsRepository
+      .createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.user', 'user')
       .leftJoinAndSelect('doctor.patients', 'patients');
 
     if (search) {
-      query.where('doctor.specialization LIKE :search OR user.firstName LIKE :search OR user.lastName LIKE :search OR user.email LIKE :search', { search: `%${search}%` });
+      query.where(
+        'doctor.specialization LIKE :search OR user.firstName LIKE :search OR user.lastName LIKE :search OR user.email LIKE :search',
+        { search: `%${search}%` },
+      );
     }
 
     const [data, total] = await query
@@ -232,14 +245,21 @@ export class DoctorsService {
       .take(limit)
       .getManyAndCount();
 
-    console.log(`[DoctorsService] Found ${data.length} doctors out of ${total} total`);
-    console.log('[DoctorsService] Sample doctor data:', data.length > 0 ? {
-      id: data[0].id,
-      specialization: data[0].specialization,
-      licenseNumber: data[0].licenseNumber,
-      consultationFee: data[0].consultationFee,
-      availableDays: data[0].availableDays,
-    } : 'No doctors found');
+    console.log(
+      `[DoctorsService] Found ${data.length} doctors out of ${total} total`,
+    );
+    console.log(
+      '[DoctorsService] Sample doctor data:',
+      data.length > 0
+        ? {
+            id: data[0].id,
+            specialization: data[0].specialization,
+            licenseNumber: data[0].licenseNumber,
+            consultationFee: data[0].consultationFee,
+            availableDays: data[0].availableDays,
+          }
+        : 'No doctors found',
+    );
 
     return { data, total };
   }

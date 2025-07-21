@@ -90,9 +90,13 @@ export class AppointmentsController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
   ) {
-    const result = await this.appointmentsService.findAllPaginated(page, limit, search);
+    const result = await this.appointmentsService.findAllPaginated(
+      page,
+      limit,
+      search,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Appointments retrieved successfully',
@@ -194,7 +198,7 @@ export class AppointmentsController {
     };
   }
 
-//get by patient id
+  //get by patient id
   @Get('patient')
   //@Roles(Role.PATIENT)
   @ApiOperation({ summary: 'Get appointments by patient ID' })
@@ -210,5 +214,5 @@ export class AppointmentsController {
       message: 'Patient appointments retrieved successfully',
       data: appointments,
     };
-  } 
+  }
 }

@@ -127,7 +127,6 @@ export class Patient {
   )
   telemedicineAppointments: TelemedicineAppointment[];
 
-  @OneToMany(() => Prescription, prescription => prescription.patient)
+  @OneToMany(() => Prescription, (prescription) => prescription.patient)
   prescriptions: Prescription[];
-
 }

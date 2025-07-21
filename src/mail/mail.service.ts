@@ -162,7 +162,9 @@ export class MailService {
       await this.mailerService.sendMail(options);
       this.logger.log(`Custom mail sent to ${options.to}`);
     } catch (error) {
-      this.logger.error(`Failed to send custom mail to ${options.to}: ${error.message}`);
+      this.logger.error(
+        `Failed to send custom mail to ${options.to}: ${error.message}`,
+      );
       throw error;
     }
   }

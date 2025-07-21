@@ -1,60 +1,55 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { OpenAI } from 'openai';
+import ModelClient from '@azure-rest/ai-inference';
+import { AzureKeyCredential } from '@azure/core-auth';
 
 @Injectable()
 export class ChatService {
-  private readonly openai: OpenAI;
   private readonly logger = new Logger(ChatService.name);
+  private readonly endpoint: string;
+  private readonly apiKey: string;
+  private readonly modelName: string;
+  private client: ReturnType<typeof ModelClient>;
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('AZURE_OPENAI_API_KEY');
-    let endpoint = this.configService.get<string>('AZURE_OPENAI_ENDPOINT');
-    const deploymentName = this.configService.get<string>('AI_MODEL');
+    this.endpoint = this.configService.get<string>('AZURE_OPENAI_ENDPOINT') ?? '';
+    this.apiKey = this.configService.get<string>('AZURE_OPENAI_API_KEY') ?? '';
+    this.modelName = this.configService.get<string>('AZURE_OPENAI_MODEL') ?? 'DeepSeek-R1';
 
-    if (!apiKey || !endpoint || !deploymentName) {
+    if (!this.endpoint || !this.apiKey || !this.modelName) {
       this.logger.error('Missing Azure OpenAI configuration');
       throw new Error('Missing Azure OpenAI config');
     }
 
-    // Ensure endpoint ends with a slash as required by OpenAI client for Azure
-    if (!endpoint.endsWith('/')) {
-      endpoint += '/';
-    }
-
-    this.openai = new OpenAI({
-      apiKey,
-      baseURL: endpoint,
-      // For Azure, you must specify the API type
-      // Note: Depending on openai sdk version, this might be necessary:
-      // azure: { deploymentName }
-    });
+    this.client = ModelClient(this.endpoint, new AzureKeyCredential(this.apiKey));
   }
 
   async getAIResponse(message: string): Promise<string> {
-    const deploymentName = this.configService.get<string>('AI_MODEL');
-
-    if (!deploymentName) {
-      this.logger.error('AI_MODEL is not defined in configuration');
-      throw new Error('AI_MODEL is not defined');
-    }
-
     try {
-      // For Azure, use the 'model' property and set it to your deployment name
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o', // <-- Use deploymentName here for Azure
-        messages: [{ role: 'user', content: message }],
+      const response = await this.client.path('/chat/completions').post({
+        body: {
+          messages: [
+            { role: 'system', content: 'You are a helpful assistant.' },
+            { role: 'user', content: message }
+          ],
+          max_tokens: 2048,
+          model: this.modelName
+        }
       });
 
-      const content = response.choices[0].message.content;
-      if (content === null) {
-        this.logger.error('OpenAI response content is null');
-        throw new Error('OpenAI response content is null');
+      if (response.status === '200') {
+        // Success: response.body is ChatCompletionsOutput
+        const body = response.body as any;
+        return body.choices[0].message.content;
+      } else {
+        // Error: response.body is ErrorResponse
+        const errorBody = response.body as any;
+        this.logger.error('Azure AI Inference error:', errorBody?.error);
+        throw new InternalServerErrorException(errorBody?.error?.message || 'Failed to get AI response');
       }
-      return content;
-    } catch (error: any) {
-      this.logger.error(`OpenAI API error: ${error.message || error}`);
-      throw error;
+    } catch (err) {
+      this.logger.error('Azure AI Inference SDK error:', err);
+      throw new InternalServerErrorException('Failed to get AI response');
     }
   }
 }

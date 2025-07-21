@@ -1,4 +1,11 @@
-import { Injectable, UseGuards, Query, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UseGuards,
+  Query,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   Controller,
   Get,
@@ -9,7 +16,6 @@ import {
   Req,
   Delete,
   HttpStatus,
-  
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -61,9 +67,13 @@ export class DoctorsController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
   ) {
-    const result = await this.doctorsService.findAllPaginated(page, limit, search);
+    const result = await this.doctorsService.findAllPaginated(
+      page,
+      limit,
+      search,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Doctors retrieved successfully',

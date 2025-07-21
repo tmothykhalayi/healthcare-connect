@@ -47,9 +47,13 @@ export class MedicinesController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
   ) {
-    const result = await this.medicinesService.findAllPaginated(page, limit, search);
+    const result = await this.medicinesService.findAllPaginated(
+      page,
+      limit,
+      search,
+    );
     return {
       statusCode: 200,
       message: 'Medicines retrieved successfully',
@@ -201,7 +205,10 @@ export class MedicinesController {
     @Body() updateMedicineDto: UpdateMedicineDto,
   ) {
     try {
-      const medicine = await this.medicinesService.update(+id, updateMedicineDto);
+      const medicine = await this.medicinesService.update(
+        +id,
+        updateMedicineDto,
+      );
       return {
         statusCode: 200,
         message: 'Medicine updated successfully',

@@ -61,9 +61,15 @@ export class OrdersController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
+    @Query('patientId') patientId?: number,
   ) {
-    const result = await this.ordersService.findAllPaginated(page, limit, search);
+    const result = await this.ordersService.findAllPaginated(
+      page,
+      limit,
+      search,
+      patientId,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Orders retrieved successfully',

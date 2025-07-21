@@ -29,9 +29,15 @@ export class PrescriptionService {
   ) {}
 
   async create(dto: CreatePrescriptionDto): Promise<Prescription> {
-    const doctor = await this.doctorRepo.findOne({ where: { id: dto.doctorId } });
-    const patient = await this.patientRepo.findOne({ where: { id: dto.patientId } });
-    const medicines = await this.medicineRepo.findBy({ id: In(dto.medicineIds) });
+    const doctor = await this.doctorRepo.findOne({
+      where: { id: dto.doctorId },
+    });
+    const patient = await this.patientRepo.findOne({
+      where: { id: dto.patientId },
+    });
+    const medicines = await this.medicineRepo.findBy({
+      id: In(dto.medicineIds),
+    });
 
     if (!doctor || !patient || medicines.length !== dto.medicineIds.length) {
       throw new NotFoundException('Doctor, Patient or Medicines not found');
@@ -54,15 +60,23 @@ export class PrescriptionService {
   }
 
   // Get all prescriptions with pagination and search
-  async findAllPaginated(page = 1, limit = 10, search = ''): Promise<{ data: Prescription[]; total: number }> {
-    const query = this.prescriptionRepo.createQueryBuilder('prescription')
+  async findAllPaginated(
+    page = 1,
+    limit = 10,
+    search = '',
+  ): Promise<{ data: Prescription[]; total: number }> {
+    const query = this.prescriptionRepo
+      .createQueryBuilder('prescription')
       .leftJoinAndSelect('prescription.doctor', 'doctor')
       .leftJoinAndSelect('prescription.patient', 'patient')
       .leftJoinAndSelect('prescription.pharmacist', 'pharmacist')
       .leftJoinAndSelect('prescription.medicines', 'medicines');
 
     if (search) {
-      query.where('prescription.notes LIKE :search OR prescription.status LIKE :search', { search: `%${search}%` });
+      query.where(
+        'prescription.notes LIKE :search OR prescription.status LIKE :search',
+        { search: `%${search}%` },
+      );
     }
 
     const [data, total] = await query
@@ -92,7 +106,9 @@ export class PrescriptionService {
     }
 
     if (dto.pharmacistId) {
-      const pharmacist = await this.pharmacistRepo.findOne({ where: { id: dto.pharmacistId } });
+      const pharmacist = await this.pharmacistRepo.findOne({
+        where: { id: dto.pharmacistId },
+      });
       if (!pharmacist) {
         throw new NotFoundException('Pharmacist not found');
       }

@@ -9,7 +9,10 @@ import { PharmacyMedicine } from '../pharmacy/entities/pharmacy-medicine.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, Patient, Pharmacy, PharmacyMedicine]),
+    TypeOrmModule.forFeature([Order, Patient, 
+      Pharmacy,
+       PharmacyMedicine
+      ]),
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

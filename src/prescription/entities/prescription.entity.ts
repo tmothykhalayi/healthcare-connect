@@ -16,13 +16,13 @@ export class Prescription {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Doctor, doctor => doctor.prescriptions, { eager: true })
+  @ManyToOne(() => Doctor, (doctor) => doctor.prescriptions, { eager: true })
   doctor: Doctor;
 
-  @ManyToOne(() => Patient, patient => patient.prescriptions, { eager: true })
+  @ManyToOne(() => Patient, (patient) => patient.prescriptions, { eager: true })
   patient: Patient;
 
-  @ManyToOne(() => Pharmacist, pharmacist => pharmacist.prescriptions, {
+  @ManyToOne(() => Pharmacist, (pharmacist) => pharmacist.prescriptions, {
     nullable: true,
     eager: true,
   })

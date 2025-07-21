@@ -6,7 +6,7 @@ import {
   Patch,
   Param,
   Delete,
-Put,
+  Put,
   HttpException,
   UseGuards,
   HttpStatus,
@@ -70,10 +70,14 @@ export class PaymentsController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
   ) {
     try {
-      const result = await this.paymentsService.findAllPaginated(page, limit, search);
+      const result = await this.paymentsService.findAllPaginated(
+        page,
+        limit,
+        search,
+      );
       return {
         statusCode: HttpStatus.OK,
         message: 'Payments retrieved successfully',
