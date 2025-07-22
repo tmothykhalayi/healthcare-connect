@@ -140,4 +140,12 @@ export class PharmacistService {
   async deleteByUserId(userId: number): Promise<void> {
     await this.pharmacistRepository.delete({ user: { id: userId } });
   }
+
+  // Find pharmacist by userId
+  async findByUserId(userId: number): Promise<Pharmacist | null> {
+    return this.pharmacistRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user', 'pharmacy'],
+    });
+  }
 }

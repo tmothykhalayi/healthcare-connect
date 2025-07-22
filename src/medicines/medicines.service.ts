@@ -143,33 +143,22 @@ export class MedicinesService {
     }
   }
 
-  async findByUserId(userId: number, doctorId: number): Promise<Medicine[]> {
+  async findByUserId(userId: number, doctorId?: number): Promise<Medicine[]> {
     try {
-      // Example logic: Check if the user is assigned to the doctor
-      // You should replace this with your actual assignment check logic
-      const doctor = await this.usersRepository.findOne({
-        where: { id: doctorId },
-      });
-      const user = await this.usersRepository.findOne({
-        where: { id: userId },
-      });
-
-      if (!doctor || !user) {
-        throw new NotFoundException(
-          `User with ID ${userId} or Doctor with ID ${doctorId} not found`,
-        );
+      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
       }
 
-      // Replace this with your actual assignment logic
-      // For example, if you have an assignments table, query it here
-      const isAssigned = true; // Set to true or false based on your logic
-
-      if (!isAssigned) {
-        throw new ForbiddenException(
-          `User with ID ${userId} is not assigned to doctor with ID ${doctorId}`,
-        );
+      if (doctorId && !isNaN(doctorId)) {
+        const doctor = await this.usersRepository.findOne({ where: { id: doctorId } });
+        if (!doctor) {
+          throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
+        }
+        // ...doctor assignment logic if needed...
       }
 
+      // Fetch medicines for the user
       return await this.medicineRepository.find({
         where: { userId },
         relations: ['user'],
@@ -400,4 +389,5 @@ export class MedicinesService {
       throw new InternalServerErrorException('Failed to remove medicine');
     }
   }
+
 }
