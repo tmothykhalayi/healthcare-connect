@@ -28,6 +28,7 @@ import { createKeyv, Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { ZoomService } from './zoom/zoom.service';
 import { PrescriptionModule } from './prescription/prescription.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -58,6 +59,8 @@ import { PrescriptionModule } from './prescription/prescription.module';
     AvailabilityModule,
 
     PrescriptionModule,
+
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

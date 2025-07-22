@@ -20,8 +20,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           entities: [__dirname + '/../**/*.entity{.ts,.js}'],
           synchronize: !isProduction,
           ssl: isProduction
-            ? { rejectUnauthorized: true} // In production, use SSL
-            : true, // In development, disable SSL to avoid your current error
+            ? { rejectUnauthorized: false } // In production, use SSL
+            : false, // In development, disable SSL to avoid your current error
         };
       },
       inject: [ConfigService],
