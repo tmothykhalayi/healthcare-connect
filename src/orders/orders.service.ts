@@ -70,7 +70,7 @@ export class OrdersService {
       medicineId: createOrderDto.medicineId,
       quantity: createOrderDto.quantity || 1,
       orderDate: new Date(createOrderDto.orderDate),
-     status: createOrderDto.orderStatus,  
+      status: createOrderDto.status,  
       totalAmount: createOrderDto.totalAmount,
       OrderId: createOrderDto.OrderId,
     });

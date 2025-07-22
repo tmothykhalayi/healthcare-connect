@@ -34,7 +34,7 @@ export class CreateOrderDto {
   })
   @IsString()
   @IsNotEmpty()
-  orderStatus: string;
+  status: string;
 
   @ApiProperty({
     example: 150.0,
@@ -52,15 +52,6 @@ export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   OrderId: string;
-
-  @ApiProperty({
-    example: 'processing',
-    description: 'Internal status of the order (optional)',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  status?: string;
 
   @ApiProperty({
     example: 1,
