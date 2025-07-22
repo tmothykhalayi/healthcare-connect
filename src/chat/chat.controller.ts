@@ -4,7 +4,7 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Public } from 'src/auth/decorators';
 @Public()
-@Controller('chat')
+@Controller('ai')
 export class ChatController {
   constructor(private readonly chatService: chatService) {}
 
