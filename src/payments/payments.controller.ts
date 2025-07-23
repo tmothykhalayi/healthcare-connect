@@ -11,11 +11,16 @@ import {
   UseGuards,
   HttpStatus,
   Query,
+  HttpCode,
+  Headers,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Payment } from './entities/payment.entity';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { User as UserDecorator } from 'src/auth/decorators/user';
 import {
   ApiTags,
   ApiOperation,
@@ -25,6 +30,9 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
+import {Role } from 'src/auth/enums/role.enum';
+import { Users } from 'src/users/entities/user.entity';
+
 
 @ApiTags('payments')
 @Controller('payments')
@@ -34,172 +42,109 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
   // Create a new payment
 
-  @Post()
-  ///@Roles(Role.ADMIN, Role.PHARMACIST)
-  @ApiOperation({ summary: 'Create a new payment' })
-  @ApiBody({ type: CreatePaymentDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Payment created successfully',
-    type: Payment,
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@Body() createPaymentDto: CreatePaymentDto) {
-    try {
-      const payment = await this.paymentsService.create(createPaymentDto);
-      return {
-        statusCode: HttpStatus.CREATED,
-        message: 'Payment created successfully',
-        data: payment,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
 
-  // Get all payments
-  @Get()
-  ///@Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get all payments (paginated)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payments retrieved successfully',
-    type: [Payment],
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async findAll(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-    @Query('search') search: string = '',
+  @Post('initialize')
+  @Roles(Role.PATIENT)
+  @ApiOperation({ summary: 'Initialize a new payment' })
+  @ApiResponse({ status: 201, description: 'Payment initialized successfully' })
+  async initializePayment(
+    @Body() createPaymentDto: CreatePaymentDto,
+    @UserDecorator() user: Users
   ) {
-    try {
-      const result = await this.paymentsService.findAllPaginated(
-        page,
-        limit,
-        search,
-      );
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Payments retrieved successfully',
-        ...result, // should include data and total
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
+    return this.paymentsService.initializePayment(createPaymentDto, user);
   }
 
-  // Get payments by pharmacy ID
-  @Get('pharmacy/:pharmacyId')
-  @ApiOperation({ summary: 'Get payments by pharmacy ID' })
-  @ApiParam({ name: 'pharmacyId', description: 'Pharmacy ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payments retrieved successfully',
-    type: [Payment],
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async findByPharmacyId(@Param('pharmacyId') pharmacyId: string) {
-    try {
-      const payments = await this.paymentsService.findByPharmacyId(
-        Number(pharmacyId),
-      );
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Payments retrieved successfully',
-        data: payments,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
+  @Post('verify/:reference')
+  @Roles(Role.PATIENT)
+  @ApiOperation({ summary: 'Verify payment status' })
+  @ApiResponse({ status: 200, description: 'Payment verification completed' })
+  async verifyPayment(@Param('reference') reference: string) {
+    return this.paymentsService.verifyPayment(reference);
   }
-  // Get a payment by ID
+
+  @Patch(':id/status')
+  @Roles(Role.ADMIN, Role.PHARMACIST, Role.DOCTOR)
+  @ApiOperation({ summary: 'Update payment status' })
+  @ApiResponse({ status: 200, description: 'Payment status updated successfully' })
+  async updatePaymentStatus(
+    @Param('id') id: string,
+    @Body('status') status: string,
+    @UserDecorator() user: Users
+  ) {
+    return this.paymentsService.updatePaymentStatus(id, status as any);
+  }
+
+  @Get()
+  @Roles(Role.PATIENT, Role.ADMIN)
+  @ApiOperation({ summary: 'Get all payments for user' })
+  @ApiResponse({ status: 200, description: 'Payments retrieved successfully' })
+  async listPayments(@UserDecorator() user: Users) {
+    return this.paymentsService.listPayments(user);
+  }
+
   @Get(':id')
-  //@Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get a payment by ID' })
-  @ApiParam({ name: 'id', description: 'Payment ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment retrieved successfully',
-    type: Payment,
-  })
-  @ApiResponse({ status: 404, description: 'Payment not found' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async findOne(@Param('id') id: string) {
-    try {
-      const payment = await this.paymentsService.findOne(Number(id));
-      if (!payment) {
-        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-      }
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Payment retrieved successfully',
-        data: payment,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
+  @Roles(Role.PATIENT, Role.ADMIN)
+  @ApiOperation({ summary: 'Get payment by ID' })
+  @ApiResponse({ status: 200, description: 'Payment retrieved successfully' })
+  async getPaymentById(
+    @Param('id') id: string,
+    @UserDecorator() user: Users
+  ) {
+    return this.paymentsService.getPaymentById(id, user);
   }
 
-  // Update a payment by ID
-  @Put(':id')
-  //@Roles(Role.ADMIN, Role.PHARMACIST)
-  @ApiOperation({ summary: 'Update a payment by ID' })
-  @ApiParam({ name: 'id', description: 'Payment ID' })
-  @ApiBody({ type: UpdatePaymentDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment updated successfully',
-    type: String,
-  })
-  @ApiResponse({ status: 404, description: 'Payment not found' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async update(
+  @Post(':id/refund')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Refund a payment' })
+  @ApiResponse({ status: 200, description: 'Payment refunded successfully' })
+  async refundPayment(
+    @Param('id') id: string,
+    @UserDecorator() user: Users
+  ) {
+    return this.paymentsService.refundPayment(id, user);
+  }
+
+  @Patch(':id/cancel')
+  @Roles(Role.PATIENT,Role.ADMIN)
+  @ApiOperation({ summary: 'Cancel a pending payment' })
+  @ApiResponse({ status: 200, description: 'Payment cancelled successfully' })
+  async cancelPayment(
+    @Param('id') id: string,
+    @UserDecorator() user: Users
+  ) {
+    return this.paymentsService.cancelPayment(id, user);
+  }
+
+  @Patch(':id')
+  @Roles(Role.PATIENT, Role.ADMIN)
+  @ApiOperation({ summary: 'Update payment details' })
+  @ApiResponse({ status: 200, description: 'Payment updated successfully' })
+  async updatePayment(
     @Param('id') id: string,
     @Body() updatePaymentDto: UpdatePaymentDto,
+    @UserDecorator() user: Users
   ) {
-    try {
-      const payment = await this.paymentsService.update(
-        Number(id),
-        updatePaymentDto,
-      );
-      if (!payment) {
-        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-      }
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Payment updated successfully',
-        data: payment,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
+    return this.paymentsService.updatePayment(id, updatePaymentDto, user);
   }
 
-  // Delete a payment by ID
   @Delete(':id')
-  //@Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Delete a payment by ID' })
-  @ApiParam({ name: 'id', description: 'Payment ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment deleted successfully',
-    type: String,
-  })
-  @ApiResponse({ status: 404, description: 'Payment not found' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async remove(@Param('id') id: string) {
-    try {
-      const payment = await this.paymentsService.remove(Number(id));
-      if (!payment) {
-        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-      }
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Payment deleted successfully',
-        data: payment,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
+  @Roles(Role.PATIENT, Role.ADMIN)
+  @ApiOperation({ summary: 'Delete a payment record' })
+  @ApiResponse({ status: 204, description: 'Payment deleted successfully' })
+  async deletePayment(
+    @Param('id') id: string,
+    @UserDecorator() user: Users
+  ) {
+    return this.paymentsService.deletePayment(id, user);
+  }
+
+  @Post('webhook')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Paystack webhook endpoint' })
+  async handleWebhook(
+    @Body() payload: any,
+    @Headers('x-paystack-signature') signature: string
+  ) {
+    return this.paymentsService.handleWebhook(payload, signature);
   }
 }

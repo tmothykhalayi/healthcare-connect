@@ -97,6 +97,24 @@ export class DoctorsController {
     };
   }
 
+  //find doctor by userId
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get doctor by user ID' })
+  @ApiParam({ name: 'userId', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'Doctor found' })
+  @ApiResponse({ status: 404, description: 'Doctor not found' })
+  async findByUserId(@Param('userId') userId: string) {
+    const doctor = await this.doctorsService.findByUserId(+userId);
+    if (!doctor) {
+      throw new NotFoundException(`Doctor for user ID ${userId} not found`);
+    }
+    return {
+      statusCode: 200,
+      message: 'Doctor found',
+      data: doctor,
+    };
+  }
+
   //update a doctor
   @Patch(':id')
   //@Roles(Role.ADMIN , Role.DOCTOR)

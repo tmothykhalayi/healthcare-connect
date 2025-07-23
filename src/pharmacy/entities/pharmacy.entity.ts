@@ -104,8 +104,8 @@ export class Pharmacy {
   @OneToMany(() => Order, (order) => order.pharmacy)
   orders: Order[];
 
-  @OneToMany(() => Payment, (payment) => payment.pharmacy)
-  payments: Payment[];
+  // @OneToMany(() => Payment, (payment) => payment.pharmacy)
+  // payments: Payment[];
 
   @Column()
   name: string;

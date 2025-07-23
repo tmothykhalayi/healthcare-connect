@@ -77,6 +77,6 @@ export class Order {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Payment, (payment) => payment.order, { eager: true })
-  payments: Payment[];
+  // @OneToMany(() => Payment, (payment) => payment.order, { eager: true })
+  // payments: Payment[];
 }

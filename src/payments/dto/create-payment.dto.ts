@@ -1,5 +1,6 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsEmail,IsNumber,IsOptional, IsUUID, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { PaymentType } from '../entities/payment.entity';
 
 export enum PaymentStatus {
   PENDING = 'pending',
@@ -8,57 +9,41 @@ export enum PaymentStatus {
   REFUNDED = 'refunded',
 }
 
+
+
 export class CreatePaymentDto {
-  @ApiProperty({ example: 1, description: 'User ID who made the payment' })
-  @IsNumber()
-  @IsNotEmpty()
-  userId: number;
-
-  @ApiProperty({
-    example: 'ORD-001',
-    description: 'OrderId (string) related to this payment',
-  })
+  @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  orderId: string;
+  fullName: string;
 
-  @ApiProperty({ example: 150.0, description: 'Payment amount' })
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
+  phoneNumber: string;
+
+  @ApiProperty()
   @IsNumber()
-  @IsNotEmpty()
   amount: number;
 
-  @ApiProperty({ example: 'credit_card', description: 'Payment method' })
+  @ApiProperty({ enum: PaymentType })
+  @IsEnum(PaymentType)
+  type: PaymentType;
+
+  // @ApiProperty({ required: false })
+  // @IsOptional()
+  // @IsUUID()
+  // appointmentId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsUUID()
+  OrderId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  paymentMethod: string;
-
-  @ApiProperty({
-    enum: PaymentStatus,
-    enumName: 'PaymentStatus',
-    description: 'Payment status',
-  })
-  @IsEnum(PaymentStatus)
-  @IsNotEmpty()
-  status: PaymentStatus;
-
-  @ApiProperty({
-    example: 'Order',
-    description: 'Related entity type (e.g., Order, Appointment)',
-  })
-  @IsString()
-  @IsNotEmpty()
-  relatedEntityType: string;
-
-  @ApiProperty({
-    example: 1,
-    description: 'Related entity ID (Order ID, Appointment ID, etc.)',
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  relatedEntityId: number;
-
-  @ApiProperty({ example: 'TXN123456', description: 'Transaction ID' })
-  @IsString()
-  @IsNotEmpty()
-  transactionId: string;
+  notes?: string;
 }

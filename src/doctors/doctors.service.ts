@@ -277,4 +277,9 @@ export class DoctorsService {
 
     return doctor.patients.map((patient) => patient.user);
   }
+
+  // Find doctor by userId
+  async findByUserId(userId: number): Promise<Doctor | null> {
+    return this.doctorsRepository.findOne({ where: { userId } });
+  }
 }

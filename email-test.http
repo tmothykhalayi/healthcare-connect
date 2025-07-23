@@ -42,7 +42,7 @@ POST {{baseUrl}}/auth/forgot-password
 Content-Type: application/json
 
 {
-  "email": "timoth@gmail.com"
+  "email": "manya@gmail.com"
 }
 
 ### 2. Test login with VALID user (should trigger login notification email)

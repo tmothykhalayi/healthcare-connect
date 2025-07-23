@@ -11,59 +11,72 @@ import { Users } from '../../users/entities/user.entity';
 import { Pharmacy } from 'src/pharmacy/entities/pharmacy.entity';
 import { Order } from 'src/orders/entities/order.entity';
 
-@Entity('payments')
+//import { Appointment } from 'src/appointments/entities/appointment.entity';
+
+export enum PaymentStatus {
+  PENDING = 'pending',
+  SUCCESS = 'success',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled',
+  REFUNDED = 'refunded'
+}
+
+export enum PaymentType {
+  //APPOINTMENT = 'appointment',
+  ORDER = 'order'
+}
+
+@Entity()
 export class Payment {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
-  userId: number;
-
-  @Column({ nullable: true })
-  pharmacyId: number;
+  fullName: string;
 
   @Column()
-  orderId: string;
+  email: string;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column()
+  phoneNumber: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @Column()
-  paymentMethod: string;
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDING
+  })
+  status: PaymentStatus;
 
-  @Column()
-  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  @Column({
+    type: 'enum',
+    enum: PaymentType
+  })
+  type: PaymentType;
+
+  @Column({ unique: true })
+  paystackReference: string;
 
   @Column({ nullable: true })
-  transactionId: string;
+  paystackAccessCode: string;
 
   @Column({ nullable: true })
-  relatedEntityType: string;
+  paystackAuthorizationUrl: string;
 
-  @Column({ nullable: true })
-  relatedEntityId: number;
-
-  @Column({ nullable: true })
-  description: string;
-
-  @Column('json', { nullable: true })
-  metadata: any;
-
-  // Relations
-  @ManyToOne(() => Users, (user) => user.payments)
-  @JoinColumn({ name: 'userId' })
+  @ManyToOne(() => Users)
+  @JoinColumn()
   user: Users;
 
-  @ManyToOne(() => Pharmacy, (pharmacy) => pharmacy.payments, {
-    eager: true,
-    nullable: true,
-  })
-  @JoinColumn({ name: 'pharmacyId' })
-  pharmacy: Pharmacy;
+  // @ManyToOne(() => Appointment, { nullable: true })
+  // appointment?: Appointment;
 
-  @ManyToOne(() => Order, (order) => order.payments, { nullable: false })
-  @JoinColumn({ name: 'orderId', referencedColumnName: 'OrderId' })
-  order: Order;
+  @ManyToOne(() => Order, { nullable: true })
+  Order?: Order;
+
+  @Column({ type: 'text', nullable: true })
+  notes: string;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -308,12 +308,12 @@ export class UsersService {
       await this.medicinesService.remove(med.id);
     }
 
-    // Delete payments
-    const payments = await this.paymentsService.findAll();
-    const userPayments = payments.filter((p) => p.userId === id);
-    for (const payment of userPayments) {
-      await this.paymentsService.remove(payment.id);
-    }
+    // // Delete payments
+    // const payments = await this.paymentsService.findAll();
+    // const userPayments = payments.filter((p) => p.userId === id);
+    // for (const payment of userPayments) {
+    //   await this.paymentsService.remove(payment.id);
+    // }
 
     // Delete orders (by patientId)
     try {
