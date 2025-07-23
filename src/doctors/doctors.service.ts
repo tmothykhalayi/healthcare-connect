@@ -102,13 +102,13 @@ export class DoctorsService {
       throw new NotFoundException(`Doctor with ID ${id} not found`);
     }
 
-    console.log(`[DoctorsService] Found existing doctor:`, {
-      id: doctor.id,
-      specialization: doctor.specialization,
-      licenseNumber: doctor.licenseNumber,
-      consultationFee: doctor.consultationFee,
-      availableDays: doctor.availableDays,
-    });
+    // console.log(`[DoctorsService] Found existing doctor:`, {
+    //   id: doctor.id,
+    //   specialization: doctor.specialization,
+    //   licenseNumber: doctor.licenseNumber,
+    //   consultationFee: doctor.consultationFee,
+    //   availableDays: doctor.availableDays,
+    // });
 
     // Check if license number is being updated and if it already exists
     if (
