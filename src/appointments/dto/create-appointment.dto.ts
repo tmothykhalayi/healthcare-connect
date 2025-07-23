@@ -27,7 +27,7 @@ export class CreateAppointmentDto {
     example: '2025-07-05T10:00:00Z',
     description: 'Appointment date and time',
   })
-  @IsDateString()
+  @IsString()
   appointmentDate: string;
 
   @ApiProperty({

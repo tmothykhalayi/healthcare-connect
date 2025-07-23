@@ -59,7 +59,7 @@ export class UsersController {
     }
   }
 
-  // Get all users
+  //Get all users
   @Get()
    @Roles(Role.ADMIN) 
   @ApiOperation({ summary: 'Get all users' })

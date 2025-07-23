@@ -72,7 +72,7 @@ export class Payment {
   // @ManyToOne(() => Appointment, { nullable: true })
   // appointment?: Appointment;
 
-  @ManyToOne(() => Order, { nullable: true })
+  @ManyToOne(() => Order, { nullable: true, onDelete: 'CASCADE' })
   Order?: Order;
 
   @Column({ type: 'text', nullable: true })
