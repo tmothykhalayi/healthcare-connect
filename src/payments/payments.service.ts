@@ -120,10 +120,10 @@ export class PaymentsService {
       //   }
       // }
 
-      if (createPaymentDto.type === PaymentType.ORDER && createPaymentDto.OrderId) {
+      if (createPaymentDto.type === PaymentType.ORDER && createPaymentDto.orderId) {
         const order = await this.pharmacyOrderRepository.findOne({
-          where: { id: Number(createPaymentDto.OrderId) },
-          relations: ['patient', 'prescription']
+          where: { id: createPaymentDto.orderId },
+          relations: ['patient']
         });
         if (!order) {
           throw new NotFoundException('Pharmacy order not found');
@@ -137,7 +137,7 @@ export class PaymentsService {
           amount: createPaymentDto.amount,
           type: createPaymentDto.type,
           user: user,
-          order: order, // Use the found order entity
+          Order: order, // Use uppercase O for the relation
           paystackReference: reference,
           paystackAccessCode: paystackResponse.data.access_code,
           paystackAuthorizationUrl: paystackResponse.data.authorization_url,
@@ -166,8 +166,6 @@ export class PaymentsService {
         amount: createPaymentDto.amount,
         type: createPaymentDto.type,
         user: user,
-        //appointment: appointment || undefined, // Use undefined instead of null
-        //Order:Order || undefined, // Use undefined instead of null
         paystackReference: reference,
         paystackAccessCode: paystackResponse.data.access_code,
         paystackAuthorizationUrl: paystackResponse.data.authorization_url,
@@ -207,7 +205,7 @@ export class PaymentsService {
   async updatePaymentStatus(reference: string, status: PaymentStatus): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({
       where: { paystackReference: reference },
-      relations: ['appointment', 'pharmacyOrder']
+      relations: ['appointment', 'Order']
     });
 
     if (!payment) {
@@ -222,8 +220,10 @@ export class PaymentsService {
     try {
       const payment = await this.paymentRepository.findOne({
         where: { paystackReference: reference },
-        relations: ['appointment', 'pharmacyOrder']
+        relations: ['appointment', 'Order']
       });
+      this.logger.log('Loaded payment:', payment);
+      this.logger.log('Loaded payment.Order:', payment?.Order);
 
       if (!payment) {
         throw new NotFoundException('Payment not found');
@@ -252,6 +252,16 @@ export class PaymentsService {
 
       if (paystackResponse.status) {
         await this.updatePaymentStatus(reference, PaymentStatus.SUCCESS);
+        // Update order status if payment is for an order
+        if (payment.type === PaymentType.ORDER) {
+          if (payment.Order) {
+            payment.Order.status = 'completed';
+            const updatedOrder = await this.pharmacyOrderRepository.save(payment.Order);
+            this.logger.log('Updated order:', updatedOrder);
+          } else {
+            this.logger.error('Payment.Order is undefined during verification!');
+          }
+        }
         return paystackResponse.data;
       }
 

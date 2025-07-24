@@ -32,11 +32,12 @@ import {
 } from '@nestjs/swagger';
 import {Role } from 'src/auth/enums/role.enum';
 import { Users } from 'src/users/entities/user.entity';
+import { AtGuard } from 'src/auth/guards/at.guard';
 
 
 @ApiTags('payments')
 @Controller('payments')
-//@UseGuards(AtGuard, RolesGuard)
+@UseGuards(AtGuard, RolesGuard)
 @ApiBearerAuth()
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
@@ -44,7 +45,7 @@ export class PaymentsController {
 
 
   @Post('initialize')
-  @Roles(Role.PATIENT)
+  //@Roles(Role.PATIENT)
   @ApiOperation({ summary: 'Initialize a new payment' })
   @ApiResponse({ status: 201, description: 'Payment initialized successfully' })
   async initializePayment(

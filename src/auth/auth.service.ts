@@ -1,11 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-  BadRequestException,
-  ConflictException,
-  Logger,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,UnauthorizedException,BadRequestException,ConflictException,Logger,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -169,6 +162,24 @@ export class AuthService {
     }
   }
 
+  ///SEND A WELCOME EMAIL
+  async sendWelcomeEmail(email: string): Promise<void> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { email },
+        select: ['id', 'email', 'firstName', 'lastName', 'role'],
+      });
+      if (!user) {
+        this.logger.warn(`Welcome email requested for non-existent email: ${email}`);
+        throw new NotFoundException('User not found');
+      }
+      await this.mailService.sendWelcomeEmail(user);
+      this.logger.log(`Welcome email sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send welcome email: ${error.message}`);
+      throw error;
+    }
+  }
   // ===== REFRESH TOKENS =====
   async refreshTokens(userId: number, refreshToken: string) {
     try {

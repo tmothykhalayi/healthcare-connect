@@ -76,12 +76,26 @@ export class AuthController {
       );
     }
 
-    // Optionally, send a welcome email or any other post-signup logic
-    // await this.usersService.sendWelcomeEmail(result.user.email);
-
     return result;
   }
 
+  //SEND A WELCOME EMAIL
+  // @Post('welcome-email')
+  // @ApiOperation({ summary: 'Send welcome email' })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Welcome email sent successfully',
+  //   schema: {
+  //     example: {
+  //       message: 'Welcome email sent successfully',
+  //     },
+  //   },
+  // })
+  // async sendWelcomeEmail(@Body('email') email: string) {
+  //   if (!email) {
+  //     throw new BadRequestException('Email is required');
+  //   }
+  //   await this.usersService.sendWelcomeEmail(email);
   // ===== LOGIN =====
   @Public()
   @Post('login')
