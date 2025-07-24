@@ -76,7 +76,7 @@ export class UsersService {
       const newUser = this.usersRepository.create(userData);
       const savedUser = await this.usersRepository.save(newUser);
 
-      // Now create the role-specific record
+      //  create the role-specific record
       console.log(
         `Creating ${savedUser.role} profile for user ID ${savedUser.id}`,
       );
@@ -388,10 +388,7 @@ export class UsersService {
     // Update user role
     await this.usersRepository.update(userId, { role });
 
-    // Get the updated user
     const user = await this.findOne(userId);
-
-    // Assign to appropriate role table
     await this.assignToRoleTable(user);
   }
 

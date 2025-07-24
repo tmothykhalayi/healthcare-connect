@@ -13,7 +13,7 @@ import { Users } from '../../users/entities/user.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 
 import { Appointment } from '../../appointments/entities/appointment.entity';
-import { Prescription } from '../../prescription/entities/prescription.entity';
+
 
 @Entity('doctors')
 export class Doctor {
@@ -90,6 +90,5 @@ export class Doctor {
   @OneToMany(() => Appointment, (appointment) => appointment.doctor)
   appointments: Appointment[];
 
-  @OneToMany(() => Prescription, (prescription) => prescription.doctor)
-  prescriptions: Prescription[];
+ 
 }

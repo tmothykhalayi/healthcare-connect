@@ -12,7 +12,7 @@ import * as crypto from 'crypto';
 import axios from 'axios';
 
 // Move API key to environment variable
-const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY || 'sk_test_5b533438ddd2423da733c718b434b2771d9dadd6');
+const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY || 'sk_test_742aa04eba08efb440f9eac360395c2b488e3093');
 
 @Injectable()
 export class PaymentsService {

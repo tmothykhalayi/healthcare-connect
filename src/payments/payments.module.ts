@@ -20,10 +20,3 @@ import { Order } from '../orders/entities/order.entity';
 })
 export class PaymentsModule {}
 
-
-// @Module({
-//   imports: [TypeOrmModule.forFeature([Payment ,order ,]), forwardRef(() => UsersModule)],
-//   controllers: [PaymentsController],
-//   providers: [PaymentsService],
-//   exports: [PaymentsService],
-// })

@@ -25,7 +25,7 @@ export class AppointmentsService {
     private zoomService: ZoomService,
     private doctorsService: DoctorsService,
     private patientsService: PatientsService,
-    private mailService: MailService, // Inject MailService
+    private mailService: MailService, 
   ) {}
 
   // Create a new appointment
@@ -47,8 +47,7 @@ export class AppointmentsService {
       );
     }
 
-    // Combine date and time into ISO string for Zoom and entity
-    // Prefer appointmentDate if present, else combine date and time
+  
     let appointmentDateTime: string;
     if (createAppointmentDto.appointmentDate) {
       appointmentDateTime = createAppointmentDto.appointmentDate;
@@ -99,7 +98,7 @@ export class AppointmentsService {
       throw new NotFoundException('Time slot not available');
     }
 
-    // Send emails to patient and doctor, but do not fail booking if email fails
+    // Send emails to patient and doctor
     try {
       // Send email to patient
       await this.mailService.sendCustomMail({
@@ -130,7 +129,6 @@ export class AppointmentsService {
         },
       });
     } catch (emailError) {
-      // Log the error but do not delete the appointment
       if (this['logger']) {
         this['logger'].error('Failed to send appointment email:', emailError);
       } else {
@@ -243,7 +241,7 @@ export class AppointmentsService {
   }
 
   async remove(id: number) {
-    // Release the time slot when appointment is cancelled
+
     await this.doctorsService.releaseTimeSlot(id);
     return this.appointmentsRepository.delete(id);
   }
@@ -263,7 +261,6 @@ export class AppointmentsService {
   }
 
   async findByCurrentDoctor(userId: number) {
-    // Assuming doctorId is the same as userId for doctors
     return this.appointmentsRepository.find({
       where: { doctorId: userId },
       relations: ['patient', 'doctor'],
@@ -315,6 +312,4 @@ export class AppointmentsService {
       relations: ['patient', 'doctor'],
     });
   }
-
-  //fetch user b patientid
 }

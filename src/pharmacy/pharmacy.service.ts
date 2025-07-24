@@ -29,7 +29,7 @@ export class PharmacyService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    // Automatically assign role based on pharmacy status
+    //  assign role based on pharmacy status
     let role: UserRole;
     if (user.role === UserRole.ADMIN) {
       role = UserRole.ADMIN;
@@ -179,10 +179,9 @@ export class PharmacyService {
       deliveryAvailable: pharmacy.deliveryAvailable,
       onlineOrderingAvailable: pharmacy.onlineOrderingAvailable,
       services: pharmacy.services,
-      // Add more statistics as needed
-      totalOrders: 0, // Placeholder - implement when you have orders
-      totalCustomers: 0, // Placeholder - implement when you have customers
-      monthlyRevenue: 0, // Placeholder - implement when you have revenue tracking
+      totalOrders: 0, 
+      totalCustomers: 0, 
+      monthlyRevenue: 0, 
     };
   }
 

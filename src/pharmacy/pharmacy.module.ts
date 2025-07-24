@@ -7,7 +7,7 @@ import { Pharmacy } from './entities/pharmacy.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Pharmacy, Users]), // Register repositories for Pharmacy and User entities
+    TypeOrmModule.forFeature([Pharmacy, Users]), 
   ],
   controllers: [PharmacyController],
   providers: [PharmacyService],

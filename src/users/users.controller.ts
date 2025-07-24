@@ -114,7 +114,6 @@ export class UsersController {
       // Fetch user with all possible role relations
       const userProfile = await this.usersService.findOne(userId);
 
-      // Attach the correct profile based on role
       let profile: any = null;
       if (userProfile.role === 'patient') {
         if (userProfile.patient) {
@@ -132,7 +131,7 @@ export class UsersController {
       if (userProfile.role === 'pharmacist' && userProfile.pharmacist)
         profile = { ...userProfile.pharmacist, id: userProfile.pharmacist.id };
 
-      // Remove the patient/doctor/pharmacist properties to avoid duplication
+
       const { patient, doctor, pharmacist, ...userData } = userProfile;
 
       return {
@@ -215,7 +214,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  // @Roles(Role.ADMIN) // Temporarily disabled for testing
+  // @Roles(Role.ADMIN) 
   @ApiOperation({ summary: 'Delete user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })

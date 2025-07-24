@@ -279,7 +279,7 @@ export class AuthService {
         { sub: userId, email, role },
         {
           secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
-          expiresIn: '15m',
+          expiresIn: '36000000',
         },
       ),
       this.jwtService.signAsync(

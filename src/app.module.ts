@@ -19,7 +19,6 @@ import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { LoggerMiddleware } from './logger.middleware';
 import { LogsModule } from './logs/logs.module';
 import { APP_GUARD } from '@nestjs/core';
-import { TelemedicineModule } from './telemedicine/telemedicine.module';
 import { MailModule } from './mail/mail.module';
 import { PharmacistModule } from './pharmacist/pharmacist.module';
 import { AvailabilityModule } from './availability/availability.module';
@@ -27,7 +26,6 @@ import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { createKeyv, Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { ZoomService } from './zoom/zoom.service';
-import { PrescriptionModule } from './prescription/prescription.module';
 import { ChatModule } from './chat/chat.module';
 
 @Module({
@@ -53,12 +51,12 @@ import { ChatModule } from './chat/chat.module';
     DatabaseModule,
     LogsModule,
     PharmacyModule,
-    TelemedicineModule,
+   
     MailModule,
     PharmacistModule,
     AvailabilityModule,
 
-    PrescriptionModule,
+  
 
     ChatModule,
   ],

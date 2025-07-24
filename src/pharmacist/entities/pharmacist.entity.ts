@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { Pharmacy } from '../../pharmacy/entities/pharmacy.entity';
 import { Users } from '../../users/entities/user.entity';
-import { Prescription } from '../../prescription/entities/prescription.entity';
 
 @Entity('pharmacists')
 export class Pharmacist {
@@ -28,6 +27,5 @@ export class Pharmacist {
   @JoinColumn()
   user: Users;
 
-  @OneToMany(() => Prescription, (prescription) => prescription.pharmacist)
-  prescriptions: Prescription[];
+ 
 }

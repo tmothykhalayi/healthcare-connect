@@ -9,17 +9,12 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm';
-
-import { TelemedicineAppointment } from '../../telemedicine/entities/telemedicine.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
 import { Medicine } from '../../medicines/entities/medicine.entity';
 import { Order } from '../../orders/entities/order.entity';
-import { Prescription } from '../../prescription/entities/prescription.entity';
-//import{patient} from '../../patients/entities/patient.entity';
-
 export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
@@ -121,12 +116,5 @@ export class Patient {
   @OneToMany(() => Order, (order) => order.patient)
   orders: Order[];
 
-  @OneToMany(
-    () => TelemedicineAppointment,
-    (appointment) => appointment.patient,
-  )
-  telemedicineAppointments: TelemedicineAppointment[];
-
-  @OneToMany(() => Prescription, (prescription) => prescription.patient)
-  prescriptions: Prescription[];
+ 
 }

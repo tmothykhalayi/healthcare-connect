@@ -40,14 +40,12 @@ export class PharmacistService {
     const pharmacist = this.pharmacistRepository.create({
       licenseNumber,
       user,
-      // Assume you have a pharmacy relation, set it here if needed
-      // pharmacy: await this.pharmacyRepository.findOne(pharmacyId),
     });
 
     return this.pharmacistRepository.save(pharmacist);
   }
 
-  // Add this method for automatic role assignment
+  // A automatic role assignment
   async createFromUser(user: Users, pharmacy: Pharmacy): Promise<Pharmacist> {
     // Check if pharmacist record already exists
     const existingPharmacist = await this.pharmacistRepository.findOne({

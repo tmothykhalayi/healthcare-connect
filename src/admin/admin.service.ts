@@ -32,7 +32,7 @@ export class AdminService {
       );
     }
 
-    // Ensure permissions is an array of strings
+    //  permissions 
     let permissions: string[] = [];
     if (createAdminDto.permissions) {
       permissions = Array.isArray(createAdminDto.permissions)
@@ -55,9 +55,8 @@ export class AdminService {
     }
   }
 
-  // Add this method for automatic role assignment
+  // method for role assignment
   async createFromUser(user: Users): Promise<Admin> {
-    // Check if admin record already exists
     const existingAdmin = await this.adminRepository.findOne({
       where: { user: { id: user.id } },
     });
@@ -70,9 +69,9 @@ export class AdminService {
     try {
       const adminData = {
         user: user,
-        adminLevel: 'admin', // Default level
-        department: 'General', // Default department
-        phoneNumber: user.phoneNumber || '(Not set)', // Default value
+        adminLevel: 'admin', 
+        department: 'General', 
+        phoneNumber: user.phoneNumber || '(Not set)',
         status: 'active',
         permissions: {
           users: ['read'],
