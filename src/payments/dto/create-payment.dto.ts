@@ -47,5 +47,10 @@ export class CreatePaymentDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  returnUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   notes?: string;
 }

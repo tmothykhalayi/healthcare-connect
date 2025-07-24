@@ -12,7 +12,7 @@ import * as crypto from 'crypto';
 import axios from 'axios';
 
 // Move API key to environment variable
-const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY || 'sk_test_742aa04eba08efb440f9eac360395c2b488e3093');
+const paystack = require('paystack')(process.env.PAYSTACK_SECRET_KEY || 'sk_test_5b533438ddd2423da733c718b434b2771d9dadd6');
 
 @Injectable()
 export class PaymentsService {
@@ -26,7 +26,7 @@ export class PaymentsService {
     @InjectRepository(Appointment)
     private readonly appointmentRepository: Repository<Appointment>,
     @InjectRepository(Order)
-    private readonly pharmacyOrderRepository: Repository<Order>,
+    private readonly OrderRepository: Repository<Order>,
   ) {
     // Validate environment variables
     if (!process.env.PAYSTACK_SECRET_KEY) {
@@ -61,7 +61,7 @@ export class PaymentsService {
         amount: Math.round(createPaymentDto.amount * 100), // Convert to cents (KES cents)
         reference: reference,
         currency: 'KES', // Changed from NGN to KES
-        callback_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/verify`,
+        callback_url: createPaymentDto.returnUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/verify`,
         metadata: {
           custom_fields: [
             {
@@ -121,7 +121,7 @@ export class PaymentsService {
       // }
 
       if (createPaymentDto.type === PaymentType.ORDER && createPaymentDto.orderId) {
-        const order = await this.pharmacyOrderRepository.findOne({
+        const order = await this.OrderRepository.findOne({
           where: { id: createPaymentDto.orderId },
           relations: ['patient']
         });
@@ -137,7 +137,8 @@ export class PaymentsService {
           amount: createPaymentDto.amount,
           type: createPaymentDto.type,
           user: user,
-          Order: order, // Use uppercase O for the relation
+          Order: order,
+          orderId: order.id,
           paystackReference: reference,
           paystackAccessCode: paystackResponse.data.access_code,
           paystackAuthorizationUrl: paystackResponse.data.authorization_url,
@@ -223,7 +224,7 @@ export class PaymentsService {
         relations: ['appointment', 'Order']
       });
       this.logger.log('Loaded payment:', payment);
-      this.logger.log('Loaded payment.Order:', payment?.Order);
+      this.logger.log('Loaded payment.Order:', payment?.order);
 
       if (!payment) {
         throw new NotFoundException('Payment not found');
@@ -254,12 +255,17 @@ export class PaymentsService {
         await this.updatePaymentStatus(reference, PaymentStatus.SUCCESS);
         // Update order status if payment is for an order
         if (payment.type === PaymentType.ORDER) {
-          if (payment.Order) {
-            payment.Order.status = 'completed';
-            const updatedOrder = await this.pharmacyOrderRepository.save(payment.Order);
-            this.logger.log('Updated order:', updatedOrder);
+          if (payment.order) {
+            this.logger.log(`[VERIFY] About to update order status. Order ID: ${payment.order.id}, Current status: ${payment.order.status}`);
+            payment.order.status = 'completed';
+            try {
+              const updatedOrder = await this.OrderRepository.save(payment.order);
+              this.logger.log(`[VERIFY] Updated order. Order ID: ${updatedOrder.id}, New status: ${updatedOrder.status}`);
+            } catch (err) {
+              this.logger.error(`[VERIFY] Failed to update order status for Order ID: ${payment.order.id}`, err);
+            }
           } else {
-            this.logger.error('Payment.Order is undefined during verification!');
+            this.logger.error('[VERIFY] Payment.Order is undefined during verification! Payment ID:', payment.id, 'Reference:', reference);
           }
         }
         return paystackResponse.data;
@@ -351,7 +357,7 @@ export class PaymentsService {
     try {
       // Verify webhook signature
       const hash = crypto
-        .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY || 'sk_test_5b533438ddd2423da733c718b434b2771d9dadd6')
+        .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY || 'sk_test_742aa04eba08efb440f9eac360395c2b488e3093')
         .update(JSON.stringify(payload))
         .digest('hex');
 
