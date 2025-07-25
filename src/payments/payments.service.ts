@@ -37,6 +37,7 @@ export class PaymentsService {
     }
   }
 
+  //INITIALIZE PAYMENT
   async initializePayment(createPaymentDto: CreatePaymentDto, user: Users): Promise<any> {
     try {
       this.logger.log(`Initializing payment for user ${user.id}`);
@@ -47,11 +48,13 @@ export class PaymentsService {
         throw new BadRequestException('Amount must be greater than 0');
       }
 
-      if (!process.env.PAYSTACK_SECRET_KEY && !process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_')) {
+      //if (!process.env.PAYSTACK_SECRET_KEY && !process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_')) {
+        if (!process.env.PAYSTACK_SECRET_KEY || !process.env.PAYSTACK_SECRET_KEY.startsWith('sk_')) {
+
         throw new BadRequestException('Invalid Paystack secret key configuration');
       }
 
-      // Generate unique reference
+     //GENERATE REFERENCE
       const reference = `PAY_${Date.now()}_${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
       this.logger.log(`Generated reference: ${reference}`);
 
@@ -137,7 +140,7 @@ export class PaymentsService {
           amount: createPaymentDto.amount,
           type: createPaymentDto.type,
           user: user,
-          Order: order,
+          //Order: order,
           orderId: order.id,
           paystackReference: reference,
           paystackAccessCode: paystackResponse.data.access_code,
@@ -203,10 +206,11 @@ export class PaymentsService {
     return `PAY_${Date.now()}_${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
   }
 
+  //UPDATE PAYMENT STATUS
   async updatePaymentStatus(reference: string, status: PaymentStatus): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({
       where: { paystackReference: reference },
-      relations: ['appointment', 'Order']
+      relations: ['appointment', 'order']
     });
 
     if (!payment) {
@@ -217,14 +221,17 @@ export class PaymentsService {
     return await this.paymentRepository.save(payment);
   }
 
+  //VERIFY PAYMENT
   async verifyPayment(reference: string): Promise<any> {
     try {
       const payment = await this.paymentRepository.findOne({
         where: { paystackReference: reference },
-        relations: ['appointment', 'Order']
+        relations: [
+          //'appointment', 
+          'order']
       });
       this.logger.log('Loaded payment:', payment);
-      this.logger.log('Loaded payment.Order:', payment?.order);
+      this.logger.log('Loaded payment.order:', payment?.order);
 
       if (!payment) {
         throw new NotFoundException('Payment not found');
@@ -281,7 +288,9 @@ export class PaymentsService {
   async getPaymentById(id: string, user: Users): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({
       where: { id, user: { id: user.id } },
-      relations: ['user', 'appointment', 'pharmacyOrder']
+      relations: ['user', 
+        //'appointment',
+         'order']
     });
 
     if (!payment) {
@@ -294,7 +303,7 @@ export class PaymentsService {
   async listPayments(user: Users): Promise<Payment[]> {
     return await this.paymentRepository.find({
       where: { user: { id: user.id } },
-      relations: ['appointment', 'pharmacyOrder'],
+      relations: ['appointment', 'order'],
       order: { createdAt: 'DESC' }
     });
   }

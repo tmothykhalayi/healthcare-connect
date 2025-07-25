@@ -198,7 +198,18 @@ export class AppointmentsService {
         : 'No appointments found',
     );
 
-    return { data, total };
+    return {
+      data: data.map((apt) => ({
+        ...apt,
+        doctor_name: apt.doctor
+          ? `${apt.doctor.user?.firstName || ''} ${apt.doctor.user?.lastName || ''}`.trim()
+          : '',
+        patient_name: apt.patient
+          ? `${apt.patient.user?.firstName || ''} ${apt.patient.user?.lastName || ''}`.trim()
+          : '',
+      })),
+      total,
+    };
   }
 
   findOne(id: number) {
