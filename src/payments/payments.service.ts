@@ -286,6 +286,26 @@ export class PaymentsService {
     });
   }
 
+  // Get all payments (admin only)
+  async getAllPayments(): Promise<Payment[]> {
+    return await this.paymentRepository.find({
+      relations: ['user', 'order'],
+      order: { createdAt: 'DESC' }
+    });
+  }
+
+  // Get payments for a specific pharmacy
+  async getPaymentsByPharmacy(pharmacyId: number): Promise<Payment[]> {
+    return await this.paymentRepository
+      .createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.user', 'user')
+      .leftJoinAndSelect('payment.order', 'order')
+      .leftJoinAndSelect('order.pharmacy', 'pharmacy')
+      .where('order.pharmacyId = :pharmacyId', { pharmacyId })
+      .orderBy('payment.createdAt', 'DESC')
+      .getMany();
+  }
+
   async refundPayment(id: string, user: Users): Promise<Payment> {
     const payment = await this.getPaymentById(id, user);
 
