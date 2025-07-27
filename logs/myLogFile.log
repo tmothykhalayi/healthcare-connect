@@ -2533,3 +2533,15 @@
 7/27/25, 4:55 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753624492669_F8367F6F9D72A3B5
 7/27/25, 4:56 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753624563245_0D793A3A102B2783
 7/27/25, 4:56 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753624563245_0D793A3A102B2783
+7/27/25, 5:01 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753624885965_FBCB3920329C6B84
+7/27/25, 5:01 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753624885965_FBCB3920329C6B84
+7/27/25, 5:02 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753624951868_23236BC9BAEA2567
+7/27/25, 5:02 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753624951868_23236BC9BAEA2567
+7/27/25, 5:02 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on GET /api/payments
+7/27/25, 5:02 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on GET /api/payments
+7/27/25, 5:12 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753625547375_113F2FC500F6DBB7
+7/27/25, 5:12 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753625547375_113F2FC500F6DBB7
+7/27/25, 5:14 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753625663749_C87BAF8247F73D68
+7/27/25, 5:14 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753625663749_C87BAF8247F73D68
+7/27/25, 5:17 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753625822508_7B5D6EE83F5D4468
+7/27/25, 5:17 PM - IP: unknown - [{"status":500,"message":"Internal server error","exception":{}}]Error on POST /api/payments/verify/PAY_1753625822508_7B5D6EE83F5D4468

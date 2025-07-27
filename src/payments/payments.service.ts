@@ -7,7 +7,7 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Users } from 'src/users/entities/user.entity';
 import { Appointment } from 'src/appointments/entities/appointment.entity';
 import { Order } from '../orders/entities/order.entity';
-//import { AppointmentStatus, OrderStatus } from 'src/enums';
+import {  OrderStatus } from '../enums';
 import * as crypto from 'crypto';
 import axios from 'axios';
 
@@ -179,27 +179,34 @@ export class PaymentsService {
   }
 
   async updatePaymentStatus(reference: string, status: PaymentStatus): Promise<Payment> {
+    this.logger.log(`Updating payment status for reference: ${reference} to status: ${status}`);
     const payment = await this.paymentRepository.findOne({
       where: { paystackReference: reference },
-      relations: ['appointment', 'pharmacyOrder']
+      relations: ['order']
     });
 
     if (!payment) {
+      this.logger.error(`Payment not found for reference: ${reference}`);
       throw new NotFoundException('Payment not found');
     }
 
+    this.logger.log(`Current payment status: ${payment.status}`);
     payment.status = status;
-    return await this.paymentRepository.save(payment);
+    const saved = await this.paymentRepository.save(payment);
+    this.logger.log(`Payment status after save: ${saved.status}`);
+    return saved;
   }
 
   async verifyPayment(reference: string): Promise<any> {
     try {
+      this.logger.log(`Verifying payment for reference: ${reference}`);
       const payment = await this.paymentRepository.findOne({
         where: { paystackReference: reference },
-        relations: ['appointment', 'pharmacyOrder']
+        relations: ['order']
       });
 
       if (!payment) {
+        this.logger.error(`Payment not found for reference: ${reference}`);
         throw new NotFoundException('Payment not found');
       }
 
@@ -224,13 +231,18 @@ export class PaymentsService {
         );
       }
 
+      this.logger.log(`Paystack response status: ${paystackResponse.status}, data.status: ${paystackResponse.data?.status}`);
+
       if (paystackResponse.status && paystackResponse.data.status === 'success') {
+        this.logger.log('Paystack verification success, updating payment status to SUCCESS');
         await this.updatePaymentStatus(reference, PaymentStatus.SUCCESS);
         return paystackResponse.data;
       } else if (paystackResponse.status && paystackResponse.data.status === 'failed') {
+        this.logger.log('Paystack verification failed, updating payment status to FAILED');
         await this.updatePaymentStatus(reference, PaymentStatus.FAILED);
         throw new BadRequestException('Payment failed on Paystack');
       } else {
+        this.logger.log('Paystack verification not completed, payment not successful');
         throw new BadRequestException('Payment not completed on Paystack');
       }
     } catch (error) {
@@ -242,7 +254,7 @@ export class PaymentsService {
   async getPaymentById(id: string, user: Users): Promise<Payment> {
     const payment = await this.paymentRepository.findOne({
       where: { id, user: { id: user.id } },
-      relations: ['user',  'Order']
+      relations: ['user',  'order']
     });
 
     if (!payment) {
@@ -257,7 +269,7 @@ export class PaymentsService {
       where: { user: { id: user.id } },
       relations: [
        // 'appointment',
-         'Order'],
+         'order'],
       order: { createdAt: 'DESC' }
     });
   }
