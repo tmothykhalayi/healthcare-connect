@@ -56,7 +56,7 @@ export class PaymentsController {
   }
 
   @Post('verify/:reference')
-  @Roles(Role.PATIENT)
+  @UseGuards() // Remove authentication for this endpoint
   @ApiOperation({ summary: 'Verify payment status' })
   @ApiResponse({ status: 200, description: 'Payment verification completed' })
   async verifyPayment(@Param('reference') reference: string) {
@@ -81,6 +81,22 @@ export class PaymentsController {
   @ApiResponse({ status: 200, description: 'Payments retrieved successfully' })
   async listPayments(@UserDecorator() user: Users) {
     return this.paymentsService.listPayments(user);
+  }
+
+  @Get('admin/all')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get all payments (Admin only)' })
+  @ApiResponse({ status: 200, description: 'All payments retrieved successfully' })
+  async getAllPayments() {
+    return this.paymentsService.getAllPayments();
+  }
+
+  @Get('pharmacy/:pharmacyId')
+  @Roles(Role.PHARMACIST, Role.ADMIN)
+  @ApiOperation({ summary: 'Get payments for a specific pharmacy' })
+  @ApiResponse({ status: 200, description: 'Pharmacy payments retrieved successfully' })
+  async getPaymentsByPharmacy(@Param('pharmacyId') pharmacyId: string) {
+    return this.paymentsService.getPaymentsByPharmacy(+pharmacyId);
   }
 
   @Get(':id')
@@ -137,6 +153,16 @@ export class PaymentsController {
     @UserDecorator() user: Users
   ) {
     return this.paymentsService.deletePayment(id, user);
+  }
+
+  @Delete('admin/:id')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete a payment record (Admin only)' })
+  @ApiResponse({ status: 204, description: 'Payment deleted successfully' })
+  async deletePaymentAdmin(
+    @Param('id') id: string
+  ) {
+    return this.paymentsService.deletePaymentAdmin(id);
   }
 
   @Post('webhook')

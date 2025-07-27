@@ -54,17 +54,12 @@ export class PaymentsService {
         throw new BadRequestException('Invalid Paystack secret key configuration');
       }
 
-     //GENERATE REFERENCE
-      const reference = `PAY_${Date.now()}_${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
-      this.logger.log(`Generated reference: ${reference}`);
-
       // Prepare Paystack payload with KES currency
       const paystackPayload = {
         email: createPaymentDto.email,
         amount: Math.round(createPaymentDto.amount * 100), // Convert to cents (KES cents)
-        reference: reference,
         currency: 'KES', // Changed from NGN to KES
-        callback_url: createPaymentDto.returnUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/verify`,
+        callback_url: createPaymentDto.returnUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-verify`,
         metadata: {
           custom_fields: [
             {
@@ -91,8 +86,13 @@ export class PaymentsService {
       // Initialize payment with Paystack
       let paystackResponse;
       try {
+        this.logger.log(`=== INITIALIZING PAYSTACK PAYMENT ===`);
+        this.logger.log(`Sending payload to Paystack:`, JSON.stringify(paystackPayload, null, 2));
         paystackResponse = await paystack.transaction.initialize(paystackPayload);
         this.logger.log(`Paystack response:`, JSON.stringify(paystackResponse, null, 2));
+        this.logger.log(`Paystack authorization URL: ${paystackResponse.data.authorization_url}`);
+        this.logger.log(`Paystack access code: ${paystackResponse.data.access_code}`);
+        this.logger.log(`Paystack reference: ${paystackResponse.data.reference}`);
       } catch (paystackError) {
         this.logger.error('Paystack API Error:', paystackError);
         this.logger.error('Paystack Error Details:', {
@@ -108,6 +108,9 @@ export class PaymentsService {
         this.logger.error('Paystack initialization failed:', paystackResponse);
         throw new BadRequestException(`Paystack initialization failed: ${paystackResponse?.message || 'Unknown error'}`);
       }
+
+      // Use the reference returned by Paystack
+      const paystackReference = paystackResponse.data.reference;
 
       // Validate appointment or pharmacy order exists
       // let appointment: Appointment | null = null;
@@ -139,10 +142,10 @@ export class PaymentsService {
           phoneNumber: createPaymentDto.phoneNumber,
           amount: createPaymentDto.amount,
           type: createPaymentDto.type,
+          userId: user.id,
           user: user,
-          //Order: order,
-          orderId: order.id,
-          paystackReference: reference,
+          order: order,
+          paystackReference: paystackReference, // Use Paystack's reference
           paystackAccessCode: paystackResponse.data.access_code,
           paystackAuthorizationUrl: paystackResponse.data.authorization_url,
           status: PaymentStatus.PENDING,
@@ -157,7 +160,7 @@ export class PaymentsService {
           paystack_data: {
             authorization_url: paystackResponse.data.authorization_url,
             access_code: paystackResponse.data.access_code,
-            reference: reference
+            reference: paystackReference // Use Paystack's reference
           }
         };
       }
@@ -169,8 +172,9 @@ export class PaymentsService {
         phoneNumber: createPaymentDto.phoneNumber,
         amount: createPaymentDto.amount,
         type: createPaymentDto.type,
+        userId: user.id,
         user: user,
-        paystackReference: reference,
+        paystackReference: paystackReference, // Use Paystack's reference
         paystackAccessCode: paystackResponse.data.access_code,
         paystackAuthorizationUrl: paystackResponse.data.authorization_url,
         status: PaymentStatus.PENDING,
@@ -179,15 +183,20 @@ export class PaymentsService {
 
       const savedPayment = await this.paymentRepository.save(paymentData);
       this.logger.log(`Payment saved with ID: ${savedPayment.id}`);
+      this.logger.log(`Payment reference: ${savedPayment.paystackReference}`);
+      this.logger.log(`Payment status: ${savedPayment.status}`);
 
-      return {
+      const response = {
         payment: savedPayment,
         paystack_data: {
           authorization_url: paystackResponse.data.authorization_url,
           access_code: paystackResponse.data.access_code,
-          reference: reference
+          reference: paystackReference // Use Paystack's reference
         }
       };
+      
+      this.logger.log(`Returning response:`, JSON.stringify(response, null, 2));
+      return response;
 
     } catch (error) {
       this.logger.error('Payment initialization failed:', error);
@@ -208,36 +217,70 @@ export class PaymentsService {
 
   //UPDATE PAYMENT STATUS
   async updatePaymentStatus(reference: string, status: PaymentStatus): Promise<Payment> {
+    this.logger.log(`=== UPDATE PAYMENT STATUS ===`);
+    this.logger.log(`Updating payment with reference: ${reference} to status: ${status}`);
+    
     const payment = await this.paymentRepository.findOne({
       where: { paystackReference: reference },
       relations: ['appointment', 'order']
     });
 
     if (!payment) {
+      this.logger.error(`Payment not found for reference: ${reference}`);
       throw new NotFoundException('Payment not found');
     }
 
+    this.logger.log(`Found payment - ID: ${payment.id}, Current status: ${payment.status}`);
+    this.logger.log(`Updating status from ${payment.status} to ${status}`);
+    
     payment.status = status;
-    return await this.paymentRepository.save(payment);
+    const updatedPayment = await this.paymentRepository.save(payment);
+    
+    this.logger.log(`✅ Payment status updated successfully - ID: ${updatedPayment.id}, New status: ${updatedPayment.status}`);
+    return updatedPayment;
   }
 
   //VERIFY PAYMENT
   async verifyPayment(reference: string): Promise<any> {
     try {
+      this.logger.log(`=== PAYMENT VERIFICATION START ===`);
+      this.logger.log(`Verifying payment with reference: ${reference}`);
+      
       const payment = await this.paymentRepository.findOne({
         where: { paystackReference: reference },
         relations: [
           //'appointment', 
           'order']
       });
-      this.logger.log('Loaded payment:', payment);
-      this.logger.log('Loaded payment.order:', payment?.order);
+      
+      this.logger.log('Database payment record:', JSON.stringify(payment, null, 2));
+      this.logger.log('Payment order relation:', payment?.order ? JSON.stringify(payment.order, null, 2) : 'No order');
 
       if (!payment) {
+        this.logger.error(`Payment not found for reference: ${reference}`);
+        this.logger.error(`Checking all payments in database...`);
+        const allPayments = await this.paymentRepository.find({
+          select: ['id', 'paystackReference', 'status', 'createdAt', 'type']
+        });
+        this.logger.error(`All payments in database:`, JSON.stringify(allPayments, null, 2));
+        
+        // Check if there are any payments with similar references
+        const similarPayments = allPayments.filter(p => 
+          p.paystackReference && p.paystackReference.includes(reference.split('_')[1])
+        );
+        if (similarPayments.length > 0) {
+          this.logger.error(`Found similar payments:`, JSON.stringify(similarPayments, null, 2));
+        }
+        
         throw new NotFoundException('Payment not found');
       }
+      
+      this.logger.log(`Payment found - ID: ${payment.id}, Status: ${payment.status}, Type: ${payment.type}`);
 
       // Verify with Paystack using axios
+      this.logger.log(`Calling Paystack API to verify transaction: ${reference}`);
+      this.logger.log(`Using Paystack secret key: ${process.env.PAYSTACK_SECRET_KEY ? 'Present' : 'Missing'}`);
+      
       let paystackResponse;
       try {
         const response = await axios.get(
@@ -250,32 +293,66 @@ export class PaymentsService {
           }
         );
         paystackResponse = response.data;
-        this.logger.log(`Paystack verify response:`, JSON.stringify(paystackResponse, null, 2));
+        this.logger.log(`=== PAYSTACK API RESPONSE ===`);
+        this.logger.log(`Paystack response status: ${paystackResponse.status}`);
+        this.logger.log(`Paystack response data:`, JSON.stringify(paystackResponse.data, null, 2));
+        this.logger.log(`Full Paystack response:`, JSON.stringify(paystackResponse, null, 2));
       } catch (paystackError: any) {
-        this.logger.error('Paystack Verify API Error:', paystackError?.response?.data || paystackError.message);
-        throw new BadRequestException(
-          `Paystack Verify API Error: ${paystackError?.response?.data?.message || paystackError.message}`
-        );
+        this.logger.error('=== PAYSTACK API ERROR ===');
+        this.logger.error('Paystack error response:', paystackError?.response?.data);
+        this.logger.error('Paystack error status:', paystackError?.response?.status);
+        this.logger.error('Paystack error message:', paystackError.message);
+        const errorMessage = paystackError?.response?.data?.message || paystackError.message;
+        if (errorMessage.includes('Transaction reference not found')) {
+          throw new BadRequestException(
+            'Payment not found on Paystack. This usually means the payment was not completed. Please try making the payment again.'
+          );
+        } else {
+          throw new BadRequestException(
+            `Paystack Verify API Error: ${errorMessage}`
+          );
+        }
       }
 
-      if (paystackResponse.status) {
-        await this.updatePaymentStatus(reference, PaymentStatus.SUCCESS);
+      // Check if the transaction was successful
+      this.logger.log(`=== VERIFICATION LOGIC ===`);
+      this.logger.log(`Paystack response.status: ${paystackResponse.status}`);
+      this.logger.log(`Paystack response.data exists: ${!!paystackResponse.data}`);
+      this.logger.log(`Paystack response.data.status: ${paystackResponse.data?.status}`);
+      
+      if (paystackResponse.status && paystackResponse.data && paystackResponse.data.status === 'success') {
+        this.logger.log(`✅ Payment successful for reference: ${reference}`);
+        
+        // Update payment status in database
+        this.logger.log(`Updating payment status to SUCCESS...`);
+        const updatedPayment = await this.updatePaymentStatus(reference, PaymentStatus.SUCCESS);
+        this.logger.log(`Payment status updated successfully. New status: ${updatedPayment.status}`);
+        
         // Update order status if payment is for an order
         if (payment.type === PaymentType.ORDER) {
           if (payment.order) {
-            this.logger.log(`[VERIFY] About to update order status. Order ID: ${payment.order.id}, Current status: ${payment.order.status}`);
+            this.logger.log(`Updating order status. Order ID: ${payment.order.id}, Current status: ${payment.order.status}`);
             payment.order.status = 'completed';
             try {
               const updatedOrder = await this.OrderRepository.save(payment.order);
-              this.logger.log(`[VERIFY] Updated order. Order ID: ${updatedOrder.id}, New status: ${updatedOrder.status}`);
+              this.logger.log(`✅ Order status updated successfully. Order ID: ${updatedOrder.id}, New status: ${updatedOrder.status}`);
             } catch (err) {
-              this.logger.error(`[VERIFY] Failed to update order status for Order ID: ${payment.order.id}`, err);
+              this.logger.error(`❌ Failed to update order status for Order ID: ${payment.order.id}`, err);
             }
           } else {
-            this.logger.error('[VERIFY] Payment.Order is undefined during verification! Payment ID:', payment.id, 'Reference:', reference);
+            this.logger.error(`❌ Payment.Order is undefined during verification! Payment ID: ${payment.id}, Reference: ${reference}`);
+            this.logger.error(`Payment type: ${payment.type}, Payment data:`, JSON.stringify(payment, null, 2));
           }
         }
+        
+        this.logger.log(`=== VERIFICATION COMPLETE - SUCCESS ===`);
         return paystackResponse.data;
+      } else {
+        this.logger.log(`❌ Payment not successful. Paystack response:`, JSON.stringify(paystackResponse, null, 2));
+        // Update payment status to failed if not successful
+        this.logger.log(`Updating payment status to FAILED...`);
+        await this.updatePaymentStatus(reference, PaymentStatus.FAILED);
+        this.logger.log(`=== VERIFICATION COMPLETE - FAILED ===`);
       }
 
       throw new BadRequestException('Payment verification failed');
@@ -306,6 +383,72 @@ export class PaymentsService {
       relations: ['appointment', 'order'],
       order: { createdAt: 'DESC' }
     });
+  }
+
+  async getAllPayments(): Promise<Payment[]> {
+    const payments = await this.paymentRepository.find({
+      relations: ['user', 'order'],
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        amount: true,
+        status: true,
+        type: true,
+        paystackReference: true,
+        paystackAccessCode: true,
+        paystackAuthorizationUrl: true,
+        notes: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        user: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phoneNumber: true,
+        },
+        order: {
+          id: true,
+          OrderId: true,
+          totalAmount: true,
+          status: true,
+        }
+      },
+      order: { createdAt: 'DESC' }
+    });
+
+    this.logger.log(`Found ${payments.length} payments`);
+    if (payments.length > 0) {
+      this.logger.log(`Sample payment data:`, {
+        id: payments[0].id,
+        fullName: payments[0].fullName,
+        email: payments[0].email,
+        userId: payments[0].userId,
+        user: payments[0].user,
+        hasUser: !!payments[0].user,
+        userFirstName: payments[0].user?.firstName,
+        userLastName: payments[0].user?.lastName,
+      });
+    }
+
+    return payments;
+  }
+
+  async getPaymentsByPharmacy(pharmacyId: number): Promise<Payment[]> {
+    const payments = await this.paymentRepository
+      .createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.user', 'user')
+      .leftJoinAndSelect('payment.order', 'order')
+      .leftJoinAndSelect('order.pharmacy', 'pharmacy')
+      .where('order.pharmacyId = :pharmacyId', { pharmacyId })
+      .orderBy('payment.createdAt', 'DESC')
+      .getMany();
+
+    this.logger.log(`Found ${payments.length} payments for pharmacy ${pharmacyId}`);
+    return payments;
   }
 
   async refundPayment(id: string, user: Users): Promise<Payment> {
@@ -362,6 +505,23 @@ export class PaymentsService {
     await this.paymentRepository.remove(payment);
   }
 
+  async deletePaymentAdmin(id: string): Promise<void> {
+    const payment = await this.paymentRepository.findOne({
+      where: { id },
+      relations: ['user', 'order']
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    if (payment.status === PaymentStatus.SUCCESS) {
+      throw new BadRequestException('Cannot delete successful payments');
+    }
+
+    await this.paymentRepository.remove(payment);
+  }
+
   async handleWebhook(payload: any, signature: string): Promise<void> {
     try {
       // Verify webhook signature
@@ -375,10 +535,23 @@ export class PaymentsService {
       }
 
       const { event, data } = payload;
+      this.logger.log(`Webhook received: ${event} for reference: ${data.reference}`);
 
       if (event === 'charge.success') {
-        await this.updatePaymentStatus(data.reference, PaymentStatus.SUCCESS);
+        const payment = await this.updatePaymentStatus(data.reference, PaymentStatus.SUCCESS);
         this.logger.log(`Payment webhook processed: ${data.reference} - SUCCESS`);
+        
+        // Update order status if payment is for an order
+        if (payment.type === PaymentType.ORDER && payment.order) {
+          this.logger.log(`[WEBHOOK] Updating order status. Order ID: ${payment.order.id}, Current status: ${payment.order.status}`);
+          payment.order.status = 'completed';
+          try {
+            const updatedOrder = await this.OrderRepository.save(payment.order);
+            this.logger.log(`[WEBHOOK] Updated order. Order ID: ${updatedOrder.id}, New status: ${updatedOrder.status}`);
+          } catch (err) {
+            this.logger.error(`[WEBHOOK] Failed to update order status for Order ID: ${payment.order.id}`, err);
+          }
+        }
       } else if (event === 'charge.failed') {
         await this.updatePaymentStatus(data.reference, PaymentStatus.FAILED);
         this.logger.log(`Payment webhook processed: ${data.reference} - FAILED`);

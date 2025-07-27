@@ -65,8 +65,11 @@ export class Payment {
   @Column({ nullable: true })
   paystackAuthorizationUrl: string;
 
+  @Column({ nullable: true })
+  userId: number;
+
   @ManyToOne(() => Users)
-  @JoinColumn()
+  @JoinColumn({ name: 'userId' })
   user: Users;
 
   // @ManyToOne(() => Appointment, { nullable: true })

@@ -1,0 +1,33 @@
+### Test Webhook Endpoint
+POST {{baseUrl}}/payments/webhook
+Content-Type: application/json
+x-paystack-signature: {{signature}}
+
+{
+  "event": "charge.success",
+  "data": {
+    "reference": "PAY_1234567890_ABC123",
+    "amount": 5000,
+    "currency": "KES",
+    "status": "success"
+  }
+}
+
+### Test Webhook with Failed Payment
+POST {{baseUrl}}/payments/webhook
+Content-Type: application/json
+x-paystack-signature: {{signature}}
+
+{
+  "event": "charge.failed",
+  "data": {
+    "reference": "PAY_1234567890_DEF456",
+    "amount": 5000,
+    "currency": "KES",
+    "status": "failed"
+  }
+}
+
+### Variables (set these in your environment)
+# @baseUrl = http://localhost:8000/api
+# @signature = your_webhook_signature_here 
