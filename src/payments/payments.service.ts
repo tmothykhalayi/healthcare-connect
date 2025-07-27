@@ -236,6 +236,18 @@ export class PaymentsService {
       if (paystackResponse.status && paystackResponse.data.status === 'success') {
         this.logger.log('Paystack verification success, updating payment status to SUCCESS');
         await this.updatePaymentStatus(reference, PaymentStatus.SUCCESS);
+
+        // Also update the related order's status to 'completed' if it exists
+        const payment = await this.paymentRepository.findOne({
+          where: { paystackReference: reference },
+          relations: ['order'],
+        });
+        if (payment && payment.order) {
+          payment.order.status = 'completed';
+          await this.pharmacyOrderRepository.save(payment.order);
+          this.logger.log(`Order ${payment.order.id} status updated to 'completed' after successful payment.`);
+        }
+
         return paystackResponse.data;
       } else if (paystackResponse.status && paystackResponse.data.status === 'failed') {
         this.logger.log('Paystack verification failed, updating payment status to FAILED');

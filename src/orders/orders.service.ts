@@ -45,12 +45,12 @@ export class OrdersService {
 
     // Check if OrderId already exists
     const existingOrder = await this.ordersRepository.findOne({
-      where: { OrderId: createOrderDto.OrderId },
+      where: { orderId: createOrderDto.orderId },
     });
 
     if (existingOrder) {
       throw new ConflictException(
-        `Order with OrderId ${createOrderDto.OrderId} already exists`,
+        `Order with OrderId ${createOrderDto.orderId} already exists`,
       );
     }
 
@@ -72,7 +72,7 @@ export class OrdersService {
       orderDate: new Date(createOrderDto.orderDate),
       status: createOrderDto.status,  
       totalAmount: createOrderDto.totalAmount,
-      OrderId: createOrderDto.OrderId,
+      orderId: createOrderDto.orderId,
     });
 
     try {
@@ -156,7 +156,7 @@ export class OrdersService {
           patientId: data[0].patientId,
           pharmacyId: data[0].pharmacyId,
           status: data[0].status,
-          OrderId: data[0].OrderId,
+          OrderId: data[0].orderId,
           patientName: data[0].patient
             ? `${data[0].patient.user?.firstName || ''} ${data[0].patient.user?.lastName || ''}`.trim()
             : '',

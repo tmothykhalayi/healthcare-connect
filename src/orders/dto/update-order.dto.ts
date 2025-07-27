@@ -33,5 +33,5 @@ export class UpdateOrderDto extends PartialType(CreateOrderDto) {
   @ApiPropertyOptional({ example: '234' })
   @IsOptional()
   @IsString()
-  OrderId?: string;
+  orderId?: string;
 }

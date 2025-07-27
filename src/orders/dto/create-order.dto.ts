@@ -51,7 +51,7 @@ export class CreateOrderDto {
   })
   @IsString()
   @IsNotEmpty()
-  OrderId: string;
+  orderId: string;
 
   @ApiProperty({
     example: 1,

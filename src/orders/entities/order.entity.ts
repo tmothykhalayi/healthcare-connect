@@ -67,7 +67,7 @@ export class Order {
 
   @ApiProperty({ description: 'Custom Order ID' })
   @Column({ unique: true })
-  OrderId: string;
+  orderId: string;
 
   @ApiProperty({ description: 'Order creation date' })
   @CreateDateColumn()
