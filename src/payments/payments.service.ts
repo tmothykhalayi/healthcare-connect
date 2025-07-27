@@ -140,8 +140,8 @@ export class PaymentsService {
         amount: createPaymentDto.amount,
         type: createPaymentDto.type,
         user: user,
-       // appointment: appointment || undefined, // Use undefined instead of null
-        Order: Order || undefined, // Use undefined instead of null
+        // appointment: appointment || undefined, // Use undefined instead of null
+        order: pharmacyOrder || undefined, // Use undefined instead of null
         paystackReference: reference,
         paystackAccessCode: paystackResponse.data.access_code,
         paystackAuthorizationUrl: paystackResponse.data.authorization_url,

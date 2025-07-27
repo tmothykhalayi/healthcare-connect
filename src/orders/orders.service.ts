@@ -118,7 +118,8 @@ export class OrdersService {
         .leftJoinAndSelect('order.patient', 'patient')
         .leftJoinAndSelect('order.pharmacy', 'pharmacy')
         .leftJoinAndSelect('patient.user', 'patientUser')
-        .leftJoinAndSelect('pharmacy.user', 'pharmacyUser');
+        .leftJoinAndSelect('pharmacy.user', 'pharmacyUser')
+        .leftJoinAndSelect('order.payments', 'payments');
 
       if (search && patientId) {
         query
@@ -140,35 +141,46 @@ export class OrdersService {
       //console.log('Final SQL:', query.getSql());
       //console.log('Query Params:', query.getParameters());
 
-      const [data, total] = await query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .orderBy('order.orderDate', 'DESC')
-        .getManyAndCount();
-
-      console.log(
-        `[OrdersService] Found ${data.length} orders out of ${total} total`,
-      );
-
-      if (data.length > 0) {
-        console.log('[OrdersService] Sample order data:', {
-          id: data[0].id,
-          patientId: data[0].patientId,
-          pharmacyId: data[0].pharmacyId,
-          status: data[0].status,
-          OrderId: data[0].orderId,
-          patientName: data[0].patient
-            ? `${data[0].patient.user?.firstName || ''} ${data[0].patient.user?.lastName || ''}`.trim()
-            : '',
-          pharmacyName: data[0].pharmacy
-            ? `${data[0].pharmacy.user?.firstName || ''} ${data[0].pharmacy.user?.lastName || ''}`.trim()
-            : '',
-        });
-      } else {
-        console.log('[OrdersService] No orders found in database');
+      // Build where object for findAndCount
+      const where: any = {};
+      if (patientId) {
+        where.patientId = patientId;
       }
+      // Note: search is ignored for now; for advanced search, use QueryBuilder and load payments separately
 
-      return { data, total };
+      const [data, total] = await this.ordersRepository.findAndCount({
+        where,
+        relations: [
+          'patient',
+          'pharmacy',
+          'patient.user',
+          'pharmacy.user',
+          'payments',
+        ],
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { orderDate: 'DESC' },
+      });
+
+      // Debug: print payments for each order
+      data.forEach(order => {
+        console.log(`Order ID: ${order.id}, payments:`, order.payments);
+      });
+
+      // Map orders to include paymentStatus (latest payment or 'pending')
+      const mappedData = data.map(order => {
+        let paymentStatus = 'pending';
+        if (order.payments && order.payments.length > 0) {
+          // Sort payments by createdAt descending and pick the latest
+          const latestPayment = order.payments.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+          paymentStatus = latestPayment.status || 'pending';
+        }
+        return {
+          ...order,
+          paymentStatus,
+        };
+      });
+      return { data: mappedData, total };
     } catch (error) {
       console.error('[OrdersService] Error fetching orders:', error);
       throw new InternalServerErrorException('Failed to retrieve orders');
