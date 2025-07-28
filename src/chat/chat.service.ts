@@ -22,43 +22,107 @@ export class chatService {
       'shikamoo',
     ];
     if (greetings.some((g) => cleanedPrompt.startsWith(g))) {
-      return `Hello! I'm Ava, How can I help you today?`;
+      return `Hello! I'm Ava, your Healthcare AI Assistant. I can help you with:
+      
+• Booking appointments with doctors
+• Managing your medical records
+• Pharmacy orders and prescriptions
+• Payment and billing information
+• Finding doctors and specialties
+• General health information
+• System navigation and features
+
+How can I assist you today?`;
     }
 
     const allowedKeywords = [
-      // English
-      'hospital',
-      'clinic',
+      // Healthcare System Activities
+      'appointment',
+      'book appointment',
+      'schedule appointment',
+      'reschedule appointment',
+      'cancel appointment',
+      'appointment booking',
+      'doctor appointment',
+      'consultation',
+      'medical consultation',
+      
+      // Medical Records
+      'medical records',
+      'health records',
+      'patient records',
+      'medical history',
+      'download records',
+      'view records',
+      'medical file',
+      'health file',
+      
+      // Pharmacy & Medicines
       'pharmacy',
-      'medicine',
+      'pharmacy orders',
+      'medicine orders',
+      'prescription',
+      'medicines',
       'medication',
       'drug',
       'tablet',
       'capsule',
       'injection',
-      'vaccine',
-      'vaccination',
-      'prescription',
       'dosage',
+      'prescribe',
+      'order medicine',
+      'pharmacy payment',
+      
+      // Payments & Billing
+      'payment',
+      'payments',
+      'billing',
+      'bill',
+      'cost',
+      'price',
+      'payment history',
+      'payment method',
+      'paystack',
+      'online payment',
+      'medical bill',
+      
+      // Doctors & Specialists
+      'doctor',
+      'doctors',
+      'specialist',
+      'specialization',
+      'find doctor',
+      'doctor list',
+      'available doctors',
+      'doctor availability',
+      'specialty',
+      'specialties',
+      
+      // System Features
+      'dashboard',
+      'overview',
+      'patient dashboard',
+      'admin dashboard',
+      'doctor dashboard',
+      'pharmacist dashboard',
+      'settings',
+      'profile',
+      'account',
+      'login',
+      'register',
+      'sign up',
+      'sign in',
+      
+      // Health Information
+      'symptom',
+      'symptoms',
+      'diagnosis',
       'treatment',
       'therapy',
       'procedure',
       'surgery',
       'operation',
       'checkup',
-      'diagnosis',
-      'symptom',
-      'pain',
-      'fever',
-      'cough',
-      'headache',
-      'appointment',
-      'consultation',
-      'doctor',
-      'nurse',
-      'midwife',
-      'lab',
-      'laboratory',
       'test',
       'scan',
       'x-ray',
@@ -67,23 +131,40 @@ export class chatService {
       'ultrasound',
       'blood test',
       'urine test',
-      'specimen',
+      'lab test',
+      'laboratory',
       'results',
-      'ward',
-      'admission',
-      'discharge',
-      'referral',
-      'follow-up',
-      'recovery',
-      'prescribe',
+      
+      // General Medical Terms
+      'hospital',
+      'clinic',
+      'medicine',
+      'medication',
+      'vaccine',
+      'vaccination',
+      'pain',
+      'fever',
+      'cough',
+      'headache',
       'blood pressure',
       'heart rate',
       'temperature',
       'sick',
       'ill',
-      'clinic visit',
-
-      // Swahili
+      'disease',
+      'illness',
+      'cure',
+      'treat',
+      'remedy',
+      'healing',
+      'recovery',
+      'ward',
+      'admission',
+      'discharge',
+      'referral',
+      'follow-up',
+      
+      // Swahili Healthcare Terms
       'hospitali',
       'kliniki',
       'dawa',
@@ -115,173 +196,7 @@ export class chatService {
       'uchunguzi wa mkojo',
       'majibu ya vipimo',
       'wodi',
-  // English
-  'hospital',
-  'clinic',
-  'pharmacy',
-  'medicine',
-  'medication',
-  'drug',
-  'tablet',
-  'capsule',
-  'injection',
-  'vaccine',
-  'vaccination',
-  'prescription',
-  'dosage',
-  'treatment',
-  'therapy',
-  'procedure',
-  'surgery',
-  'operation',
-  'checkup',
-  'diagnosis',
-  'symptom',
-  'pain',
-  'fever',
-  'cough',
-  'headache',
-  'appointment',
-  'consultation',
-  'doctor',
-  'nurse',
-  'midwife',
-  'lab',
-  'laboratory',
-  'test',
-  'scan',
-  'x-ray',
-  'mri',
-  'ct scan',
-  'ultrasound',
-  'blood test',
-  'urine test',
-  'specimen',
-  'results',
-  'ward',
-  'admission',
-  'discharge',
-  'referral',
-  'follow-up',
-  'recovery',
-  'prescribe',
-  'blood pressure',
-  'heart rate',
-  'temperature',
-  'sick',
-  'ill',
-  'clinic visit',
-  // NEW (English) – Disease, treatment, cure-related
-  'cure',
-  'treat',
-  'remedy',
-  'healing',
-  'disease',
-  'illness',
-
-  // Swahili
-  'hospitali',
-  'kliniki',
-  'dawa',
-  'madawa',
-  'tembe',
-  'sindano',
-  'chanjo',
-  'chanjo ya kinga',
-  'agizo la dawa',
-  'kipimo cha dawa',
-  'matibabu',
-  'tiba',
-  'upasuaji',
-  'upimaji',
-  'vipimo',
-  'uchunguzi',
-  'dalili',
-  'maumivu',
-  'homa',
-  'kikohozi',
-  'kichwa kuuma',
-  'miadi',
-  'ushauri',
-  'daktari',
-  'muuguzi',
-  'mkunga',
-  'maabara',
-  'uchunguzi wa damu',
-  'uchunguzi wa mkojo',
-  'majibu ya vipimo',
-  'wodi',
-  'kulazwa',
-  'kuruhusiwa',
-  'rejea',
-  'afya',
-  'shinikizo la damu',
-  'moyo kupiga',
-  'joto la mwili',
-  'mgonjwa',
-  'maradhi',
-  'ziara ya kliniki',
-  // NEW (Swahili)
-  'kutibu',
-  'kupona',
-  'ugonjwa',
-
-  // French
-  'hôpital',
-  'clinique',
-  'pharmacie',
-  'médicament',
-  'médication',
-  'comprimé',
-  'capsule',
-  'injection',
-  'vaccin',
-  'vaccination',
-  'ordonnance',
-  'posologie',
-  'traitement',
-  'thérapie',
-  'procédure',
-  'chirurgie',
-  'opération',
-  'examen médical',
-  'diagnostic',
-  'symptôme',
-  'douleur',
-  'fièvre',
-  'toux',
-  'mal de tête',
-  'rendez-vous',
-  'consultation',
-  'médecin',
-  'infirmier',
-  'sage-femme',
-  'laboratoire',
-  'analyse',
-  'test',
-  'prise de sang',
-  'analyse d’urine',
-  'échantillon',
-  'résultats',
-  'salle',
-  'hospitalisation',
-  'sortie',
-  'référence',
-  'suivi',
-  'rétablissement',
-  'prescrire',
-  'pression artérielle',
-  'fréquence cardiaque',
-  'température corporelle',
-  'malade',
-  'maladie',
-  'visite médicale',
-  // NEW (French)
-  'guérir',
-  'remède',
-  'soigner',
-
-    'kulazwa',
+      'kulazwa',
       'kuruhusiwa',
       'rejea',
       'afya',
@@ -291,73 +206,41 @@ export class chatService {
       'mgonjwa',
       'maradhi',
       'ziara ya kliniki',
-
-      // French
-      'hôpital',
-      'clinique',
-      'pharmacie',
-      'médicament',
-      'médication',
-      'comprimé',
-      'capsule',
-      'injection',
-      'vaccin',
-      'vaccination',
-      'ordonnance',
-      'posologie',
-      'traitement',
-      'thérapie',
-      'procédure',
-      'chirurgie',
-      'opération',
-      'examen médical',
-      'diagnostic',
-      'symptôme',
-      'douleur',
-      'fièvre',
-      'toux',
-      'mal de tête',
-      'rendez-vous',
-      'consultation',
-      'médecin',
-      'infirmier',
-      'sage-femme',
-      'laboratoire',
-      'analyse',
-      'test',
-      'prise de sang',
-      'analyse d’urine',
-      'échantillon',
-      'résultats',
-      'salle',
-      'hospitalisation',
-      'sortie',
-      'référence',
-      'suivi',
-      'rétablissement',
-      'prescrire',
-      'pression artérielle',
-      'fréquence cardiaque',
-      'température corporelle',
-      'malade',
-      'maladie',
-      'visite médicale',
+      'kutibu',
+      'kupona',
+      'ugonjwa',
+      'malipo',
+      'bei',
+      'gharama',
+      'lipa',
+      'pesa',
+      
     ];
 
     const medicalRegex =
-  /\b(test|scan|profile|procedure|surgery|symptom|treatment|medication|disease|illness|lab|dose|x[- ]?ray|mri|ct|clinic|hospital|cure|remedy|therapy|treat|healing|flu|malaria|asthma|covid|diabetes)\b/i;
+  /\b(test|scan|profile|procedure|surgery|symptom|treatment|medication|disease|illness|lab|dose|x[- ]?ray|mri|ct|clinic|hospital|cure|remedy|therapy|treat|healing|flu|malaria|asthma|covid|diabetes|appointment|booking|schedule|medical|records|pharmacy|payment|doctor|dashboard|overview|settings|profile|account|login|register|sign|up|in|malipo|bei|gharama|lipa|pesa|miadi|daktari|homa|maumivu|dawa|madawa|hôpital|clinique|pharmacie|médicament|rendez-vous|consultation|médecin|paiement|facture|coût|prix)\b/i;
 
     const isRelevant =
       allowedKeywords.some((kw) => cleanedPrompt.includes(kw)) ||
       medicalRegex.test(cleanedPrompt);
 
     if (!isRelevant) {
-      return `I'm only able to assist with hospital, medical, or pharmacy-related topics. Please ask a relevant question (English, French, or Kiswahili supported).`;
+      return `I'm your Healthcare AI Assistant and I can help you with:
+
+🔹 **Appointments**: Book, reschedule, or cancel appointments
+🔹 **Medical Records**: View and download your health records
+🔹 **Pharmacy**: Order medicines and track prescriptions
+🔹 **Payments**: Handle billing and payment information
+🔹 **Doctors**: Find specialists and check availability
+🔹 **Dashboard**: Navigate system features and settings
+🔹 **Health Info**: Get medical information and advice
+
+Please ask about any of these healthcare system activities or general health questions. I support English and Kiswahili.`;
     }
 
     const systemPrompt =
       this.buildSystemPrompt(role) +
-      ` Respond in the same language the user asked in. Support English, French, and Kiswahili.`;
+      ` Respond in the same language the user asked in. Support English, French, and Kiswahili. Focus on healthcare system activities and features.`;
 
     try {
       const response = await this.together.chat.completions.create({
@@ -381,16 +264,70 @@ export class chatService {
   private buildSystemPrompt(role: string): string {
     switch (role) {
       case 'doctor':
-        return `You are Ava, a clinical AI assistant for doctors. Analyze symptoms, patient history, and suggest accurate diagnoses, tests, and treatment plans. Be medically sound, concise, and confident.`;
+        return `You are Ava, a clinical AI assistant for doctors in the healthcare system. You can help with:
+
+🔹 **Patient Management**: View patient records, medical history, and appointments
+🔹 **Appointment Management**: Schedule, reschedule, and manage patient consultations
+🔹 **Medical Records**: Create, update, and access patient medical records
+🔹 **Prescriptions**: Write and manage prescriptions for patients
+🔹 **Diagnosis Support**: Analyze symptoms and suggest diagnostic tests
+🔹 **Treatment Plans**: Recommend treatment options and follow-up care
+🔹 **System Navigation**: Help with dashboard features and system usage
+
+Be medically sound, concise, and confident. Focus on healthcare system activities and patient care.`;
+      
       case 'lab':
-        return `You are Ava, a smart hospital lab advisor. Based on cases or test orders, suggest appropriate lab procedures, specimen requirements, and urgency recommendations.`;
+        return `You are Ava, a smart hospital lab advisor. You can help with:
+
+🔹 **Lab Procedures**: Suggest appropriate lab tests and procedures
+🔹 **Specimen Requirements**: Provide guidance on sample collection
+🔹 **Test Results**: Help interpret and explain lab results
+🔹 **Urgency Recommendations**: Advise on test priority and timing
+🔹 **Lab Orders**: Assist with test ordering and scheduling
+🔹 **Quality Control**: Ensure proper lab protocols and standards
+
+Focus on laboratory services and diagnostic testing within the healthcare system.`;
+      
       case 'pharmacy':
-        return `You are Ava, the hospital's AI pharmacist. Suggest appropriate medications, dosages, instructions, and safety checks based on diagnoses or symptoms.`;
+        return `You are Ava, the hospital's AI pharmacist. You can help with:
+
+🔹 **Medication Orders**: Process and manage pharmacy orders
+🔹 **Prescription Review**: Check prescriptions for accuracy and safety
+🔹 **Dosage Guidance**: Provide dosage and administration instructions
+🔹 **Drug Interactions**: Check for potential drug interactions
+🔹 **Side Effects**: Explain medication side effects and precautions
+🔹 **Inventory Management**: Track medicine availability and stock
+🔹 **Payment Processing**: Handle pharmacy payments and billing
+
+Focus on pharmaceutical services and medication management within the healthcare system.`;
+      
       case 'finance':
-        return `You are Ava, the hospital billing assistant. Help explain medical costs, estimate treatment prices, and assist the finance team with clarity.`;
+        return `You are Ava, the hospital billing assistant. You can help with:
+
+🔹 **Cost Estimates**: Provide treatment and procedure cost estimates
+🔹 **Payment Processing**: Handle online payments and Paystack integration
+🔹 **Billing Inquiries**: Answer questions about medical bills and charges
+🔹 **Insurance**: Assist with insurance claims and coverage
+🔹 **Payment History**: Track payment records and transactions
+🔹 **Financial Reports**: Generate billing and revenue reports
+🔹 **Refund Processing**: Handle payment refunds and adjustments
+
+Focus on financial services and billing within the healthcare system.`;
+      
       case 'patient':
       default:
-        return `You are Ava, a friendly AI health assistant for patients. Explain symptoms, procedures, medications, and care processes in clear, simple language. Be caring and helpful.`;
+        return `You are Ava, a friendly AI health assistant for patients. You can help with:
+
+🔹 **Appointment Booking**: Schedule, reschedule, or cancel appointments with doctors
+🔹 **Medical Records**: View and download your health records and medical history
+🔹 **Pharmacy Orders**: Order medicines and track prescription status
+🔹 **Payment Management**: Handle billing, payments, and payment history
+🔹 **Doctor Search**: Find available doctors and check their specialties
+🔹 **Health Information**: Get medical advice and symptom explanations
+🔹 **System Navigation**: Help with dashboard features and account settings
+🔹 **Emergency Guidance**: Provide basic emergency medical information
+
+Be caring, helpful, and focus on patient-centered healthcare system activities. Explain medical terms in simple language.`;
     }
   }
 }
