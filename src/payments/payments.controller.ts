@@ -84,8 +84,8 @@ export class PaymentsController {
   }
 
   @Get('admin/all')
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get all payments (Admin only)' })
+  @Roles(Role.ADMIN, Role.PHARMACIST)
+  @ApiOperation({ summary: 'Get all payments (Admin and Pharmacist)' })
   @ApiResponse({ status: 200, description: 'All payments retrieved successfully' })
   async getAllPayments() {
     return this.paymentsService.getAllPayments();
