@@ -131,14 +131,14 @@ export class AuthService {
 
       await this.updateRefreshToken(user.id, refreshToken);
 
-      // Send login notification email
-      try {
-        await this.mailService.sendLoginNotification(user, new Date());
-      } catch (emailError) {
-        this.logger.warn(
-          `Failed to send login notification email: ${emailError.message}`,
-        );
-      }
+      // Login notification email disabled
+      // try {
+      //   await this.mailService.sendLoginNotification(user, new Date());
+      // } catch (emailError) {
+      //   this.logger.warn(
+      //     `Failed to send login notification email: ${emailError.message}`,
+      //   );
+      // }
 
       // Destructure password and hashedRefreshToken to remove sensitive data
       const { password, hashedRefreshToken, ...userWithoutSensitive } = user;

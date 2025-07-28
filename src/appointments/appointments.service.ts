@@ -1,11 +1,6 @@
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import {Injectable,NotFoundException,ConflictException,InternalServerErrorException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, Between } from 'typeorm';
 import { Appointment } from './entities/appointment.entity';
@@ -28,6 +23,7 @@ export class AppointmentsService {
     private mailService: MailService, 
   ) {}
 
+ // healthcore  related ideas
   // Create a new appointment
   async create(createAppointmentDto: CreateAppointmentDto) {
     const patient = await this.patientsService.findOne(
