@@ -9,6 +9,27 @@ export class chatService {
   async askAva(prompt: string, role: 'doctor' | 'patient'): Promise<string> {
     const cleanedPrompt = prompt.toLowerCase().trim();
 
+    // Intent detection
+    if (cleanedPrompt.includes('book appointment') || cleanedPrompt.includes('schedule appointment')) {
+      // TODO: Extract doctor, date, time from prompt (simple regex or LLM call)
+      // Example: Book with Dr. Smith on 2024-06-10 at 10:00
+      // For now, just return a placeholder
+      return 'I can help you book an appointment. Please specify the doctor, date, and time.';
+      // Example: Call appointmentsService.create({doctorId, patientId, date, time})
+    }
+    if (cleanedPrompt.includes('show my records') || cleanedPrompt.includes('medical records') || cleanedPrompt.includes('health records')) {
+      // TODO: Fetch patient records from records service
+      // For now, just return a placeholder
+      return 'Here are your latest medical records: [Sample record 1, Sample record 2]';
+      // Example: const records = await recordsService.getByPatientId(patientId)
+    }
+    if (cleanedPrompt.includes('order medicine') || cleanedPrompt.includes('pharmacy order') || cleanedPrompt.includes('order my prescription')) {
+      // TODO: Extract medicine name and quantity
+      // For now, just return a placeholder
+      return 'I can help you order medicine. Please specify the medicine name and quantity.';
+      // Example: Call pharmacyService.createOrder({patientId, medicineId, quantity})
+    }
+
     const greetings = [
       'hi',
       'hello',
