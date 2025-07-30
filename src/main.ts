@@ -47,7 +47,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getResponse()
         : 'Internal server error';
 
-    // If message is an object with 'message' property (like validation errors), extract it
     if (
       typeof message === 'object' &&
       message !== null &&
@@ -61,11 +60,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message,
-      // Optionally include the full exception for debugging
       error: exception,
     };
 
-    // Log exception (full object)
     this.logsService.error(
       `Error on ${request.method} ${request.url}`,
       JSON.stringify({ status, message, exception }),
@@ -78,41 +75,43 @@ export class AllExceptionsFilter implements ExceptionFilter {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Security headers
+  // Set secure HTTP headers
   app.use(helmet());
 
-  // Enable CORS for frontend integration
+  // Enable CORS (use '*' during development or whitelist domains in production)
   app.enableCors({
-    origin: true,
+    origin: ['https://healthcare-connect-dwg6.onrender.com'], // or '*' for dev/testing
     credentials: true,
   });
 
-  // Global validation pipe
+  // Global input validation
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
 
+  // Global exception filter
   const httpAdapter = app.getHttpAdapter();
   const logsService = app.get(LogsService);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter, logsService));
 
+  // Load environment variables
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT') || 8000;
+
+  // Prefix all routes with /api
   app.setGlobalPrefix('api');
 
-  // Swagger documentation setup
-  const config = new DocumentBuilder()
+  // Swagger setup
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Healthcare Connect API')
     .setDescription('The Healthcare Connect API documentation')
     .setVersion('1.0')
     .addTag('users')
-    // .addTag('patients') // Removed to prevent duplicate
     .addTag('orders')
     .addBearerAuth()
-    .addServer(`http://localhost:${PORT}`, 'Development Server')
-    .build();
+    .build(); // 🔥 Removed `.addServer(...)`
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
@@ -127,8 +126,8 @@ async function bootstrap() {
   });
 
   await app.listen(PORT);
-  console.log(` Healthcare Connect API running on http://localhost:${PORT}`);
-  console.log(` Swagger docs available at http://localhost:${PORT}/api`);
+  console.log(`✅ Healthcare Connect API running on http://localhost:${PORT}`);
+  console.log(`📄 Swagger docs available at http://localhost:${PORT}/api`);
 }
 
 bootstrap();
