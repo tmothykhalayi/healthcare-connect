@@ -1,6 +1,11 @@
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import {Injectable,NotFoundException,ConflictException,InternalServerErrorException,} from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, Between } from 'typeorm';
 import { Appointment } from './entities/appointment.entity';
@@ -20,10 +25,10 @@ export class AppointmentsService {
     private zoomService: ZoomService,
     private doctorsService: DoctorsService,
     private patientsService: PatientsService,
-    private mailService: MailService, 
+    private mailService: MailService,
   ) {}
 
- // healthcore  related ideas
+  // healthcore  related ideas
   // Create a new appointment
   async create(createAppointmentDto: CreateAppointmentDto) {
     const patient = await this.patientsService.findOne(
@@ -43,7 +48,6 @@ export class AppointmentsService {
       );
     }
 
-  
     let appointmentDateTime: string;
     if (createAppointmentDto.appointmentDate) {
       appointmentDateTime = createAppointmentDto.appointmentDate;
@@ -248,7 +252,6 @@ export class AppointmentsService {
   }
 
   async remove(id: number) {
-
     await this.doctorsService.releaseTimeSlot(id);
     return this.appointmentsRepository.delete(id);
   }

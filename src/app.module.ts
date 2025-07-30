@@ -51,12 +51,10 @@ import { ChatModule } from './chat/chat.module';
     DatabaseModule,
     LogsModule,
     PharmacyModule,
-   
+
     MailModule,
     PharmacistModule,
     AvailabilityModule,
-
-  
 
     ChatModule,
   ],

@@ -26,6 +26,4 @@ export class Pharmacist {
   @OneToOne(() => Users, (user) => user.pharmacist)
   @JoinColumn()
   user: Users;
-
- 
 }

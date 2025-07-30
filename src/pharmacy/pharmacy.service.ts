@@ -179,9 +179,9 @@ export class PharmacyService {
       deliveryAvailable: pharmacy.deliveryAvailable,
       onlineOrderingAvailable: pharmacy.onlineOrderingAvailable,
       services: pharmacy.services,
-      totalOrders: 0, 
-      totalCustomers: 0, 
-      monthlyRevenue: 0, 
+      totalOrders: 0,
+      totalCustomers: 0,
+      monthlyRevenue: 0,
     };
   }
 

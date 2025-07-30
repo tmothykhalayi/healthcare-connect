@@ -59,7 +59,9 @@ export class PharmacistController {
   // Get pharmacist by userId
   @Get('user/:userId')
   async findByUserId(@Param('userId') userId: string) {
-    const pharmacist = await this.pharmacistService.findByUserId(Number(userId));
+    const pharmacist = await this.pharmacistService.findByUserId(
+      Number(userId),
+    );
     if (!pharmacist) {
       throw new NotFoundException(`Pharmacist with userId ${userId} not found`);
     }

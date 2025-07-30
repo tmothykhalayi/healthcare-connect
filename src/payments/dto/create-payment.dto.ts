@@ -1,4 +1,13 @@
-import { IsEnum, IsNotEmpty, IsEmail,IsNumber,IsOptional, IsUUID, IsString, IsInt } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsUUID,
+  IsString,
+  IsInt,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { PaymentType } from '../entities/payment.entity';
@@ -9,8 +18,6 @@ export enum PaymentStatus {
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }
-
-
 
 export class CreatePaymentDto {
   @ApiProperty()

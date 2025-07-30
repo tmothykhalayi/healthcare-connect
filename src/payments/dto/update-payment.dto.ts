@@ -2,7 +2,6 @@ import { PartialType } from '@nestjs/mapped-types';
 import { CreatePaymentDto } from './create-payment.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 import { PaymentStatus } from '../entities/payment.entity';

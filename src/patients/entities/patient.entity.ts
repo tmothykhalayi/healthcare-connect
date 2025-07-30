@@ -115,6 +115,4 @@ export class Patient {
 
   @OneToMany(() => Order, (order) => order.patient)
   orders: Order[];
-
- 
 }

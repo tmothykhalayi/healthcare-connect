@@ -32,7 +32,7 @@ export class AdminService {
       );
     }
 
-    //  permissions 
+    //  permissions
     let permissions: string[] = [];
     if (createAdminDto.permissions) {
       permissions = Array.isArray(createAdminDto.permissions)
@@ -69,8 +69,8 @@ export class AdminService {
     try {
       const adminData = {
         user: user,
-        adminLevel: 'admin', 
-        department: 'General', 
+        adminLevel: 'admin',
+        department: 'General',
         phoneNumber: user.phoneNumber || '(Not set)',
         status: 'active',
         permissions: {

@@ -18,12 +18,12 @@ export enum PaymentStatus {
   SUCCESS = 'success',
   FAILED = 'failed',
   CANCELLED = 'cancelled',
-  REFUNDED = 'refunded'
+  REFUNDED = 'refunded',
 }
 
 export enum PaymentType {
   //APPOINTMENT = 'appointment',
-  ORDER = 'order'
+  ORDER = 'order',
 }
 
 @Entity()
@@ -46,13 +46,13 @@ export class Payment {
   @Column({
     type: 'enum',
     enum: PaymentStatus,
-    default: PaymentStatus.PENDING
+    default: PaymentStatus.PENDING,
   })
   status: PaymentStatus;
 
   @Column({
     type: 'enum',
-    enum: PaymentType
+    enum: PaymentType,
   })
   type: PaymentType;
 
@@ -75,7 +75,10 @@ export class Payment {
   // @ManyToOne(() => Appointment, { nullable: true })
   // appointment?: Appointment;
 
-  @ManyToOne(() => Order, (order) => order.payments, { nullable: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => Order, (order) => order.payments, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   order?: Order;
 
   @Column({ type: 'text', nullable: true })

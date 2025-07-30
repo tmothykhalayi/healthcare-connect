@@ -1,4 +1,11 @@
-import {Injectable,NotFoundException,UnauthorizedException,BadRequestException,ConflictException,Logger,} from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -170,7 +177,9 @@ export class AuthService {
         select: ['id', 'email', 'firstName', 'lastName', 'role'],
       });
       if (!user) {
-        this.logger.warn(`Welcome email requested for non-existent email: ${email}`);
+        this.logger.warn(
+          `Welcome email requested for non-existent email: ${email}`,
+        );
         throw new NotFoundException('User not found');
       }
       await this.mailService.sendWelcomeEmail(user);

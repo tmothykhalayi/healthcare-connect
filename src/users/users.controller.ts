@@ -41,7 +41,7 @@ export class UsersController {
   ) {}
 
   @Post()
-   @Roles(Role.ADMIN ,Role.PATIENT, Role.DOCTOR, Role.PHARMACIST)
+  @Roles(Role.ADMIN, Role.PATIENT, Role.DOCTOR, Role.PHARMACIST)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 409, description: 'User already exists' })
@@ -61,7 +61,7 @@ export class UsersController {
 
   //Get all users
   @Get()
-   @Roles(Role.ADMIN) 
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   async findAll() {
@@ -130,7 +130,6 @@ export class UsersController {
         profile = { ...userProfile.doctor, id: userProfile.doctor.id };
       if (userProfile.role === 'pharmacist' && userProfile.pharmacist)
         profile = { ...userProfile.pharmacist, id: userProfile.pharmacist.id };
-
 
       const { patient, doctor, pharmacist, ...userData } = userProfile;
 
@@ -214,7 +213,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  // @Roles(Role.ADMIN) 
+  // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })

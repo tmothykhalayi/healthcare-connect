@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
-import { chatService} from './chat.service';
+import { chatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Public } from 'src/auth/decorators';
@@ -7,7 +7,6 @@ import { Public } from 'src/auth/decorators';
 @Controller('ai')
 export class ChatController {
   constructor(private readonly chatService: chatService) {}
-
 
   @Post('/ava')
   async askAva(

@@ -10,20 +10,31 @@ export class chatService {
     const cleanedPrompt = prompt.toLowerCase().trim();
 
     // Intent detection
-    if (cleanedPrompt.includes('book appointment') || cleanedPrompt.includes('schedule appointment')) {
+    if (
+      cleanedPrompt.includes('book appointment') ||
+      cleanedPrompt.includes('schedule appointment')
+    ) {
       // TODO: Extract doctor, date, time from prompt (simple regex or LLM call)
       // Example: Book with Dr. Smith on 2024-06-10 at 10:00
       // For now, just return a placeholder
       return 'I can help you book an appointment. Please specify the doctor, date, and time.';
       // Example: Call appointmentsService.create({doctorId, patientId, date, time})
     }
-    if (cleanedPrompt.includes('show my records') || cleanedPrompt.includes('medical records') || cleanedPrompt.includes('health records')) {
+    if (
+      cleanedPrompt.includes('show my records') ||
+      cleanedPrompt.includes('medical records') ||
+      cleanedPrompt.includes('health records')
+    ) {
       // TODO: Fetch patient records from records service
       // For now, just return a placeholder
       return 'Here are your latest medical records: [Sample record 1, Sample record 2]';
       // Example: const records = await recordsService.getByPatientId(patientId)
     }
-    if (cleanedPrompt.includes('order medicine') || cleanedPrompt.includes('pharmacy order') || cleanedPrompt.includes('order my prescription')) {
+    if (
+      cleanedPrompt.includes('order medicine') ||
+      cleanedPrompt.includes('pharmacy order') ||
+      cleanedPrompt.includes('order my prescription')
+    ) {
       // TODO: Extract medicine name and quantity
       // For now, just return a placeholder
       return 'I can help you order medicine. Please specify the medicine name and quantity.';
@@ -67,7 +78,7 @@ How can I assist you today?`;
       'doctor appointment',
       'consultation',
       'medical consultation',
-      
+
       // Medical Records
       'medical records',
       'health records',
@@ -77,7 +88,7 @@ How can I assist you today?`;
       'view records',
       'medical file',
       'health file',
-      
+
       // Pharmacy & Medicines
       'pharmacy',
       'pharmacy orders',
@@ -93,7 +104,7 @@ How can I assist you today?`;
       'prescribe',
       'order medicine',
       'pharmacy payment',
-      
+
       // Payments & Billing
       'payment',
       'payments',
@@ -106,7 +117,7 @@ How can I assist you today?`;
       'paystack',
       'online payment',
       'medical bill',
-      
+
       // Doctors & Specialists
       'doctor',
       'doctors',
@@ -118,7 +129,7 @@ How can I assist you today?`;
       'doctor availability',
       'specialty',
       'specialties',
-      
+
       // System Features
       'dashboard',
       'overview',
@@ -133,7 +144,7 @@ How can I assist you today?`;
       'register',
       'sign up',
       'sign in',
-      
+
       // Health Information
       'symptom',
       'symptoms',
@@ -155,7 +166,7 @@ How can I assist you today?`;
       'lab test',
       'laboratory',
       'results',
-      
+
       // General Medical Terms
       'hospital',
       'clinic',
@@ -184,7 +195,7 @@ How can I assist you today?`;
       'discharge',
       'referral',
       'follow-up',
-      
+
       // Swahili Healthcare Terms
       'hospitali',
       'kliniki',
@@ -235,11 +246,10 @@ How can I assist you today?`;
       'gharama',
       'lipa',
       'pesa',
-      
     ];
 
     const medicalRegex =
-  /\b(test|scan|profile|procedure|surgery|symptom|treatment|medication|disease|illness|lab|dose|x[- ]?ray|mri|ct|clinic|hospital|cure|remedy|therapy|treat|healing|flu|malaria|asthma|covid|diabetes|appointment|booking|schedule|medical|records|pharmacy|payment|doctor|dashboard|overview|settings|profile|account|login|register|sign|up|in|malipo|bei|gharama|lipa|pesa|miadi|daktari|homa|maumivu|dawa|madawa|hôpital|clinique|pharmacie|médicament|rendez-vous|consultation|médecin|paiement|facture|coût|prix)\b/i;
+      /\b(test|scan|profile|procedure|surgery|symptom|treatment|medication|disease|illness|lab|dose|x[- ]?ray|mri|ct|clinic|hospital|cure|remedy|therapy|treat|healing|flu|malaria|asthma|covid|diabetes|appointment|booking|schedule|medical|records|pharmacy|payment|doctor|dashboard|overview|settings|profile|account|login|register|sign|up|in|malipo|bei|gharama|lipa|pesa|miadi|daktari|homa|maumivu|dawa|madawa|hôpital|clinique|pharmacie|médicament|rendez-vous|consultation|médecin|paiement|facture|coût|prix)\b/i;
 
     const isRelevant =
       allowedKeywords.some((kw) => cleanedPrompt.includes(kw)) ||
@@ -296,7 +306,7 @@ Please ask about any of these healthcare system activities or general health que
 🔹 **System Navigation**: Help with dashboard features and system usage
 
 Be medically sound, concise, and confident. Focus on healthcare system activities and patient care.`;
-      
+
       case 'lab':
         return `You are Ava, a smart hospital lab advisor. You can help with:
 
@@ -308,7 +318,7 @@ Be medically sound, concise, and confident. Focus on healthcare system activitie
 🔹 **Quality Control**: Ensure proper lab protocols and standards
 
 Focus on laboratory services and diagnostic testing within the healthcare system.`;
-      
+
       case 'pharmacy':
         return `You are Ava, the hospital's AI pharmacist. You can help with:
 
@@ -321,7 +331,7 @@ Focus on laboratory services and diagnostic testing within the healthcare system
 🔹 **Payment Processing**: Handle pharmacy payments and billing
 
 Focus on pharmaceutical services and medication management within the healthcare system.`;
-      
+
       case 'finance':
         return `You are Ava, the hospital billing assistant. You can help with:
 
@@ -334,7 +344,7 @@ Focus on pharmaceutical services and medication management within the healthcare
 🔹 **Refund Processing**: Handle payment refunds and adjustments
 
 Focus on financial services and billing within the healthcare system.`;
-      
+
       case 'patient':
       default:
         return `You are Ava, a friendly AI health assistant for patients. You can help with:

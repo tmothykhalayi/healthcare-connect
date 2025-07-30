@@ -14,7 +14,6 @@ import { Patient } from '../../patients/entities/patient.entity';
 
 import { Appointment } from '../../appointments/entities/appointment.entity';
 
-
 @Entity('doctors')
 export class Doctor {
   @ApiProperty({ description: 'Doctor unique identifier' })
@@ -89,6 +88,4 @@ export class Doctor {
 
   @OneToMany(() => Appointment, (appointment) => appointment.doctor)
   appointments: Appointment[];
-
- 
 }

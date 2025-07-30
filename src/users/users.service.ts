@@ -96,7 +96,6 @@ export class UsersService {
       }
       //SEND WELCOME EMAIL
 
-
       return savedUser;
     } catch (error) {
       console.error('Error creating user:', error);
@@ -115,11 +114,10 @@ export class UsersService {
 
   //WELCOME EMAIL
   async sendWelcomeEmail(email: string): Promise<void> {
-
     // Implement your email sending logic here, or leave as a stub for now
     // For example, integrate with a mail service provider
     return;
-  } 
+  }
   // Find all users with optional role filter
   async findAll(): Promise<any[]> {
     try {

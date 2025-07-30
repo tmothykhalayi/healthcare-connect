@@ -193,8 +193,7 @@ export class PatientsService {
     }
 
     return doctor.patients;
-  } 
-
+  }
 
   //
 }

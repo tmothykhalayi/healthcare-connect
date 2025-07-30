@@ -6,9 +6,7 @@ import { Users } from '../users/entities/user.entity';
 import { Pharmacy } from './entities/pharmacy.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Pharmacy, Users]), 
-  ],
+  imports: [TypeOrmModule.forFeature([Pharmacy, Users])],
   controllers: [PharmacyController],
   providers: [PharmacyService],
   exports: [PharmacyService],

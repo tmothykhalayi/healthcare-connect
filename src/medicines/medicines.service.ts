@@ -145,13 +145,17 @@ export class MedicinesService {
 
   async findByUserId(userId: number, doctorId?: number): Promise<Medicine[]> {
     try {
-      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+      });
       if (!user) {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
 
       if (doctorId && !isNaN(doctorId)) {
-        const doctor = await this.usersRepository.findOne({ where: { id: doctorId } });
+        const doctor = await this.usersRepository.findOne({
+          where: { id: doctorId },
+        });
         if (!doctor) {
           throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
         }
@@ -389,5 +393,4 @@ export class MedicinesService {
       throw new InternalServerErrorException('Failed to remove medicine');
     }
   }
-
 }

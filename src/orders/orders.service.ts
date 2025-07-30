@@ -1,4 +1,10 @@
-import {Injectable,NotFoundException,InternalServerErrorException,ConflictException, BadRequestException,} from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
@@ -70,7 +76,7 @@ export class OrdersService {
       medicineId: createOrderDto.medicineId,
       quantity: createOrderDto.quantity || 1,
       orderDate: new Date(createOrderDto.orderDate),
-      status: createOrderDto.status,  
+      status: createOrderDto.status,
       totalAmount: createOrderDto.totalAmount,
       orderId: createOrderDto.orderId,
     });
@@ -163,16 +169,22 @@ export class OrdersService {
       });
 
       // Debug: print payments for each order
-      data.forEach(order => {
+      data.forEach((order) => {
         console.log(`Order ID: ${order.id}, payments:`, order.payments);
       });
 
       // Map orders to include paymentStatus (latest payment or 'pending')
-      const mappedData = data.map(order => {
+      const mappedData = data.map((order) => {
         let paymentStatus = 'pending';
         if (order.payments && order.payments.length > 0) {
           // Sort payments by createdAt descending and pick the latest
-          const latestPayment = order.payments.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+          const latestPayment = order.payments
+            .slice()
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime(),
+            )[0];
           paymentStatus = latestPayment.status || 'pending';
         }
         return {
