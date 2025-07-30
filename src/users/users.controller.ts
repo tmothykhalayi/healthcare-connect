@@ -25,13 +25,13 @@ import { PatientsService } from '../patients/patients.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole, Users } from './entities/user.entity';
-//import { AtGuard, RolesGuard } from '../auth/guards';
-//import { Roles } from '../auth/decorators/roles.decorator';
-//import { Role } from '../auth/enums/role.enum';
-//import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator';
+import { AtGuard, RolesGuard } from '../auth/guards';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../auth/enums/role.enum';
+import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator';
 
-//@UseGuards(AtGuard, RolesGuard)
-//@ApiBearerAuth()
+@UseGuards(AtGuard, RolesGuard)
+@ApiBearerAuth()
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
@@ -41,7 +41,7 @@ export class UsersController {
   ) {}
 
   @Post()
-  //@Roles(Role.ADMIN, Role.PATIENT, Role.DOCTOR, Role.PHARMACIST)
+  @Roles(Role.ADMIN, Role.PATIENT, Role.DOCTOR, Role.PHARMACIST)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 409, description: 'User already exists' })
@@ -61,7 +61,7 @@ export class UsersController {
 
   //Get all users
   @Get()
- // @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   async findAll() {
@@ -97,148 +97,148 @@ export class UsersController {
   }
 
   // Get current user profile
-  // @Get('profile')
-  // //@UseGuards(AtGuard, RolesGuard)
-  // @ApiBearerAuth()
-  // @ApiOperation({ summary: 'Get current user profile' })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'User profile retrieved successfully',
-  // })
-  // @ApiResponse({ status: 404, description: 'User not found' })
-  // async getCurrentUserProfile(
-  //   @GetCurrentUser() user: { id: number; role: Role },
-  // ) {
-  //   try {
-  //     const userId = user.id;
-  //     // Fetch user with all possible role relations
-  //     const userProfile = await this.usersService.findOne(userId);
+  @Get('profile')
+  @UseGuards(AtGuard, RolesGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getCurrentUserProfile(
+    @GetCurrentUser() user: { id: number; role: Role },
+  ) {
+    try {
+      const userId = user.id;
+      // Fetch user with all possible role relations
+      const userProfile = await this.usersService.findOne(userId);
 
-  //     let profile: any = null;
-  //     if (userProfile.role === 'patient') {
-  //       if (userProfile.patient) {
-  //         profile = { ...userProfile.patient, id: userProfile.patient.id };
-  //       } else {
-  //         // Create patient profile if it doesn't exist
-  //         console.log(`Creating patient profile for user ${userId}`);
-  //         const patient =
-  //           await this.patientsService.createFromUser(userProfile);
-  //         profile = { ...patient, id: patient.id };
-  //       }
-  //     }
-  //     if (userProfile.role === 'doctor' && userProfile.doctor)
-  //       profile = { ...userProfile.doctor, id: userProfile.doctor.id };
-  //     if (userProfile.role === 'pharmacist' && userProfile.pharmacist)
-  //       profile = { ...userProfile.pharmacist, id: userProfile.pharmacist.id };
+      let profile: any = null;
+      if (userProfile.role === 'patient') {
+        if (userProfile.patient) {
+          profile = { ...userProfile.patient, id: userProfile.patient.id };
+        } else {
+          // Create patient profile if it doesn't exist
+          console.log(`Creating patient profile for user ${userId}`);
+          const patient =
+            await this.patientsService.createFromUser(userProfile);
+          profile = { ...patient, id: patient.id };
+        }
+      }
+      if (userProfile.role === 'doctor' && userProfile.doctor)
+        profile = { ...userProfile.doctor, id: userProfile.doctor.id };
+      if (userProfile.role === 'pharmacist' && userProfile.pharmacist)
+        profile = { ...userProfile.pharmacist, id: userProfile.pharmacist.id };
 
-  //     const { patient, doctor, pharmacist, ...userData } = userProfile;
+      const { patient, doctor, pharmacist, ...userData } = userProfile;
 
-  //     return {
-  //       message: 'User profile retrieved successfully',
-  //       data: {
-  //         ...userData,
-  //         profile,
-  //       },
-  //     };
-  //   } catch (error) {
-  //     console.error('Error in getCurrentUserProfile:', error);
-  //     throw error;
-  //   }
+      return {
+        message: 'User profile retrieved successfully',
+        data: {
+          ...userData,
+          profile,
+        },
+      };
+    } catch (error) {
+      console.error('Error in getCurrentUserProfile:', error);
+      throw error;
+    }
   }
 
   // Get user statistics
-  // @Get('stats')
-  // //@Roles(Role.ADMIN)
-  // @ApiOperation({ summary: 'Get user statistics' })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'User statistics retrieved successfully',
-  // })
-  // async getUserStats() {
-  //   const stats = await this.usersService.getUserStats();
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     message: 'User statistics retrieved successfully',
-  //     data: stats,
-  //   };
-  // }
+  @Get('stats')
+  //@Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get user statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'User statistics retrieved successfully',
+  })
+  async getUserStats() {
+    const stats = await this.usersService.getUserStats();
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User statistics retrieved successfully',
+      data: stats,
+    };
+  }
 
-  // @Get(':id')
-  // // @Roles(Role.ADMIN)
-  // @ApiOperation({ summary: 'Get user by ID' })
-  // @ApiParam({ name: 'id', description: 'User ID' })
-  // @ApiResponse({ status: 200, description: 'User found' })
-  // @ApiResponse({ status: 404, description: 'User not found' })
-  // async findOne(@Param('id', ParseIntPipe) id: number) {
-  //   const user = await this.usersService.findOne(id);
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     message: 'User found',
-  //     data: user,
-  //   };
-  // }
+  @Get(':id')
+  // @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User found' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.usersService.findOne(id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User found',
+      data: user,
+    };
+  }
 
-  // @Patch('email/:email')
-  // // @Roles(Role.ADMIN)
-  // @ApiOperation({ summary: 'Update user by email' })
-  // @ApiParam({ name: 'email', description: 'User email address' })
-  // @ApiResponse({ status: 200, description: 'User updated successfully' })
-  // @ApiResponse({ status: 404, description: 'User not found' })
-  // async updateByEmail(
-  //   @Param('email') email: string,
-  //   @Body() updateUserDto: UpdateUserDto,
-  // ) {
-  //   const result = await this.usersService.updateByEmail(email, updateUserDto);
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     ...result,
-  //   };
-  // }
+  @Patch('email/:email')
+  // @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update user by email' })
+  @ApiParam({ name: 'email', description: 'User email address' })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async updateByEmail(
+    @Param('email') email: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    const result = await this.usersService.updateByEmail(email, updateUserDto);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result,
+    };
+  }
 
-  // @Patch(':id')
-  // // @Roles(Role.ADMIN)
-  // @ApiOperation({ summary: 'Update user by ID' })
-  // @ApiParam({ name: 'id', description: 'User ID' })
-  // @ApiResponse({ status: 200, description: 'User updated successfully' })
-  // @ApiResponse({ status: 404, description: 'User not found' })
-  // async update(
-  //   @Param('id', ParseIntPipe) id: number,
-  //   @Body() updateUserDto: UpdateUserDto,
-  // ) {
-  //   const result = await this.usersService.update(id, updateUserDto);
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     ...result,
-  //   };
-  // }
+  @Patch(':id')
+  // @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update user by ID' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    const result = await this.usersService.update(id, updateUserDto);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result,
+    };
+  }
 
-  // @Delete(':id')
-  // // @Roles(Role.ADMIN)
-  // @ApiOperation({ summary: 'Delete user by ID' })
-  // @ApiParam({ name: 'id', description: 'User ID' })
-  // @ApiResponse({ status: 200, description: 'User deleted successfully' })
-  // @ApiResponse({ status: 404, description: 'User not found' })
-  // async remove(@Param('id', ParseIntPipe) id: number) {
-  //   const result = await this.usersService.remove(id);
-  //   return {
-  //     statusCode: HttpStatus.OK,
-  //     ...result,
-  //   };
-  // }
+  @Delete(':id')
+  // @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete user by ID' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.usersService.remove(id);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result,
+    };
+  }
 
-//   @Delete(':id/force')
-//   @ApiOperation({ summary: 'Force delete user and all related data' })
-//   @ApiParam({ name: 'id', description: 'User ID' })
-//   @ApiResponse({
-//     status: 200,
-//     description: 'User and related data deleted successfully',
-//   })
-//   @ApiResponse({ status: 404, description: 'User not found' })
-//   async forceRemove(@Param('id', ParseIntPipe) id: number) {
-//     const result = await this.usersService.forceRemove(id);
-//     return {
-//       statusCode: HttpStatus.OK,
-//       ...result,
-//     };
-//   }
-// }
+  @Delete(':id/force')
+  @ApiOperation({ summary: 'Force delete user and all related data' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'User and related data deleted successfully',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async forceRemove(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.usersService.forceRemove(id);
+    return {
+      statusCode: HttpStatus.OK,
+      ...result,
+    };
+  }
+}
