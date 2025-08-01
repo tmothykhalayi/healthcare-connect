@@ -15,9 +15,9 @@ import {
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../auth/enums/role.enum';
-import { AtGuard, RolesGuard } from '../auth/guards';
+//import { Roles } from '../auth/decorators/roles.decorator';
+//import { Role } from '../auth/enums/role.enum';
+//import { AtGuard, RolesGuard } from '../auth/guards';
 import { GetCurrentUserId } from '../auth/decorators/get-current-user-id.decorator';
 import {
   ApiTags,
@@ -30,13 +30,13 @@ import {
 
 @ApiTags('appointments')
 @ApiBearerAuth()
-@UseGuards(AtGuard, RolesGuard)
+//@UseGuards(AtGuard, RolesGuard)
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Create a new appointment' })
   @ApiResponse({ status: 201, description: 'Appointment created successfully' })
   @ApiResponse({ status: 409, description: 'Scheduling conflict' })
@@ -57,7 +57,7 @@ export class AppointmentsController {
   }
 
   @Get('doctor')
-  @Roles(Role.DOCTOR)
+ // @Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Get appointments for the current doctor' })
   async findByCurrentDoctor(@GetCurrentUserId() userId: number) {
     const appointments = await this.appointmentsService.findByCurrentDoctor(userId);
@@ -69,7 +69,7 @@ export class AppointmentsController {
   }
 
   @Get('doctor/:doctorId')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get appointments by doctor ID' })
   @ApiParam({ name: 'doctorId', description: 'Doctor ID' })
   async findByDoctorId(@Param('doctorId', ParseIntPipe) doctorId: number) {
@@ -82,7 +82,7 @@ export class AppointmentsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all appointments (paginated)' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -101,7 +101,7 @@ export class AppointmentsController {
   }
 
   @Get('today')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: "Get today's appointments" })
   async findToday() {
     const appointments = await this.appointmentsService.findToday();
@@ -113,7 +113,7 @@ export class AppointmentsController {
   }
 
   @Get('upcoming')
-  @Roles(Role.ADMIN)
+  //@Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get upcoming appointments (next 7 days)' })
   async findUpcoming() {
     const appointments = await this.appointmentsService.findUpcoming();
@@ -125,7 +125,7 @@ export class AppointmentsController {
   }
 
   @Get('status/:status')
-  @Roles(Role.ADMIN)
+ // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get appointments by status' })
   @ApiParam({ name: 'status', description: 'Appointment status' })
   async findByStatus(@Param('status') status: string) {
@@ -152,7 +152,7 @@ export class AppointmentsController {
   }
 
   @Get('patient/:patientId')
-  @Roles(Role.ADMIN, Role.PATIENT)
+  //@Roles(Role.ADMIN, Role.PATIENT)
   @ApiOperation({ summary: 'Get appointments by patient ID' })
   @ApiParam({ name: 'patientId', description: 'Patient ID' })
   async findByPatientId(@Param('patientId', ParseIntPipe) patientId: number) {
@@ -165,7 +165,7 @@ export class AppointmentsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Get appointment by ID' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -178,7 +178,7 @@ export class AppointmentsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  //@Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Update appointment' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   async update(
@@ -194,7 +194,7 @@ export class AppointmentsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+ // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete appointment' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   async remove(@Param('id', ParseIntPipe) id: number) {

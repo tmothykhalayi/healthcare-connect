@@ -54,7 +54,12 @@ export class DoctorsService {
       );
     }
 
-    const newDoctor = this.doctorsRepository.create(createDoctorDto);
+    const newDoctor = this.doctorsRepository.create({
+      ...createDoctorDto,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      name: `${user.firstName} ${user.lastName}`,
+    });
 
     try {
       return await this.doctorsRepository.save(newDoctor);
@@ -171,6 +176,7 @@ export class DoctorsService {
         userId: user.id,
         firstName: user.firstName, // Add required firstName
         lastName: user.lastName, // Add required lastName
+        name: `${user.firstName} ${user.lastName}`, // Add required name field
         specialization: 'General Practice',
         licenseNumber: `TEMP_${user.id}_${Date.now().toString().slice(-6)}`,
         yearsOfExperience: 0,

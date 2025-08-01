@@ -31,8 +31,6 @@ export class Slot {
   @OneToOne(() => Appointment, (appointment) => appointment.slot, { nullable: true })
   appointment: Appointment;
 
- 
-  time: string; 
   @Column({ default: true })
   isAvailable: boolean; 
 

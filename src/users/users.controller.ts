@@ -25,12 +25,12 @@ import { PatientsService } from '../patients/patients.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole, Users } from './entities/user.entity';
-import { AtGuard, RolesGuard } from '../auth/guards';
-import { Roles } from '../auth/decorators/roles.decorator';
+//import { AtGuard, RolesGuard } from '../auth/guards';
+//import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { GetCurrentUser } from '../auth/decorators/get-current-user.decorator';
 
-@UseGuards(AtGuard, RolesGuard)
+//@UseGuards(AtGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('users')
 @Controller('users')
@@ -41,7 +41,7 @@ export class UsersController {
   ) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.PATIENT, Role.DOCTOR, Role.PHARMACIST)
+  //@Roles(Role.ADMIN, Role.PATIENT, Role.DOCTOR, Role.PHARMACIST)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 409, description: 'User already exists' })
@@ -61,7 +61,7 @@ export class UsersController {
 
   //Get all users
   @Get()
-  @Roles(Role.ADMIN)
+ // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   async findAll() {
@@ -98,7 +98,7 @@ export class UsersController {
 
   // Get current user profile
   @Get('profile')
-  @UseGuards(AtGuard, RolesGuard)
+  //@UseGuards(AtGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({

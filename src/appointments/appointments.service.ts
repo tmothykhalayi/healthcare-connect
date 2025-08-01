@@ -51,7 +51,7 @@ export class AppointmentsService {
     if (slot.doctor.id !== doctorId)
       throw new BadRequestException(`Slot does not belong to the selected doctor`);
 
-    const appointmentDateTime = `${slot.date}T${slot.time}`;
+    const appointmentDateTime = `${slot.date}T${slot.startTime}`;
     const { start_url, join_url, meeting_id } = await this.zoomService.createMeeting(
       title,
       appointmentDateTime,
