@@ -12,6 +12,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '../../users/entities/user.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 
+import { Slot } from '../../slots/entities/slot.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
 
 @Entity('doctors')
@@ -88,4 +89,13 @@ export class Doctor {
 
   @OneToMany(() => Appointment, (appointment) => appointment.doctor)
   appointments: Appointment[];
+
+
+  @Column()
+  name: string;
+
+  @OneToMany(() => Slot, (slot) => slot.doctor)
+  slots: Slot[];
 }
+
+

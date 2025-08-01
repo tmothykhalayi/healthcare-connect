@@ -1,12 +1,5 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn,ManyToOne,JoinColumn,OneToOne} from 'typeorm';
+import { Slot } from '../../slots/entities/slot.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
@@ -125,4 +118,14 @@ export class Appointment {
   })
   @Column({ nullable: true })
   admin_url?: string;
+
+
+  @OneToOne(() => Slot)
+  @JoinColumn() // Required for one-to-one
+  slot: Slot;
+
+  @Column({ nullable: true })
+  patientName: string;
+
+
 }

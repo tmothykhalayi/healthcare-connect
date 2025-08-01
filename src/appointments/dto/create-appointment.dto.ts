@@ -2,11 +2,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsInt,
   IsString,
-  IsDateString,
   IsOptional,
   IsPositive,
   IsIn,
   IsNotEmpty,
+  IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -23,23 +23,32 @@ export class CreateAppointmentDto {
   @IsPositive()
   doctorId: number;
 
+  @ApiProperty({ example: 1, description: 'Slot ID' })
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  slotId: number;
+
   @ApiProperty({
-    example: '2025-07-05T10:00:00Z',
-    description: 'Appointment date and time',
+    example: '2025-07-05',
+    description: 'Date of the appointment (YYYY-MM-DD)',
   })
   @IsString()
-  appointmentDate: string;
+  @IsNotEmpty()
+  date: string;
 
   @ApiProperty({
     example: '10:00',
-    description: 'Appointment time (HH:MM format)',
+    description: 'Time of the appointment (HH:mm)',
   })
   @IsString()
-  appointmentTime: string;
+  @IsNotEmpty()
+  time: string;
 
-  @ApiProperty({ example: 'timothy', description: 'Patient email address' })
+  @ApiProperty({ example: 'Dental Checkup', description: 'Title of appointment' })
   @IsString()
-  patientEmail: string;
+  @IsNotEmpty()
+  title: string;
 
   @ApiProperty({ example: 30, description: 'Duration in minutes' })
   @Type(() => Number)
@@ -47,35 +56,19 @@ export class CreateAppointmentDto {
   @IsPositive()
   duration: number;
 
-  @ApiProperty({
-    example: 'Regular checkup',
-    description: 'Reason for appointment',
-  })
+  @ApiProperty({ example: 'Regular checkup', description: 'Reason for appointment' })
   @IsString()
+  @IsNotEmpty()
   reason: string;
 
   @ApiPropertyOptional({
     example: 'scheduled',
     description: 'Appointment status',
-    enum: [
-      'scheduled',
-      'confirmed',
-      'cancelled',
-      'completed',
-      'no_show',
-      'rescheduled',
-    ],
+    enum: ['scheduled', 'confirmed', 'cancelled', 'completed', 'no_show', 'rescheduled'],
     default: 'scheduled',
   })
   @IsOptional()
-  @IsIn([
-    'scheduled',
-    'confirmed',
-    'cancelled',
-    'completed',
-    'no_show',
-    'rescheduled',
-  ])
+  @IsIn(['scheduled', 'confirmed', 'cancelled', 'completed', 'no_show', 'rescheduled'])
   status?: string;
 
   @ApiPropertyOptional({
@@ -144,49 +137,20 @@ export class CreateAppointmentDto {
     default: {},
   })
   @IsOptional()
-  vitals?: any;
+  @IsObject()
+  vitals?: Record<string, any>;
 
-  @ApiProperty({
-    description: 'Date of the appointment',
-    example: '2023-10-01',
-  })
-  @IsString()
-  @IsNotEmpty()
-  date: string;
-
-  @ApiProperty({
-    description: 'Time of the appointment',
-    example: '10:00 AM',
-  })
-  @IsString()
-  @IsNotEmpty()
-  time: string;
-
-  @ApiProperty({
-    description: 'Duration of the appointment in minutes',
-    example: 30,
-  })
-  @ApiProperty({
-    description: 'Title of the appointment',
-    example: 'Dental Checkup',
-  })
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
-  @ApiProperty({
-    description: 'Zoom meeting ID associated with the appointment',
-    example: '123456789',
-    required: false,
+  @ApiPropertyOptional({
+    description: 'Zoom meeting URL for the appointment user',
+    example: 'https://zoom.us/j/123456789',
   })
   @IsOptional()
   @IsString()
   user_url?: string;
 
-  @ApiProperty({
-    description: 'Zoom meeting URL for the appointment for the admin',
+  @ApiPropertyOptional({
+    description: 'Zoom meeting URL for the admin/host',
     example: 'https://zoom.us/s/123456789',
-    required: false,
   })
   @IsOptional()
   @IsString()
