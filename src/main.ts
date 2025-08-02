@@ -80,7 +80,7 @@ async function bootstrap() {
 
   // Enable CORS (use '*' during development or whitelist domains in production)
   app.enableCors({
-    origin: ['https://healthcare-connect-dwg6.onrender.com'], 
+    origin: ['https://healthcare-connect-dwg6.onrender.com'],
     credentials: true,
   });
 
@@ -109,7 +109,7 @@ async function bootstrap() {
     .addTag('users')
     .addTag('orders')
     .addBearerAuth()
-    .build(); 
+    .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document, {

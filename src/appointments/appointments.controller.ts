@@ -42,7 +42,8 @@ export class AppointmentsController {
   @ApiResponse({ status: 409, description: 'Scheduling conflict' })
   async create(@Body() createAppointmentDto: CreateAppointmentDto) {
     try {
-      const appointment = await this.appointmentsService.create(createAppointmentDto);
+      const appointment =
+        await this.appointmentsService.create(createAppointmentDto);
       return {
         statusCode: HttpStatus.CREATED,
         message: 'Appointment created successfully',
@@ -50,17 +51,20 @@ export class AppointmentsController {
       };
     } catch (error) {
       if (error.code === 'SCHEDULING_CONFLICT') {
-        throw new ConflictException('Scheduling conflict: appointment overlaps');
+        throw new ConflictException(
+          'Scheduling conflict: appointment overlaps',
+        );
       }
       throw error;
     }
   }
 
   @Get('doctor')
- // @Roles(Role.DOCTOR)
+  // @Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Get appointments for the current doctor' })
   async findByCurrentDoctor(@GetCurrentUserId() userId: number) {
-    const appointments = await this.appointmentsService.findByCurrentDoctor(userId);
+    const appointments =
+      await this.appointmentsService.findByCurrentDoctor(userId);
     return {
       statusCode: HttpStatus.OK,
       message: 'Appointments for the current doctor retrieved successfully',
@@ -73,7 +77,8 @@ export class AppointmentsController {
   @ApiOperation({ summary: 'Get appointments by doctor ID' })
   @ApiParam({ name: 'doctorId', description: 'Doctor ID' })
   async findByDoctorId(@Param('doctorId', ParseIntPipe) doctorId: number) {
-    const appointments = await this.appointmentsService.findByDoctorId(doctorId);
+    const appointments =
+      await this.appointmentsService.findByDoctorId(doctorId);
     return {
       statusCode: HttpStatus.OK,
       message: 'Doctor appointments retrieved successfully',
@@ -92,7 +97,11 @@ export class AppointmentsController {
     @Query('limit') limit: number = 10,
     @Query('search') search: string = '',
   ) {
-    const result = await this.appointmentsService.findAllPaginated(page, limit, search);
+    const result = await this.appointmentsService.findAllPaginated(
+      page,
+      limit,
+      search,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Appointments retrieved successfully',
@@ -125,7 +134,7 @@ export class AppointmentsController {
   }
 
   @Get('status/:status')
- // @Roles(Role.ADMIN)
+  // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get appointments by status' })
   @ApiParam({ name: 'status', description: 'Appointment status' })
   async findByStatus(@Param('status') status: string) {
@@ -156,7 +165,8 @@ export class AppointmentsController {
   @ApiOperation({ summary: 'Get appointments by patient ID' })
   @ApiParam({ name: 'patientId', description: 'Patient ID' })
   async findByPatientId(@Param('patientId', ParseIntPipe) patientId: number) {
-    const appointments = await this.appointmentsService.findByPatientId(patientId);
+    const appointments =
+      await this.appointmentsService.findByPatientId(patientId);
     return {
       statusCode: HttpStatus.OK,
       message: 'Patient appointments retrieved successfully',
@@ -185,7 +195,10 @@ export class AppointmentsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateAppointmentDto: UpdateAppointmentDto,
   ) {
-    const result = await this.appointmentsService.update(id, updateAppointmentDto);
+    const result = await this.appointmentsService.update(
+      id,
+      updateAppointmentDto,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Appointment updated successfully',
@@ -194,7 +207,7 @@ export class AppointmentsController {
   }
 
   @Delete(':id')
- // @Roles(Role.ADMIN)
+  // @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete appointment' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
   async remove(@Param('id', ParseIntPipe) id: number) {
@@ -209,12 +222,20 @@ export class AppointmentsController {
   @Post(':id/send-reminder')
   @ApiOperation({ summary: 'Manually send appointment reminder' })
   @ApiParam({ name: 'id', description: 'Appointment ID' })
-  @ApiQuery({ name: 'type', description: 'Reminder type', enum: ['1-day', '1-hour'], required: false })
+  @ApiQuery({
+    name: 'type',
+    description: 'Reminder type',
+    enum: ['1-day', '1-hour'],
+    required: false,
+  })
   async sendReminder(
     @Param('id', ParseIntPipe) id: number,
     @Query('type') reminderType: '1-day' | '1-hour' = '1-hour',
   ) {
-    const result = await this.appointmentsService.sendManualReminder(id, reminderType);
+    const result = await this.appointmentsService.sendManualReminder(
+      id,
+      reminderType,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: result.message,

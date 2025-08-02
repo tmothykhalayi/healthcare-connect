@@ -36,15 +36,18 @@ export class AppointmentsService {
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto) {
-    const { patientId, doctorId, slotId, title, date, time, reason } = createAppointmentDto;
-    
+    const { patientId, doctorId, slotId, title, date, time, reason } =
+      createAppointmentDto;
+
     // Set default duration to 30 minutes if not provided
     const duration = createAppointmentDto.duration || 30;
 
     const patient = await this.patientsService.findOne(String(patientId));
     const doctor = await this.doctorsService.findOne(doctorId);
-    if (!patient) throw new NotFoundException(`Patient with ID ${patientId} not found`);
-    if (!doctor) throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
+    if (!patient)
+      throw new NotFoundException(`Patient with ID ${patientId} not found`);
+    if (!doctor)
+      throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
 
     const slot = await this.slotsRepository.findOne({
       where: { id: slotId },
@@ -54,18 +57,21 @@ export class AppointmentsService {
     if (!slot) throw new NotFoundException(`Slot with ID ${slotId} not found`);
     if (slot.isBooked) throw new ConflictException(`Slot is already booked`);
     if (slot.doctor.id !== doctorId)
-      throw new BadRequestException(`Slot does not belong to the selected doctor`);
+      throw new BadRequestException(
+        `Slot does not belong to the selected doctor`,
+      );
 
     // Use the date and time from the DTO, or fall back to slot data
     const appointmentDate = date || slot.date;
     const appointmentTime = time || slot.startTime;
     const appointmentDateTime = `${appointmentDate}T${appointmentTime}`;
-    
-    const { start_url, join_url, meeting_id } = await this.zoomService.createMeeting(
-      title,
-      appointmentDateTime,
-      duration,
-    );
+
+    const { start_url, join_url, meeting_id } =
+      await this.zoomService.createMeeting(
+        title,
+        appointmentDateTime,
+        duration,
+      );
 
     const appointment = this.appointmentsRepository.create({
       patientId,
@@ -92,7 +98,8 @@ export class AppointmentsService {
     });
 
     try {
-      const savedAppointment = await this.appointmentsRepository.save(appointment);
+      const savedAppointment =
+        await this.appointmentsRepository.save(appointment);
 
       slot.isBooked = true;
       await this.slotsRepository.save(slot);
@@ -135,7 +142,9 @@ export class AppointmentsService {
       }
       slot.isBooked = false;
       await this.slotsRepository.save(slot);
-      throw new InternalServerErrorException(`Failed to create appointment: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create appointment: ${error.message}`,
+      );
     }
   }
   private scheduleReminders(appointment: Appointment) {
@@ -147,14 +156,20 @@ export class AppointmentsService {
     if (oneDayBefore.isAfter(moment())) {
       // Schedule reminder 1 day before
       cron.schedule(this.convertMomentToCron(oneDayBefore), async () => {
-        await this.sendReminderEmail(appointment, 'Reminder: Your appointment is tomorrow');
+        await this.sendReminderEmail(
+          appointment,
+          'Reminder: Your appointment is tomorrow',
+        );
       });
     }
 
     if (oneHourBefore.isAfter(moment())) {
       // Schedule reminder 1 hour before
       cron.schedule(this.convertMomentToCron(oneHourBefore), async () => {
-        await this.sendReminderEmail(appointment, 'Reminder: Your appointment is in one hour');
+        await this.sendReminderEmail(
+          appointment,
+          'Reminder: Your appointment is in one hour',
+        );
       });
     }
   }
@@ -170,7 +185,7 @@ export class AppointmentsService {
       const now = moment();
       const timeUntil = appointmentMoment.from(now);
       const [firstName, lastName] = appointment.patientName.split(' ');
-      
+
       // Determine reminder urgency based on time until appointment
       const hoursUntil = appointmentMoment.diff(now, 'hours');
       const isUrgent = hoursUntil <= 24 && hoursUntil > 1;
@@ -226,7 +241,9 @@ export class AppointmentsService {
         },
       });
 
-      console.log(`Sent reminder emails for appointment ${appointment.id} - Patient: ${appointment.patientEmail}, Doctor: ${appointment.doctor.user.email}`);
+      console.log(
+        `Sent reminder emails for appointment ${appointment.id} - Patient: ${appointment.patientEmail}, Doctor: ${appointment.doctor.user.email}`,
+      );
     } catch (error) {
       console.error('Failed to send reminder email:', error);
     }
@@ -350,18 +367,22 @@ export class AppointmentsService {
   }
 
   // Method to manually send reminder for testing
-  async sendManualReminder(appointmentId: number, reminderType: '1-day' | '1-hour' = '1-hour') {
+  async sendManualReminder(
+    appointmentId: number,
+    reminderType: '1-day' | '1-hour' = '1-hour',
+  ) {
     const appointment = await this.findOne(appointmentId);
-    
-    const subject = reminderType === '1-day' 
-      ? 'Reminder: Your appointment is tomorrow'
-      : 'Reminder: Your appointment is in one hour';
-      
+
+    const subject =
+      reminderType === '1-day'
+        ? 'Reminder: Your appointment is tomorrow'
+        : 'Reminder: Your appointment is in one hour';
+
     await this.sendReminderEmail(appointment, subject);
-    
-    return { 
-      success: true, 
-      message: `${reminderType} reminder sent for appointment ${appointmentId}` 
+
+    return {
+      success: true,
+      message: `${reminderType} reminder sent for appointment ${appointmentId}`,
     };
   }
 
@@ -395,9 +416,9 @@ export class AppointmentsService {
       context: sampleContext,
     });
 
-    return { 
-      success: true, 
-      message: `Test reminder sent to ${email}` 
+    return {
+      success: true,
+      message: `Test reminder sent to ${email}`,
     };
   }
 }

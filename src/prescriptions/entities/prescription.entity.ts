@@ -1,4 +1,3 @@
-
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -14,10 +13,16 @@ export class Prescription {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Doctor, doctor => doctor.prescriptions, { eager: false, onDelete: 'SET NULL' })
+  @ManyToOne(() => Doctor, (doctor) => doctor.prescriptions, {
+    eager: false,
+    onDelete: 'SET NULL',
+  })
   doctor: Doctor;
 
-  @ManyToOne(() => Patient, patient => patient.prescriptions, { eager: false, onDelete: 'SET NULL' })
+  @ManyToOne(() => Patient, (patient) => patient.prescriptions, {
+    eager: false,
+    onDelete: 'SET NULL',
+  })
   patient: Patient;
 
   @Column()

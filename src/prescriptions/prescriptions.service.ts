@@ -21,8 +21,12 @@ export class PrescriptionsService {
   ) {}
 
   async create(dto: CreatePrescriptionDto): Promise<Prescription> {
-    const doctor = await this.doctorRepo.findOneOrFail({ where: { id: Number(dto.doctorId) } });
-    const patient = await this.patientRepo.findOneOrFail({ where: { id: Number(dto.patientId) } });
+    const doctor = await this.doctorRepo.findOneOrFail({
+      where: { id: Number(dto.doctorId) },
+    });
+    const patient = await this.patientRepo.findOneOrFail({
+      where: { id: Number(dto.patientId) },
+    });
 
     const prescription = this.prescriptionRepo.create({
       diagnosis: dto.diagnosis,
@@ -62,11 +66,15 @@ export class PrescriptionsService {
     }
 
     if (dto.doctorId) {
-      prescription.doctor = await this.doctorRepo.findOneOrFail({ where: { id: Number(dto.doctorId) } });
+      prescription.doctor = await this.doctorRepo.findOneOrFail({
+        where: { id: Number(dto.doctorId) },
+      });
     }
 
     if (dto.patientId) {
-      prescription.patient = await this.patientRepo.findOneOrFail({ where: { id: Number(dto.patientId) } });
+      prescription.patient = await this.patientRepo.findOneOrFail({
+        where: { id: Number(dto.patientId) },
+      });
     }
 
     if (dto.diagnosis) prescription.diagnosis = dto.diagnosis;

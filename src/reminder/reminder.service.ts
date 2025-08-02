@@ -14,13 +14,27 @@ export class ReminderService {
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
-  async scheduleReminders(appointmentId: number, appointmentDateTime: string, patientEmail: string) {
+  async scheduleReminders(
+    appointmentId: number,
+    appointmentDateTime: string,
+    patientEmail: string,
+  ) {
     const appointmentMoment = moment(appointmentDateTime);
     const oneDayBefore = appointmentMoment.clone().subtract(1, 'days');
     const oneHourBefore = appointmentMoment.clone().subtract(1, 'hours');
 
-    await this.scheduleReminderJob(appointmentId, oneDayBefore.toDate(), '1 Day Reminder', patientEmail);
-    await this.scheduleReminderJob(appointmentId, oneHourBefore.toDate(), '1 Hour Reminder', patientEmail);
+    await this.scheduleReminderJob(
+      appointmentId,
+      oneDayBefore.toDate(),
+      '1 Day Reminder',
+      patientEmail,
+    );
+    await this.scheduleReminderJob(
+      appointmentId,
+      oneHourBefore.toDate(),
+      '1 Hour Reminder',
+      patientEmail,
+    );
   }
 
   private async scheduleReminderJob(
@@ -38,7 +52,9 @@ export class ReminderService {
 
     this.schedulerRegistry.addCronJob(jobName, job);
     job.start();
-    this.logger.log(`Scheduled ${message} for appointment ${appointmentId} at ${time}`);
+    this.logger.log(
+      `Scheduled ${message} for appointment ${appointmentId} at ${time}`,
+    );
   }
 
   private async sendReminder(email: string, message: string) {

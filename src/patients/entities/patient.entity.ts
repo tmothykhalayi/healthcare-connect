@@ -25,11 +25,10 @@ export enum Gender {
 
 @Entity('patients')
 export class Patient {
-
   @Column({ nullable: true })
-name: string;
+  name: string;
 
-  @OneToMany(() => Prescription, prescription => prescription.patient)
+  @OneToMany(() => Prescription, (prescription) => prescription.patient)
   prescriptions: Prescription[];
 
   @ApiProperty({ description: 'Patient unique identifier' })

@@ -1,4 +1,4 @@
-import { Module  ,forwardRef } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppointmentsService } from './appointments.service';
 import { AppointmentsController } from './appointments.controller';
@@ -13,10 +13,10 @@ import { ReminderModule } from '../reminder/reminder.module';
 
 @Module({
   imports: [
-    forwardRef(() =>ReminderModule),
+    forwardRef(() => ReminderModule),
     PatientsModule,
     TypeOrmModule.forFeature([Appointment, Slot, Doctor]),
-    DoctorsModule,              
+    DoctorsModule,
     MailModule,
   ],
   controllers: [AppointmentsController],
@@ -24,11 +24,3 @@ import { ReminderModule } from '../reminder/reminder.module';
   exports: [AppointmentsService],
 })
 export class AppointmentsModule {}
-
-
-
-
-
-
-
-   

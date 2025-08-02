@@ -28,11 +28,11 @@ export class Slot {
   @ManyToOne(() => Doctor, (doctor) => doctor.slots, { eager: true })
   doctor: Doctor;
 
-  @OneToOne(() => Appointment, (appointment) => appointment.slot, { nullable: true })
+  @OneToOne(() => Appointment, (appointment) => appointment.slot, {
+    nullable: true,
+  })
   appointment: Appointment;
 
   @Column({ default: true })
-  isAvailable: boolean; 
-
+  isAvailable: boolean;
 }
-

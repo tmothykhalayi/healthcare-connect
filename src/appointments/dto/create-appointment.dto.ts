@@ -45,15 +45,18 @@ export class CreateAppointmentDto {
   @IsNotEmpty()
   time: string;
 
-  @ApiProperty({ example: 'Dental Checkup', description: 'Title of appointment' })
+  @ApiProperty({
+    example: 'Dental Checkup',
+    description: 'Title of appointment',
+  })
   @IsString()
   @IsNotEmpty()
   title: string;
 
-  @ApiPropertyOptional({ 
-    example: 30, 
-    description: 'Duration in minutes', 
-    default: 30 
+  @ApiPropertyOptional({
+    example: 30,
+    description: 'Duration in minutes',
+    default: 30,
   })
   @IsOptional()
   @Type(() => Number)
@@ -61,7 +64,10 @@ export class CreateAppointmentDto {
   @IsPositive()
   duration?: number;
 
-  @ApiProperty({ example: 'Regular checkup', description: 'Reason for appointment' })
+  @ApiProperty({
+    example: 'Regular checkup',
+    description: 'Reason for appointment',
+  })
   @IsString()
   @IsNotEmpty()
   reason: string;
@@ -69,11 +75,25 @@ export class CreateAppointmentDto {
   @ApiPropertyOptional({
     example: 'scheduled',
     description: 'Appointment status',
-    enum: ['scheduled', 'confirmed', 'cancelled', 'completed', 'no_show', 'rescheduled'],
+    enum: [
+      'scheduled',
+      'confirmed',
+      'cancelled',
+      'completed',
+      'no_show',
+      'rescheduled',
+    ],
     default: 'scheduled',
   })
   @IsOptional()
-  @IsIn(['scheduled', 'confirmed', 'cancelled', 'completed', 'no_show', 'rescheduled'])
+  @IsIn([
+    'scheduled',
+    'confirmed',
+    'cancelled',
+    'completed',
+    'no_show',
+    'rescheduled',
+  ])
   status?: string;
 
   @ApiPropertyOptional({
