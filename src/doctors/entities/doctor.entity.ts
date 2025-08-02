@@ -14,7 +14,10 @@ import { Patient } from '../../patients/entities/patient.entity';
 
 import { Slot } from '../../slots/entities/slot.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
+import { Prescription } from '../../prescriptions/entities/prescription.entity';
 
+
+  
 @Entity('doctors')
 export class Doctor {
   @ApiProperty({ description: 'Doctor unique identifier' })
@@ -96,6 +99,9 @@ export class Doctor {
 
   @OneToMany(() => Slot, (slot) => slot.doctor)
   slots: Slot[];
+
+  @OneToMany(() => Prescription, (prescription) => prescription.doctor)
+  prescriptions: Prescription[];
 }
 
 

@@ -32,6 +32,7 @@ import { ChatModule } from './chat/chat.module';
 import { LogsModule } from './logs/logs.module';
 import { DatabaseModule } from './database/database.module';
 import { ZoomService } from './zoom/zoom.service';
+import { PrescriptionsModule } from './prescriptions/prescriptions.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { ZoomService } from './zoom/zoom.service';
     ChatModule,
     LogsModule,
     DatabaseModule,
+    PrescriptionsModule,
   ],
   controllers: [AppController],
   providers: [

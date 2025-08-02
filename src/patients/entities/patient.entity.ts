@@ -15,6 +15,8 @@ import { Doctor } from '../../doctors/entities/doctor.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
 import { Medicine } from '../../medicines/entities/medicine.entity';
 import { Order } from '../../orders/entities/order.entity';
+
+import { Prescription } from '../../prescriptions/entities/prescription.entity';
 export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
@@ -23,6 +25,13 @@ export enum Gender {
 
 @Entity('patients')
 export class Patient {
+
+  @Column({ nullable: true })
+name: string;
+
+  @OneToMany(() => Prescription, prescription => prescription.patient)
+  prescriptions: Prescription[];
+
   @ApiProperty({ description: 'Patient unique identifier' })
   @PrimaryGeneratedColumn()
   id: number;
