@@ -16,6 +16,8 @@ import { ZoomService } from 'src/zoom/zoom.service';
 import { DoctorsService } from 'src/doctors/doctors.service';
 import { PatientsService } from 'src/patients/patients.service';
 import { MailService } from 'src/mail/mail.service';
+import * as moment from 'moment';
+import * as cron from 'node-cron';
 
 @Injectable()
 export class AppointmentsService {
@@ -34,7 +36,7 @@ export class AppointmentsService {
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto) {
-    const { patientId, doctorId, slotId, title, duration } = createAppointmentDto;
+    const { patientId, doctorId, slotId, title, duration, date, time, reason } = createAppointmentDto;
 
     const patient = await this.patientsService.findOne(String(patientId));
     const doctor = await this.doctorsService.findOne(doctorId);
@@ -51,7 +53,11 @@ export class AppointmentsService {
     if (slot.doctor.id !== doctorId)
       throw new BadRequestException(`Slot does not belong to the selected doctor`);
 
-    const appointmentDateTime = `${slot.date}T${slot.startTime}`;
+    // Use the date and time from the DTO, or fall back to slot data
+    const appointmentDate = date || slot.date;
+    const appointmentTime = time || slot.startTime;
+    const appointmentDateTime = `${appointmentDate}T${appointmentTime}`;
+    
     const { start_url, join_url, meeting_id } = await this.zoomService.createMeeting(
       title,
       appointmentDateTime,
@@ -59,14 +65,27 @@ export class AppointmentsService {
     );
 
     const appointment = this.appointmentsRepository.create({
-      ...createAppointmentDto,
+      patientId,
+      doctorId,
       appointmentDate: new Date(appointmentDateTime),
+      appointmentTime,
+      duration,
+      reason,
+      status: createAppointmentDto.status || 'scheduled',
+      priority: createAppointmentDto.priority || 'normal',
+      notes: createAppointmentDto.notes || '',
+      medicalNotes: createAppointmentDto.medicalNotes || '',
+      diagnosis: createAppointmentDto.diagnosis || '',
+      prescription: createAppointmentDto.prescription || '',
+      vitals: createAppointmentDto.vitals || {},
       patient,
       doctor,
       slot,
       user_url: join_url,
       admin_url: start_url,
       zoomMeetingId: meeting_id,
+      patientEmail: patient.user.email,
+      patientName: `${patient.firstName} ${patient.lastName}`,
     });
 
     try {
@@ -102,15 +121,61 @@ export class AppointmentsService {
           isDoctor: true,
         },
       });
+      // Schedule reminders 1 day and 1 hour before appointment
+      this.scheduleReminders(savedAppointment);
 
       return savedAppointment;
     } catch (error) {
+      console.error('Error creating appointment:', error);
       if (appointment.id) {
         await this.appointmentsRepository.delete(appointment.id);
       }
       slot.isBooked = false;
       await this.slotsRepository.save(slot);
-      throw new InternalServerErrorException('Failed to create appointment');
+      throw new InternalServerErrorException(`Failed to create appointment: ${error.message}`);
+    }
+  }
+  private scheduleReminders(appointment: Appointment) {
+    const appointmentMoment = moment(appointment.appointmentDate);
+
+    const oneDayBefore = appointmentMoment.clone().subtract(1, 'day');
+    const oneHourBefore = appointmentMoment.clone().subtract(1, 'hour');
+
+    if (oneDayBefore.isAfter(moment())) {
+      // Schedule reminder 1 day before
+      cron.schedule(this.convertMomentToCron(oneDayBefore), async () => {
+        await this.sendReminderEmail(appointment, 'Reminder: Your appointment is tomorrow');
+      });
+    }
+
+    if (oneHourBefore.isAfter(moment())) {
+      // Schedule reminder 1 hour before
+      cron.schedule(this.convertMomentToCron(oneHourBefore), async () => {
+        await this.sendReminderEmail(appointment, 'Reminder: Your appointment is in one hour');
+      });
+    }
+  }
+  private convertMomentToCron(momentObj: moment.Moment): string {
+    // Convert moment date to cron string format: 'm H D M *'
+    // Note: Cron months are 1-12, moment months are 0-11, so add 1 to month
+    return `${momentObj.minute()} ${momentObj.hour()} ${momentObj.date()} ${momentObj.month() + 1} *`;
+  }
+
+  private async sendReminderEmail(appointment: Appointment, subject: string) {
+    try {
+      await this.mailService.sendCustomMail({
+        to: appointment.patientEmail,
+        subject,
+        template: 'appointment-reminder',
+        context: {
+          firstName: appointment.patientName,
+          appointmentDate: moment(appointment.appointmentDate).format('YYYY-MM-DD HH:mm'),
+          meetingUrl: appointment.user_url,
+        },
+      });
+      console.log(`Sent reminder email to ${appointment.patientEmail} with subject "${subject}"`);
+    } catch (error) {
+      console.error('Failed to send reminder email:', error);
     }
   }
 

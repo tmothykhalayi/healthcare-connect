@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module  ,forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppointmentsService } from './appointments.service';
 import { AppointmentsController } from './appointments.controller';
@@ -9,9 +9,11 @@ import { Doctor } from 'src/doctors/entities/doctor.entity';
 import { ZoomService } from 'src/zoom/zoom.service';
 import { MailModule } from 'src/mail/mail.module';
 import { Slot } from '../slots/entities/slot.entity';
+import { ReminderModule } from '../reminder/reminder.module';
 
 @Module({
   imports: [
+    forwardRef(() =>ReminderModule),
     PatientsModule,
     TypeOrmModule.forFeature([Appointment, Slot, Doctor]),
     DoctorsModule,              
@@ -22,3 +24,11 @@ import { Slot } from '../slots/entities/slot.entity';
   exports: [AppointmentsService],
 })
 export class AppointmentsModule {}
+
+
+
+
+
+
+
+   
