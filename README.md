@@ -1,141 +1,52 @@
-# Healthcare System Data Model
+# 🏥 HealthCore Connect – Backend (NestJS)
 
-## Overview
+This is the **backend API** for the HealthCore Connect Hospital Management System — a role-based healthcare platform for managing appointments, medical records, prescriptions, pharmacy orders, and user access.
 
-This document describes the key entities and relationships within the healthcare system data model. The system supports managing users of various roles (patients, doctors, admins, pharmacies), appointments, medical records, payments, medicines, and orders.
-
----
-
-### 1. User
-- `id: string`  
-- `email: string`  
-- `password: string` (hashed)  
-- `firstName: string`  
-- `lastName: string`  
-- `role: enum` ('admin', 'doctor', 'patient', 'pharmacy', etc.)  
-- `isEmailVerified: boolean`  
-- `createdAt: Date`  
-- `updatedAt: Date`  
+Built using **NestJS**, this backend supports secure, modular services for doctors, patients, pharmacists, and administrators.
 
 ---
 
-### 2. Patient
-- `id: string` (foreign key to User)  
-- `userId: string` (reference to User)  
-- `dateOfBirth: Date`  
-- `gender: string`  
-- `address: string`  
-- `phoneNumber: string`  
-- `assignedDoctorId: string` (reference to Doctor)  
-- `medicalHistory: string`  
-- `createdAt: Date`  
-- `updatedAt: Date`  
+## 🚀 Tech Stack
+
+- **NestJS** (Node.js framework)
+- **TypeORM** or **Prisma**
+- **PostgreSQL** (or your DB of choice)
+- **JWT Authentication** with role-based access
+- **Class-validator** and DTO-based request validation
+- **Swagger** (optional for API docs)
 
 ---
 
-### 3. Doctor
-- `id: string` (foreign key to User)  
-- `userId: string` (reference to User)  
-- `specializations: string[]` (array of specialties)  
-- `licenseNumber: string`  
-- `experienceYears: number`  
-- `bio: string`  
-- `createdAt: Date`  
-- `updatedAt: Date`  
-- Inherits `isEmailVerified` from User  
+## 📁 Entities / Modules
+
+| Module          | Description |
+|------------------|-------------|
+| `users`          | Core user entity shared across all roles |
+| `admin`          | Admin-specific operations |
+| `patient`        | Patient registration, profiles, and activities |
+| `doctor`         | Doctor scheduling, profile, and access |
+| `pharmacist`     | Pharmacy operations and inventory |
+| `appointments`   | Slot-based appointment system |
+| `slot`           | Doctor availability and time slots |
+| `prescriptions`  | Digital prescriptions issued by doctors |
+| `records`        | Patient health records and doctor notes |
+| `medicines`      | Medicine stock and expiry management |
+| `orders`         | Medicine orders placed by patients |
+| `payments`       | Payment tracking and invoice generation |
 
 ---
 
-### 4. Appointment
-- `id: string`  
-- `patientId: string` (reference to Patient)  
-- `doctorId: string` (reference to Doctor)  
-- `appointmentDateTime: Date`  
-- `status: enum` ('pending', 'confirmed', 'cancelled', 'completed')  
-- `reason: string`  
-- `createdAt: Date`  
-- `updatedAt: Date`  
+## 🛠️ Setup Instructions
 
----
+### 📦 Prerequisites
 
-### 5. Records
-- `id: string` (foreign key to User)  
-- `patientId: string` (reference to Patient)  
-- `doctorId: string` (reference to Doctor who created/updated)  
-- `recordDate: Date`  
-- `description: string`  
-- `attachments: string[]` (URLs or file references)  
-- `createdAt: Date`  
-- `updatedAt: Date`  
+- Node.js 18+
+- PostgreSQL or compatible database
+- pnpm or npm
 
----
+### ⚙️ Installation
 
-### 6. Admin
-- `id: string` (foreign key to User)  
-- `userId: string` (reference to User)  
-- `permissions: string[]` (array of permission identifiers or roles, e.g., ['manage-users', 'manage-settings'])  
-- `createdAt: Date`  
-- `updatedAt: Date`  
-- Inherits `isEmailVerified` from User  
-
----
-
-### 7. Medicine
-- `id: string` (foreign key to User)  
-- `name: string`  
-- `description: string`  
-- `manufacturer: string`  
-- `price: number`  
-- `expiryDate: Date`  
-- `createdAt: Date`  
-- `updatedAt: Date`  
-
----
-
-### 8. Payment
-- `id: string` (foreign key to User)  
-- `userId: string` (reference to User)  
-- `amount: number`  
-- `paymentMethod: string`  
-- `status: enum` ('pending', 'completed', 'failed', 'refunded')  
-- `relatedEntityType: string` (e.g., 'Appointment', 'Order')  
-- `relatedEntityId: string`  
-- `transactionId: string`  
-- `createdAt: Date`  
-- `updatedAt: Date`  
-
----
-
-### 9. Pharmacy
-- `id: string` (foreign key to User)  
-- `name: string` (name of the hospital pharmacy unit)  
-- `location: string` (physical location in the hospital, e.g., "Ground Floor, Building A")  
-- `description: string` (optional, summary of services or specialties)  
-- `managedBy: string` (optional, reference to a User — Admin or Doctor)  
-- `isActive: boolean` (whether this pharmacy is currently operational)  
-- `createdAt: Date`  
-- `updatedAt: Date`  
-
----
-
-### 10. Orders
-- `id: string` (foreign key to User)  
-- `patientId: string` (reference to Patient)  
-- `orderDate: Date`  
-- `status: enum` ('pending', 'processed', 'shipped', 'delivered', 'cancelled')  
-- `totalAmount: number`  
-- `createdAt: Date`  
-- `updatedAt: Date`  
-
----
-
-## Relationships Summary
-
-- **User** is the base entity for Patient, Doctor, Admin, Pharmacy, and Medicine.  
-- **Patient** links to one assigned **Doctor**; has many **Appointments**, **Records**, and **Orders**.  
-- **Doctor** has many assigned **Patients**, **Appointments**, and **Records**.  
-- **Appointment** links one **Patient** and one **Doctor**, and may have one **Payment**.  
-- **Records** are created by **Doctor** for a **Patient**.  
-- **Admin** manages system permissions.  
-- **Pharmacy** may be managed by a **User** (Admin or Doctor), manages **Medicines** and fulfills **Orders**.  
-- **Payment** references the paying **User** and a related entity (Appointment, Order, etc.).
+```bash
+git clone https://github.com/your-username/healthcore-backend.git
+cd healthcore-backend
+pnpm install
