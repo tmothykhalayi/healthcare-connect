@@ -36,7 +36,10 @@ export class AppointmentsService {
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto) {
-    const { patientId, doctorId, slotId, title, duration, date, time, reason } = createAppointmentDto;
+    const { patientId, doctorId, slotId, title, date, time, reason } = createAppointmentDto;
+    
+    // Set default duration to 30 minutes if not provided
+    const duration = createAppointmentDto.duration || 30;
 
     const patient = await this.patientsService.findOne(String(patientId));
     const doctor = await this.doctorsService.findOne(doctorId);
@@ -163,17 +166,67 @@ export class AppointmentsService {
 
   private async sendReminderEmail(appointment: Appointment, subject: string) {
     try {
+      const appointmentMoment = moment(appointment.appointmentDate);
+      const now = moment();
+      const timeUntil = appointmentMoment.from(now);
+      const [firstName, lastName] = appointment.patientName.split(' ');
+      
+      // Determine reminder urgency based on time until appointment
+      const hoursUntil = appointmentMoment.diff(now, 'hours');
+      const isUrgent = hoursUntil <= 24 && hoursUntil > 1;
+      const isEmergency = appointment.priority === 'emergency';
+
       await this.mailService.sendCustomMail({
         to: appointment.patientEmail,
         subject,
         template: 'appointment-reminder',
         context: {
-          firstName: appointment.patientName,
-          appointmentDate: moment(appointment.appointmentDate).format('YYYY-MM-DD HH:mm'),
+          firstName: firstName || appointment.patientName,
+          lastName: lastName || '',
+          doctorName: `${appointment.doctor.firstName} ${appointment.doctor.lastName}`,
+          appointmentDate: appointmentMoment.format('dddd, MMMM Do YYYY'),
+          appointmentTime: appointmentMoment.format('h:mm A'),
+          timeUntilAppointment: `Your appointment is ${timeUntil}`,
+          duration: appointment.duration,
+          reason: appointment.reason,
+          priority: appointment.priority,
+          notes: appointment.notes,
           meetingUrl: appointment.user_url,
+          isDoctor: false,
+          isUrgent: isUrgent,
+          isEmergency: isEmergency,
+          vitalsRequired: appointment.priority !== 'normal',
+          rescheduleInfo: true,
+          supportEmail: 'support@healthcareconnect.com',
+          supportPhone: '+1-800-HEALTH',
         },
       });
-      console.log(`Sent reminder email to ${appointment.patientEmail} with subject "${subject}"`);
+
+      // Also send reminder to doctor
+      await this.mailService.sendCustomMail({
+        to: appointment.doctor.user.email,
+        subject: `Doctor Reminder: ${subject.replace('Your', 'Patient')}`,
+        template: 'appointment-reminder',
+        context: {
+          firstName: appointment.doctor.firstName,
+          lastName: appointment.doctor.lastName,
+          patientName: appointment.patientName,
+          appointmentDate: appointmentMoment.format('dddd, MMMM Do YYYY'),
+          appointmentTime: appointmentMoment.format('h:mm A'),
+          timeUntilAppointment: `Appointment is ${timeUntil}`,
+          duration: appointment.duration,
+          reason: appointment.reason,
+          priority: appointment.priority,
+          notes: appointment.notes,
+          meetingUrl: appointment.admin_url,
+          isDoctor: true,
+          isUrgent: isUrgent,
+          isEmergency: isEmergency,
+          rescheduleInfo: false,
+        },
+      });
+
+      console.log(`Sent reminder emails for appointment ${appointment.id} - Patient: ${appointment.patientEmail}, Doctor: ${appointment.doctor.user.email}`);
     } catch (error) {
       console.error('Failed to send reminder email:', error);
     }
@@ -294,5 +347,57 @@ export class AppointmentsService {
 
   async findByCurrentDoctor(userId: number) {
     return this.findByDoctorId(userId);
+  }
+
+  // Method to manually send reminder for testing
+  async sendManualReminder(appointmentId: number, reminderType: '1-day' | '1-hour' = '1-hour') {
+    const appointment = await this.findOne(appointmentId);
+    
+    const subject = reminderType === '1-day' 
+      ? 'Reminder: Your appointment is tomorrow'
+      : 'Reminder: Your appointment is in one hour';
+      
+    await this.sendReminderEmail(appointment, subject);
+    
+    return { 
+      success: true, 
+      message: `${reminderType} reminder sent for appointment ${appointmentId}` 
+    };
+  }
+
+  // Method to test reminder template with sample data
+  async testReminderTemplate(email: string) {
+    const sampleContext = {
+      firstName: 'John',
+      lastName: 'Doe',
+      doctorName: 'Dr. Sarah Smith',
+      appointmentDate: 'Monday, August 5th 2025',
+      appointmentTime: '2:30 PM',
+      timeUntilAppointment: 'Your appointment is in 2 hours',
+      duration: 30,
+      reason: 'Regular checkup',
+      priority: 'normal',
+      notes: 'Please bring your insurance card',
+      meetingUrl: 'https://zoom.us/j/123456789',
+      isDoctor: false,
+      isUrgent: true,
+      isEmergency: false,
+      vitalsRequired: false,
+      rescheduleInfo: true,
+      supportEmail: 'support@healthcareconnect.com',
+      supportPhone: '+1-800-HEALTH',
+    };
+
+    await this.mailService.sendCustomMail({
+      to: email,
+      subject: 'Test: Appointment Reminder Template',
+      template: 'appointment-reminder',
+      context: sampleContext,
+    });
+
+    return { 
+      success: true, 
+      message: `Test reminder sent to ${email}` 
+    };
   }
 }

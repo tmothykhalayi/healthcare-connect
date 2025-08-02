@@ -205,4 +205,32 @@ export class AppointmentsController {
       data: result,
     };
   }
+
+  @Post(':id/send-reminder')
+  @ApiOperation({ summary: 'Manually send appointment reminder' })
+  @ApiParam({ name: 'id', description: 'Appointment ID' })
+  @ApiQuery({ name: 'type', description: 'Reminder type', enum: ['1-day', '1-hour'], required: false })
+  async sendReminder(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('type') reminderType: '1-day' | '1-hour' = '1-hour',
+  ) {
+    const result = await this.appointmentsService.sendManualReminder(id, reminderType);
+    return {
+      statusCode: HttpStatus.OK,
+      message: result.message,
+      data: result,
+    };
+  }
+
+  @Post('test-reminder-template')
+  @ApiOperation({ summary: 'Test appointment reminder template' })
+  @ApiQuery({ name: 'email', description: 'Email to send test reminder to' })
+  async testReminderTemplate(@Query('email') email: string) {
+    const result = await this.appointmentsService.testReminderTemplate(email);
+    return {
+      statusCode: HttpStatus.OK,
+      message: result.message,
+      data: result,
+    };
+  }
 }

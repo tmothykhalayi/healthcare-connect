@@ -50,11 +50,16 @@ export class CreateAppointmentDto {
   @IsNotEmpty()
   title: string;
 
-  @ApiProperty({ example: 30, description: 'Duration in minutes' })
+  @ApiPropertyOptional({ 
+    example: 30, 
+    description: 'Duration in minutes', 
+    default: 30 
+  })
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @IsPositive()
-  duration: number;
+  duration?: number;
 
   @ApiProperty({ example: 'Regular checkup', description: 'Reason for appointment' })
   @IsString()
