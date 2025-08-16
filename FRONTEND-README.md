@@ -392,15 +392,12 @@ export const useCreateAppointment = () => {
 ## 🚀 Deployment
 
 ### Build for Production
-```bash
 # Build the application
-npm run build
+pnpm run build
 
 # Preview the build
-npm run preview
+pnpm run preview
 ```
-
-### Deployment Options
 
 #### Vercel (Recommended)
 ```bash
@@ -413,7 +410,6 @@ vercel
 # Deploy to production
 vercel --prod
 ```
-
 #### Netlify
 ```bash
 # Install Netlify CLI
@@ -523,7 +519,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-For support, email timothy.khalayi@example.com or create an issue in the GitHub repository.
+For support, email timothykhalayi@gmail.com or create an issue in the GitHub repository.
 
 ## 🙏 Acknowledgments
 
