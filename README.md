@@ -33,6 +33,7 @@ The application is currently deployed and running on Render, providing a stable 
 - **Order Management** - Medicine ordering and fulfillment
 - **Admin Dashboard** - Administrative oversight and statistics
 - **API Documentation** - Comprehensive Swagger documentation
+- **Chronic Disease Management** - Monitor and track vitals, medication adherence, and lifestyle data for patients with chronic conditions
 
 ## 🛠️ Technology Stack
 
@@ -200,7 +201,8 @@ src/
 ├── mail/              # Email services
 ├── reminder/          # Notification system
 ├── logs/              # Application logging
-└── database/          # Database configuration
+├── database/          # Database configuration
+└── chronic-management/# Chronic disease monitoring and management
 ```
 
 ### Database Schema
@@ -210,6 +212,7 @@ The application uses PostgreSQL with TypeORM for the following entities:
 - Prescriptions, Medicines, Orders
 - Payments, Medical Records
 - Chat Messages, Logs
+- Vitals, Medication Logs, Lifestyle Logs (for chronic disease management)
 
 ## 🧪 Testing
 
@@ -272,6 +275,14 @@ pnpm run test:e2e       # End-to-end tests
 - `GET /api/prescriptions` - Get prescriptions
 - `POST /api/prescriptions` - Create prescription
 - `GET /api/medicines` - Get medicine catalog
+
+### Chronic Disease Management
+- `POST /api/chronic-management/vitals` - Record patient vitals
+- `GET /api/chronic-management/vitals` - Get patient vitals history
+- `POST /api/chronic-management/medication-logs` - Log medication adherence
+- `GET /api/chronic-management/medication-logs` - Get medication adherence history
+- `POST /api/chronic-management/lifestyle-logs` - Record lifestyle activities
+- `GET /api/chronic-management/lifestyle-logs` - Get lifestyle activity history
 
 ## 🔧 Development
 

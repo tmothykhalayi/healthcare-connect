@@ -33,6 +33,7 @@ import { LogsModule } from './logs/logs.module';
 import { DatabaseModule } from './database/database.module';
 import { ZoomService } from './zoom/zoom.service';
 import { PrescriptionsModule } from './prescriptions/prescriptions.module';
+import { ChronicManagementModule } from './chronic-management/chronic-management.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { PrescriptionsModule } from './prescriptions/prescriptions.module';
     LogsModule,
     DatabaseModule,
     PrescriptionsModule,
+    ChronicManagementModule,
   ],
   controllers: [AppController],
   providers: [
