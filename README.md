@@ -338,7 +338,7 @@ This project is licensed under the UNLICENSED License - see the [LICENSE](LICENS
 
 ## 🆘 Support
 
-For support, email timothy.khalayi@example.com or create an issue in the GitHub repository.
+For support, email timothykhalayi96@gmail.com or create an issue in the GitHub repository.
 
 ## 🙏 Acknowledgments
 
