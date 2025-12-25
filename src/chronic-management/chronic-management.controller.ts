@@ -1,4 +1,11 @@
-import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { ChronicManagementService } from './chronic-management.service';
 import { CreateVitalDto } from './dto/create-vital.dto';
 import { CreateMedicationLogDto } from './dto/create-medication-log.dto';
@@ -8,7 +15,9 @@ import { AtGuard } from '../auth/guards/at.guard';
 @Controller('chronic-management')
 @UseGuards(AtGuard)
 export class ChronicManagementController {
-  constructor(private readonly chronicManagementService: ChronicManagementService) {}
+  constructor(
+    private readonly chronicManagementService: ChronicManagementService,
+  ) {}
 
   @Post('vitals')
   async addVital(@Body() dto: CreateVitalDto, @Request() req) {

@@ -38,7 +38,7 @@ export class ChronicManagementService {
 
   async getVitals(user: any) {
     // Replace with: return await this.vitalRepo.find({ where: { patientId: user.id } });
-    return this.vitals.filter(v => v.patientId === user.id);
+    return this.vitals.filter((v) => v.patientId === user.id);
   }
 
   async addMedicationLog(dto: CreateMedicationLogDto, user: any) {
@@ -56,7 +56,7 @@ export class ChronicManagementService {
 
   async getMedicationLogs(user: any) {
     // Replace with: return await this.medicationLogRepo.find({ where: { patientId: user.id } });
-    return this.medicationLogs.filter(l => l.patientId === user.id);
+    return this.medicationLogs.filter((l) => l.patientId === user.id);
   }
 
   async addLifestyleLog(dto: CreateLifestyleLogDto, user: any) {
@@ -74,6 +74,6 @@ export class ChronicManagementService {
 
   async getLifestyleLogs(user: any) {
     // Replace with: return await this.lifestyleLogRepo.find({ where: { patientId: user.id } });
-    return this.lifestyleLogs.filter(l => l.patientId === user.id);
+    return this.lifestyleLogs.filter((l) => l.patientId === user.id);
   }
 }
